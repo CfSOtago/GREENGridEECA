@@ -1,4 +1,4 @@
-# GREENGridEECA
+# GREEN Grid EECA
 A repo supporting analysis of NZ GREEN Grid electricity demand data for EECA.
 
 ## Data
@@ -15,4 +15,8 @@ Note that to run the code you will need to [register with the UK Data Service](h
 
 ## Reporting
 
-Best viewed at 
+### Part A – Data processing
+
+### Part B - Data analysis
+
+### Part C – Provision of advice for upscaling 
