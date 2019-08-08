@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj
+*.csv # in case of accidents
