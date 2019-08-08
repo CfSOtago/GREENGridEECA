@@ -6,29 +6,16 @@ Authors@R:
            family = "Anderson",
            role = c("aut", "cre"),
            email = "ben.anderson@otago.ac.nz",
-           comment = structure("0000-0003-2092-4406", .Names = "ORCID")),
-    person(given = "Carsten",
-           family = "Dortans",
-           role = c("aut"),
-           email = "",
-           comment = structure("", .Names = "ORCID")),
-  person(given = "Jason",
-           family = "Mair",
-           role = c("aut"),
-           email = "",
-           comment = structure("", .Names = "ORCID")),
-  person(given = "Michael",
-           family = "Jack",
-           role = c("aut"),
-           email = "",
-           comment = structure("", .Names = "ORCID"))
+           comment = structure("0000-0003-2092-4406", .Names = "ORCID"))
 Description: What the package does (one paragraph).
 License: Apache License (>= 2.0)
 Encoding: UTF-8
 LazyData: true
 Depends: 
     data.table,
+    here,
     ggplot2,
-    lubridate
+    lubridate,
+    GREENGridData (>= 1.0)
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
