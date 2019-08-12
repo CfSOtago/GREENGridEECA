@@ -1,0 +1,7 @@
+The [NZ GREEN Grid household electricity demand study](https://cfsotago.github.io/GREENGridData/) recruited a sample of c 40 households in each of two regions of New Zealand [@stephenson_smart_2017]. The first sample was recruited in early 2014 and the second in early 2015. Research data includes:
+
+  * 1 minute electricity power (W) data was collected for each dwelling circuit using [GridSpy](https://gridspy.com/) monitors on each power circuit (and the incoming power). The power values represent mean(W) over the minute preceeding the observation timestamp;
+  * Dwelling & appliance surveys;
+  * Occupant time-use diaries (focused on energy use).
+
+The data collection was supported by the New Zealand [Ministry of Business, Innovation and Employment (MBIE)](http://www.mbie.govt.nz/) through the [Renewable Energy and the Smart Grid (GREEN Grid)](https://www.otago.ac.nz/centre-sustainability/research/energy/otago050285.html) grant (Contract ID: UOCX1203).
