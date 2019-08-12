@@ -2,10 +2,10 @@
 params:
   subtitle: ""
   title: ""
-  version: ""
+  authors: ""
 title: '`r params$title`'
 subtitle: '`r params$subtitle`'
-author: '`r repoParams$Authors`'
+author: '`r params$authors`'
 date: 'Last run at: `r getRunDateTime()`'
 output:
   bookdown::html_document2:
@@ -33,7 +33,12 @@ startTime <- proc.time()
 b2Kb <- 1024 #http://whatsabyte.com/P1/byteconverter.htm
 b2Mb <- 1048576
 plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots
-  
+
+# Packages used in the report ----
+libs <- c("ggplot2", # plots
+          "kableExtra" # fancy tables
+          )
+          
 # Local functions ----
 ```
 
@@ -59,22 +64,34 @@ plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots
 
 ```{r history, child=repoParams$history}
 ```
- * this [report's edit history](https://github.com/CfSOtago/GREENGridData/commits/master/makeDocs/buildOverviewReport.Rmd)
+ * this [report's edit history](https://github.com/CfSOtago/GREENGridEECA/commits/master/reports/partA_dataProcessing)
  
 ## Support
 
-```{r generic support, child=repoParams$supportGeneric}
+```{r generic support, child=repoParams$support}
 ```
  
 \newpage
 
 # Introduction
 
-```{r generic sample, child=repoParams$sampleGeneric}
-```
- 
 This report uses the GREEN Grid project [@stephenson_smart_2017] research data to...
 
+# Multi-year data availability
+
+```{r reportMY}
+# NB: most data processing handled by drake in the makeFile.R 
+```
+
+# Estimation of total load
+
+# Development of a half-hourly power demand dataset
+
+# Data
+
+```{r generic sample, child=repoParams$data}
+```
+ 
 # Runtime
 
 
