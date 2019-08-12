@@ -2,19 +2,35 @@ Package: GREENGridEECA
 Title: Supports Analysis of NZ GREEN Grid data for EECA
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "Ben",
+    c(person(given = "Ben",
            family = "Anderson",
            role = c("aut", "cre"),
            email = "ben.anderson@otago.ac.nz",
-           comment = structure("0000-0003-2092-4406", .Names = "ORCID"))
+           comment = structure("0000-0003-2092-4406", .Names = "ORCID")),
+    person(given = "Carsten",
+           family = "Dortans",
+           role = c("aut"),
+           email = "",
+           comment = structure("", .Names = "ORCID")),
+  person(given = "Jason",
+           family = "Mair",
+           role = c("aut"),
+           email = "",
+           comment = structure("", .Names = "ORCID")),
+  person(given = "Michael",
+           family = "Jack",
+           role = c("aut"),
+           email = "",
+           comment = structure("", .Names = "ORCID"))
+           )
 Description: What the package does (one paragraph).
 License: Apache License (>= 2.0)
 Encoding: UTF-8
 LazyData: true
 Depends: 
     data.table,
-    here,
     ggplot2,
+    here,
     lubridate,
     GREENGridData (>= 1.0)
 Roxygen: list(markdown = TRUE)
