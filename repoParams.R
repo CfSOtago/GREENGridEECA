@@ -17,13 +17,14 @@ repoParams$Authors <- "Anderson, B., Dortans, C, Mair, J. and Jack, M."
 
 # Rmd includes
 repoParams$licenseCCBY <- paste0(repoParams$repoLoc, "/includes/licenseCCBY.Rmd")
-repoParams$supportGeneric <- paste0(repoParams$repoLoc, "/includes/supportGeneric.Rmd")
-repoParams$sampleGeneric <- paste0(repoParams$repoLoc, "/includes/sampleGeneric.Rmd")
-repoParams$history <- paste0(repoParams$repoLoc, "/includes/historyGeneric.Rmd")
-repoParams$citation <- paste0(repoParams$repoLoc, "/includes/citationGeneric.Rmd")
+repoParams$support <- paste0(repoParams$repoLoc, "/includes/support.Rmd")
+repoParams$data <- paste0(repoParams$repoLoc, "/includes/data.Rmd")
+repoParams$history <- paste0(repoParams$repoLoc, "/includes/history.Rmd")
+repoParams$citation <- paste0(repoParams$repoLoc, "/includes/citation.Rmd")
 
 
 # Parameters you should _not_ need to change (as they are only used to process the original non-released data) ----
 ## Location of original data ----
 
-repoParams$dataLoc <- "/Volumes/hum-csafe/Research Projects/GREEN Grid/" # HCS by default
+repoParams$dataLoc <- "~/greenGridData/cleanData/safe" # HCS mounted on Computer.Sci RStudio server by default
+repoParams$gridSpy <- paste0(repoParams$dataLoc, "/gridSpy/1min/data/")
