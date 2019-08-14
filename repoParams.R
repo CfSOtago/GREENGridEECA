@@ -27,4 +27,4 @@ repoParams$citation <- paste0(repoParams$repoLoc, "/includes/citation.Rmd")
 ## Location of original data ----
 
 repoParams$dataLoc <- "~/greenGridData/cleanData/safe" # HCS mounted on Computer.Sci RStudio server by default
-repoParams$gridSpy <- paste0(repoParams$dataLoc, "/gridSpy/1min/data/")
+repoParams$gridSpy <- paste0(repoParams$dataLoc, "/gridSpy/")
