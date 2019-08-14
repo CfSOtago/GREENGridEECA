@@ -49,6 +49,7 @@ processData <- function(filesDT){
     ofile <- paste0(oPath, hh, "_allObs_halfHourly.csv")
     print(paste0("Writing ", ofile))
     data.table::fwrite(hhDT, file = ofile)
+    GREENGridEECA::gzipIt(ofile)
     print("Done")
   }
 }
@@ -58,8 +59,8 @@ version <- "1.0"
 repoParams$repoLoc <- here::here()
 
 # data paths
-iPath <- paste0(repoParams$gridSpy,"1min/data/imputed/") # use data with imputed total load
-oPath <- paste0(repoParams$gridSpy,"halfHour/data/")
+iPath <- paste0(repoParams$GreenGridData, "gridSpy/1min/data/imputed/") # use data with imputed total load
+oPath <- paste0(repoParams$GreenGridData,"gridSpy/halfHour/data/")
 
 # --- Code ---
 
@@ -68,4 +69,4 @@ filesDT <- getFileList(iPath)
 # remove rf_46
 filesDT <- filesDT[!(all.files %like% "rf_46")]
 
-processData(filesDT)
+#processData(filesDT)
