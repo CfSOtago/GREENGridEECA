@@ -22,11 +22,7 @@ GREENGridEECA::loadLibraries(localLibs)
 
 # Local functions (if any) ----
 
-getFileList <- function(){
-  # should be fast
-  dPath <- repoParams$gridSpy
-  # test
-  dPath <- "~/greenGridData/cleanData/safe/gridSpy/1min/data/imputed/"
+getFileList <- function(dPath){
   all.files <- list.files(path = dPath, pattern = ".csv.gz")
   dt <- as.data.table(all.files)
   dt[, fullPath := paste0(dPath, all.files)]
@@ -58,18 +54,17 @@ doReport <- function(){
 version <- "1.0"
 repoParams$repoLoc <- here::here()
 
+# data ----
+dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
+
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
-subtitle <- paste0("EECA Analysis: Data Processing Report v", version)
+subtitle <- paste0("EECA Data Processing (Part A) Report v", version)
 authors <- "Anderson, B."
-
-#> dates ----
-startDate <- lubridate::date("2010-01-01") # well before
-endDate <- lubridate::date("2020-01-01") # well after
 
 # --- Code ---
 
-filesDT <- getFileList()
+filesDT <- getFileList(dPath)
 
 # remove rf_46
 filesDT <- filesDT[!(fullPath %like% "rf_46")]
