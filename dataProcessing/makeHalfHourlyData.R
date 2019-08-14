@@ -34,9 +34,9 @@ processData <- function(filesDT){
     # for testing: f <- "rf_01_all_1min_data_withImputedTotal_circuitsToSum_v1.1.csv.gz"
     s <- strsplit(f, "_all")
     hh <- unlist(s)[1]
-    print(paste0("Processing: ", hh))
+    message("Processing: ", hh)
     iFile <- paste0(iPath, f)
-    print(paste0("Loading ", iFile))
+    message("Loading ", iFile)
     dt <- data.table::fread(iFile)
     dt[, r_dateTime := lubridate::as_datetime(r_dateTime, tz = "Pacific/Auckland")] # this will be UTC unless you set this
     dt[, r_dateTimeHalfHour := lubridate::floor_date(r_dateTime, "30 minutes")]
@@ -49,8 +49,9 @@ processData <- function(filesDT){
     ofile <- paste0(oPath, hh, "_allObs_halfHourly.csv")
     print(paste0("Writing ", ofile))
     data.table::fwrite(hhDT, file = ofile)
+    message("gzipping...")
     GREENGridEECA::gzipIt(ofile)
-    print("Done")
+    message("Done: ", hh)
   }
 }
 
@@ -69,4 +70,7 @@ filesDT <- getFileList(iPath)
 # remove rf_46
 filesDT <- filesDT[!(all.files %like% "rf_46")]
 
-#processData(filesDT)
+# testing: filesDT <- filesDT[all.files %like% "rf_01"]
+processData(filesDT)
+
+message("Done!")
