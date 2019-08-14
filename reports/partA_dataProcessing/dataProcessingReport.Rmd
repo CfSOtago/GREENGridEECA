@@ -46,6 +46,11 @@ libs <- c("ggplot2", # plots
 
 # About
 
+## Citation
+
+```{r citation, child=repoParams$citation}
+```
+
 ## Report circulation:
 
  * Public – this report is intended for publication.
@@ -55,11 +60,6 @@ libs <- c("ggplot2", # plots
 ```{r ccby license, child=repoParams$licenseCCBY}
 ```
  
-## Citation
-
-```{r citation, child=repoParams$citation}
-```
-
 ## History
 
 ```{r history, child=repoParams$history}
@@ -77,6 +77,11 @@ libs <- c("ggplot2", # plots
 
 This report uses the GREEN Grid project [@stephenson_smart_2017] research data to...
 
+# Data
+
+```{r generic sample, child=repoParams$data}
+```
+ 
 # Multi-year data availability
 
 ```{r reportMY}
@@ -87,11 +92,7 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 
 # Development of a half-hourly power demand dataset
 
-# Data
 
-```{r generic sample, child=repoParams$data}
-```
- 
 # Runtime
 
 
