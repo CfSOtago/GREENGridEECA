@@ -37,8 +37,10 @@ getData <- function(filesDT){
   # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
   # this is where we need drake
   # and probably more memory
+  message("Loading ", nrow(filesDT), " files")
   l <- lapply(filesDT$fullPath, fread)
-  dt <- rbindlist( l )
+  dt <- rbindlist(l)
+  return(dt)
   #setkey( dt , ID, date )
 }
 
