@@ -13,43 +13,65 @@ GREENGridEECA::setup() # run setup to set repo level parameters
 localLibs <- c("rmarkdown",
                "bookdown",
                "data.table", # data munching
-               "drake", # to create data objects
                "GREENGridData", # so as not to re-invent the wheel
                "here", # where are we?
-               "lubridate" # fixing dates & times
+               "lubridate", # fixing dates & times
+               "utils" # for reading .gz files with data.table
 )
 GREENGridEECA::loadLibraries(localLibs)
 
 # Local functions (if any) ----
 
+getFileList <- function(){
+  # should be fast
+  dPath <- repoParams$gridSpy
+  # test
+  dPath <- "~/greenGridData/cleanData/safe/gridSpy/1min/data/imputed/"
+  all.files <- list.files(path = dPath, pattern = ".csv.gz")
+  dt <- as.data.table(all.files)
+  dt[, fullPath := paste0(dPath, all.files)]
+  return(dt)
+}
+
+getData <- function(filesDT){
+  # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
+  # this is where we need drake
+  # and probably more memory
+  l <- lapply(filesDT$fullPath, fread)
+  dt <- rbindlist( l )
+  #setkey( dt , ID, date )
+}
+
+doReport <- function(){
+  rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
+  rmarkdown::render(input = rmdFile,
+                    params = list(title = title,
+                                  subtitle = subtitle,
+                                  authors = authors),
+                    output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".html")
+  )
+}
+
 # Local parameters ----
 version <- "1.0"
 repoParams$repoLoc <- here::here()
+
+#> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Analysis: Data Processing Report v", version)
 authors <- "Anderson, B."
 
-# --- Code ---
-
-# The original data extraction & cleaning kept all data, it was only the
-# UKDA submission that filtered dates.
-
-# put all of this data in 1 data.table. This will be quite large
+#> dates ----
 startDate <- lubridate::date("2010-01-01") # well before
 endDate <- lubridate::date("2020-01-01") # well after
-dPath <- repoParams$gridSpy
-# test
-dPath <- "~/greenGridData/cleanData/safe/gridSpy/1min/data/"
-cleanData <- GREENGridData::loadCleanGridSpyData(path.expand(dPath),
-                                          startDate,
-                                          endDate)
 
+# --- Code ---
 
+filesDT <- getFileList()
 
-rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
-rmarkdown::render(input = rmdFile,
-                  params = list(title = title,
-                                subtitle = subtitle,
-                                authors = authors),
-                  output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".html")
-)
+# remove rf_46
+filesDT <- filesDT[!(fullPath %like% "rf_46")]
+
+#allDataDT <- getData(filesDT) # breaks memory
+
+# doReport()
