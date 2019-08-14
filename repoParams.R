@@ -2,29 +2,49 @@
 
 repoParams <<- list() # params holder
 
-# Parameters you may need to change ----
-
-# Location of the repo
+# > Location of the repo ----
 library(here)
 repoParams$repoLoc <- here::here()
 
-# Location of misc data
+# Data ----
+# attempt to guess the platform & user
+info <- Sys.info()
+sysname <- info[1]
+nodename <- info[4]
+login <- info[6]
+user <- info[7]
+
+#> Green Grid data ----
+if(user == "dataknut" & sysname == "Linux"){
+  message("We're on the CS RStudio server as ", user, " using " , sysname)
+  repoParams$GreenGridData <- "~/greenGridData/cleanData/safe/"
+}
+if(user == "carsten" & sysname == "Linux"){
+  message("We're on the CS RStudio server as ", user, " using " , sysname)
+  repoParams$GreenGridData <- "~/greenGridData/cleanData/safe/"
+}
+if(user == "ben" & sysname == "Darwin"){
+  message("We're on Ben's laptop as : ", user, " using " , sysname)
+  repoParams$gridSpyImputed <- path.expand("~/Data/NZ_GREENGrid/safe/")
+}
+if(user == "carsten" & sysname == "Darwin"){
+  message("We're on Carsten's laptop as : ", user, " using " , sysname)
+  # check this path is OK - HCS
+  repoParams$gridSpyImputed <- path.expand("Volumes/hum-csafe/Research Projects/GREEN Grid/cleanData/safe/")
+}
+
+# > Misc data ----
 repoParams$dstNZDates <- paste0(repoParams$repoLoc, "/data/dstNZDates.csv")
 
-# Vars for Rmd
+# For .Rmd ----
+# > Default yaml for Rmd ----
 repoParams$pubLoc <- "[Centre for Sustainability](http://www.otago.ac.nz/centre-sustainability/), University of Otago: Dunedin"
-repoParams$Authors <- "Anderson, B., Dortans, C, Mair, J. and Jack, M."
+repoParams$Authors <- "Anderson, B., Dortans, C., and Jack, M."
 
-# Rmd includes
+# > Rmd includes ----
 repoParams$licenseCCBY <- paste0(repoParams$repoLoc, "/includes/licenseCCBY.Rmd")
 repoParams$support <- paste0(repoParams$repoLoc, "/includes/support.Rmd")
 repoParams$data <- paste0(repoParams$repoLoc, "/includes/data.Rmd")
 repoParams$history <- paste0(repoParams$repoLoc, "/includes/history.Rmd")
 repoParams$citation <- paste0(repoParams$repoLoc, "/includes/citation.Rmd")
 
-
-# Parameters you should _not_ need to change (as they are only used to process the original non-released data) ----
-## Location of original data ----
-
-repoParams$dataLoc <- "~/greenGridData/cleanData/safe" # HCS mounted on Computer.Sci RStudio server by default
-repoParams$gridSpy <- paste0(repoParams$dataLoc, "/gridSpy/")
