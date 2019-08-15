@@ -105,7 +105,7 @@ skimr::skim(allDataDT)
 
 The following tables show descriptive statistics for the meanPowerW values for each circuit by household.
 
-```{r powerCube}
+```{r powerCube, results = "asis"}
 ids <- unique(allDataDT$linkID)
 
 for(hh in ids){
@@ -116,8 +116,8 @@ for(hh in ids){
                                                               nObs = .N)), by = c("circuit"))
     # NA in circuit column of ersults table = All
     t[, circuit := ifelse(is.na(circuit), "All", circuit)]
-    kableExtra::kable(t, caption = paste0(hh, ": Mean of half-hourly mean power (W) by circuit type")) %>% 
-      kable_styling()
+    print(kableExtra::kable(t, caption = paste0(hh, ": Mean of half-hourly mean power (W) by circuit type")) %>% 
+      kable_styling())
 }
 
 ```
