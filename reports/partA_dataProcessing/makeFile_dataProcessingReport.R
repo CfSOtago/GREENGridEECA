@@ -51,8 +51,7 @@ doReport <- function(){
 }
 
 # Local parameters ----
-version <- "1.0"
-repoParams$repoLoc <- here::here()
+version <- "0.1"
 
 # data ----
 dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
@@ -69,6 +68,6 @@ filesDT <- getFileList(dPath)
 # remove rf_46
 filesDT <- filesDT[!(fullPath %like% "rf_46")]
 
-#allDataDT <- getData(filesDT) # breaks memory
+#allDataDT <- getData(filesDT) # get halfHourly data
 
 # doReport()
