@@ -32,11 +32,12 @@ startTime <- proc.time()
 # Local parameters ----
 b2Kb <- 1024 #http://whatsabyte.com/P1/byteconverter.htm
 b2Mb <- 1048576
-plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots
+plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots (if any)
 
 # Packages used in the report ----
 libs <- c("ggplot2", # plots
-          "kableExtra" # fancy tables
+          "kableExtra", # fancy tables
+          "skimr" # for skim
           )
           
 # Local functions ----
@@ -64,7 +65,7 @@ libs <- c("ggplot2", # plots
 
 ```{r history, child=repoParams$history}
 ```
- * this [report's edit history](https://github.com/CfSOtago/GREENGridEECA/commits/master/reports/partA_dataProcessing)
+ * this [report's edit history](https://github.com/CfSOtago/GREENGridEECA/commits/master/reports/partB_dataAnalysis)
  
 ## Support
 
@@ -82,15 +83,23 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 ```{r generic sample, child=repoParams$data}
 ```
  
-# Multi-year data availability
+# Peak Contribution
 
-```{r reportMY}
-# NB: most data processing handled by drake in the makeFile.R 
+```{r peakContrib}
+# use allDataDT created in the makeFile
 ```
 
-# Estimation of total load
+# Annual Contribution
 
-# Development of a half-hourly power demand dataset
+# Conservation Load Factor
+
+# Summary
+
+# Data Annex
+
+```{r skimData}
+skimr::skim(allDataDT)
+```
 
 
 # Runtime

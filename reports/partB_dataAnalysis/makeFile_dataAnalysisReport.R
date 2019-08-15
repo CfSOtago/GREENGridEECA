@@ -35,10 +35,10 @@ getData <- function(filesDT){
   # this is where we need drake
   # and probably more memory
   message("Loading ", nrow(filesDT), " files")
-  l <- lapply(filesDT$fullPath, fread)
-  dt <- rbindlist(l)
+  l <- lapply(filesDT$fullPath, fread) # uses the very fast fread to laod them to a list
+  dt <- rbindlist(l) # rbind them
   return(dt)
-  #setkey( dt , ID, date )
+  setkey( dt , linkID, r_dateTimeHalfHour )
 }
 
 doReport <- function(){
@@ -52,25 +52,25 @@ doReport <- function(){
 }
 
 # Local parameters ----
-version <- "1.0"
-repoParams$repoLoc <- here::here()
+version <- "0.1"
 
 # data paths
-dPath <- repoParams$gridSpyHalfHour
+dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
 
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part B) Report v", version)
 authors <- "Anderson, B., Dortans, C. and Jack, M."
 
-# --- Code ---
+# --- Code ----
 
+# this is where we would use drake
+# > get the file list ----
 filesDT <- getFileList(dPath)
-
-# remove rf_46 if it is in there by accident
-
+# > remove rf_46 if it is in there by accident ----
 filesDT <- filesDT[!(fullPath %like% "rf_46")]
+# > get data  ----
+allDataDT <- getData(filesDT)
 
-allDataDT <- getData(filesDT) # breaks memory
-
+# > run report ----
 doReport()
