@@ -1,3 +1,6 @@
+# file sourced by setup()
+library(here)
+
 # Package parameters ----
 
 repoParams <<- list() # params holder
