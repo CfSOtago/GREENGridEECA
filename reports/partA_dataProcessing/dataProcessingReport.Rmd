@@ -92,6 +92,35 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 
 # Development of a half-hourly power demand dataset
 
+# Summary
+
+# Data Annex
+
+Descriptive statistics for aggregate half hourly power data for all households and all circuits:
+
+```{r skimData}
+skimr::skim(allDataDT)
+```
+
+The following tables show descriptive statistics for the meanPowerW values for each circuit by household.
+
+```{r powerCube, results = "asis"}
+ids <- unique(allDataDT$linkID)
+
+for(hh in ids){
+  # prints a lot of tables
+    t <- data.table::cube(allDataDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
+                                                              minPowerW = min(meanPowerW),
+                                                              maxPowerW = max(meanPowerW),
+                                                              nObs = .N)), by = c("circuit"))
+    # NA in circuit column of ersults table = All
+    t[, circuit := ifelse(is.na(circuit), "All", circuit)]
+    print(kableExtra::kable(t, caption = paste0(hh, ": Mean of half-hourly mean power (W) by circuit type")) %>% 
+      kable_styling())
+}
+
+```
+
 
 # Runtime
 

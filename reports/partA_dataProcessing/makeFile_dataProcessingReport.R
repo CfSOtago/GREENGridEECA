@@ -63,11 +63,13 @@ authors <- "Anderson, B."
 
 # --- Code ---
 
+# this is where we would use drake
+# > get the file list ----
 filesDT <- getFileList(dPath)
-
-# remove rf_46
+# > remove rf_46 if it is in there by accident ----
 filesDT <- filesDT[!(fullPath %like% "rf_46")]
+# > get data  ----
+allDataDT <- getData(filesDT)
 
-#allDataDT <- getData(filesDT) # get halfHourly data
-
-# doReport()
+# > run report ----
+doReport()
