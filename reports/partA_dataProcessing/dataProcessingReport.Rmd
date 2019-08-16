@@ -35,10 +35,10 @@ b2Mb <- 1048576
 plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots
 
 # Packages used in the report ----
-libs <- c("ggplot2", # plots
+rmdLibs <- c("ggplot2", # plots
           "kableExtra" # fancy tables
           )
-          
+GREENGridEECA::loadLibraries(rmdLibs)
 # Local functions ----
 ```
 
@@ -84,13 +84,93 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
  
 # Multi-year data availability
 
-```{r reportMY}
-# NB: most data processing handled by drake in the makeFile.R 
+Whilst the GREEN Grid project collected data from `r min(lubridate::date(powerDataDT$r_dateTimeHalfHour))` to `r max(lubridate::date(powerDataDT$r_dateTimeHalfHour))`, we do not have complete multi-year coverage of the `r uniqueN(powerDataDT$linkID)` households for whom data exists.
+
+As Figure \@ref(fig:reportMyTile) shows data is available for most of the `r uniqueN(hhDataDT[Location == "Taranaki"])` dwellings in the Taranaki region from mid 2014 and for most of the `r uniqueN(hhDataDT[Location == "Hawkes Bay"])` dwellings in Hawkes Bay from early 2015. In most cases the 'right' number of observations were received per half hour (30) when the dwellings were sending data. However not all households sent data continuously with substantial attrition by 2017 (Figure \@ref(fig:reportMyCol).
+
+```{r reportMyTile, fig.cap="Mean number of observations per circuit per half hour", fig.height=8}
+myCaption <- "Source: GREEN Grid Household power demand data"
+
+plotDT <- powerDataDT[, .(meanNObs = mean(nObs)), 
+                    keyby = .(linkID, 
+                              date = lubridate::date(powerDataDT$r_dateTimeHalfHour))]
+setkey(plotDT, linkID)
+setkey(hhDataDT, linkID)
+plotDT <- hhDataDT[plotDT]
+plotDT[, Location := ifelse(is.na(Location), "Test installs", Location)] # gs data but no survey etc
+
+
+
+ggplot2::ggplot(plotDT[!(Location %like% "Test")], aes(x = date, y = linkID, fill = meanNObs)) +
+  geom_tile() +
+  facet_grid(Location ~ .,scales = "free_y") +
+  scale_fill_continuous(low = "red", high = "green", name = "Mean n observations per circuit\nper half hour") +
+  labs(x = "Date", y = "ID", caption = paste0(myCaption,"\n 2 test installs removed (rf_01, rf_02)")) +
+   theme(legend.position="bottom")
 ```
 
-# Estimation of total load
+
+```{r reportMyCol, fig.cap="Number of dwellings sending data per half hour", fig.height=8}
+
+plotDT <- plotDT[, .(nDwellings = uniqueN(linkID)), 
+                    keyby = .(Location, date)]
+
+
+ggplot2::ggplot(plotDT[!(Location %like% "Test")], aes(x = date, y = nDwellings, fill = Location)) +
+  geom_col(position = "stack") +
+  labs(x = "Date", y = "N dwellings", 
+       caption = paste0(myCaption,
+                        "\n 2 test installs removed (rf_01, rf_02)")) +
+   theme(legend.position="bottom")
+```
+
+For clarity, Figure \@ref(fig:reportSeasonal) shows the mean daily number of dwellings present in the data in each year and season for each region. Whilst it is clear that 2015 provides the highest level of reporting dwellings, it would be at least possible to calculate seasonal summaries for several years.
+
+```{r reportSeasonal, fig.cap="Active households by season"}
+dt <- GREENGridEECA::addNZSeason(plotDT, date)
+dt <- dt[, year := lubridate::year(date)]
+t <- dt[, .(meanDwellings = mean(nDwellings)), keyby = .(year, season, Location)]
+ggplot2::ggplot(t, aes(x = season, y = meanDwellings, fill = Location)) +
+  geom_col() +
+  labs(x = "Season", y = "Mean number of dwellings per season",
+       caption = paste0(myCaption, "\nAll households")) +
+  facet_grid(. ~ year) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+However, it should be noted that:
+
+ * not all dwellings contained the appliance circuits of analysitic interest;
+ * one dwelling (rf_46) has ambiguous circuit labels and so [should be ignored](https://github.com/CfSOtago/GREENGridData/issues/1);
+ * a number of dwellings have a very high proportion of -ve power values for some circuits ([rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total household load is required;
+ * similarly [some dwellings]((https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) have a small number of -ve power values on non-PV circuits at some times, possibly due to brief incorrect fitting of the monitors.
+
+As a result the _effective_ number of households available for any given analysis will always be _lower_ than the numbers reported above and should be evaluated on a case by case basis.
+
+# Imputation of 'total load' per minute per household
 
 # Development of a half-hourly power demand dataset
+
+In response to EECA's request we have produced an aggregated half-hourly power demand dataset.
+
+Following a decision on the utility of multi-year analysis, Otago will collate, combine, process and aggregate the raw data files into a set of .csv files with the following attributes:
+
+ * dateTime (in UTC) in half hours
+ * mean, min, max and standard deviation of power (W) for each half hour
+ * circuit label or filter label (see list below)
+ * household id (for linkage to survey data)
+
+These files will be created for the following circuits or (partial) circuit labels:
+
+ * Lighting
+ * Hot water
+ * Heat pumps
+ * ‘Kitchen’ – noting that this may include other areas of the dwelling
+ * Non-heat pump ‘Heat’ – noting that this circuit label may include other appliances
+ * ‘Refrigerator’ – noting that this circuit label may include other appliances
+ * ‘Freezer’ – noting that this circuit label may include other appliances
+ * Total load
+
 
 # Summary
 
@@ -99,17 +179,17 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 Descriptive statistics for aggregate half hourly power data for all households and all circuits:
 
 ```{r skimData}
-skimr::skim(allDataDT)
+skimr::skim(powerDataDT)
 ```
 
 The following tables show descriptive statistics for the meanPowerW values for each circuit by household.
 
 ```{r powerCube, results = "asis"}
-ids <- unique(allDataDT$linkID)
+ids <- unique(powerDataDT$linkID)
 
 for(hh in ids){
   # prints a lot of tables
-    t <- data.table::cube(allDataDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
+    t <- data.table::cube(powerDataDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
                                                               minPowerW = min(meanPowerW),
                                                               maxPowerW = max(meanPowerW),
                                                               nObs = .N)), by = c("circuit"))
