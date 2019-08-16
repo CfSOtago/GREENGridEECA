@@ -28,12 +28,12 @@ if(user == "carsten" & sysname == "Linux"){
 }
 if(user == "ben" & sysname == "Darwin"){
   message("We're on Ben's laptop as : ", user, " using " , sysname)
-  repoParams$gridSpyImputed <- path.expand("~/Data/NZ_GREENGrid/safe/")
+  repoParams$GreenGridData <- path.expand("~/Data/NZ_GREENGrid/safe/")
 }
-if(user == "carsten" & sysname == "Darwin"){
+if(user == "carsten.dortans" & sysname == "Darwin"){
   message("We're on Carsten's laptop as : ", user, " using " , sysname)
   # check this path is OK - HCS
-  repoParams$gridSpyImputed <- path.expand("Volumes/hum-csafe/Research Projects/GREEN Grid/cleanData/safe/")
+  repoParams$GreenGridData <- path.expand("/Volumes/hum-csafe/Research Projects/GREEN Grid/cleanData/safe/")
 }
 
 # > Misc data ----
