@@ -122,7 +122,37 @@ for(hh in ids){
 
 ```
 
+```{r calculations Part B: max total load per appliance @peak}
 
+#New DT
+origDT <- allDataDT
+
+#DT modifications
+
+#Excluding households based on report
+origDT <- origDT[!(origDT$linkID=="rf_14"),]
+origDT <- origDT[!(origDT$linkID=="rf_25"),]
+origDT <- origDT[!(origDT$linkID=="rf_26"),]
+origDT <- origDT[!(origDT$linkID=="rf_43"),]
+
+#Setting times of peak demand 
+
+OPS1 <- hms::as.hms("06:00:00")
+OPE1 <- hms::as.hms("10:00:00")
+
+PS <- hms::as.hms("17:00:00")
+PE <- hms::as.hms("21:00:00")
+
+OPS2 <- hms::as.hms("21:30:00")
+OPE2 <- hms::as.hms("23:30:00")
+
+
+
+
+
+
+
+```
 
 # Runtime
 
