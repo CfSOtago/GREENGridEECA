@@ -10,7 +10,7 @@ print(paste0("#-> Done "))
 GREENGridEECA::setup() # run setup to set repo level parameters
 
 # Load libraries needed across all .Rmd files ----
-localLibs <- c("rmarkdown",
+rLibs <- c("rmarkdown",
                "bookdown",
                "data.table", # data munching
                "GREENGridData", # so as not to re-invent the wheel
@@ -18,7 +18,7 @@ localLibs <- c("rmarkdown",
                "lubridate", # fixing dates & times
                "utils" # for reading .gz files with data.table
 )
-GREENGridEECA::loadLibraries(localLibs)
+GREENGridEECA::loadLibraries(rLibs)
 
 # Local functions (if any) ----
 
@@ -29,15 +29,17 @@ getFileList <- function(dPath){
   return(dt)
 }
 
-getData <- function(filesDT){
+getPowerData <- function(filesDT){
   # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
   # this is where we need drake
   # and probably more memory
   message("Loading ", nrow(filesDT), " files")
   l <- lapply(filesDT$fullPath, fread)
   dt <- rbindlist(l)
+  dt <- dt[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
+                                                     tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
+  setkey(dt, linkID, circuit, r_dateTimeHalfHour)
   return(dt)
-  #setkey( dt , ID, date )
 }
 
 doReport <- function(){
@@ -66,10 +68,12 @@ authors <- "Anderson, B."
 # this is where we would use drake
 # > get the file list ----
 filesDT <- getFileList(dPath)
-# > remove rf_46 if it is in there by accident ----
-filesDT <- filesDT[!(fullPath %like% "rf_46")]
-# > get data  ----
-allDataDT <- getData(filesDT)
+
+# > get power data  ----
+powerDataDT <- getPowerData(filesDT)
+
+# > get hh data  ----
+hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
 doReport()

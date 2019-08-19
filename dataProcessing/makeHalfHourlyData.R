@@ -22,7 +22,7 @@ GREENGridEECA::loadLibraries(localLibs)
 
 getFileList <- function(iPath){
   # should be fast
-  all.files <- list.files(path = iPath, pattern = ".csv.gz")
+  all.files <- list.files(path = iPath, pattern = "^[rf_]") # grab individual files
   dt <- as.data.table(all.files)
   return(dt)
 }
@@ -68,7 +68,7 @@ oPath <- paste0(repoParams$GreenGridData,"gridSpy/halfHour/data/")
 filesDT <- getFileList(iPath)
 
 # remove rf_46
-filesDT <- filesDT[!(all.files %like% "rf_46")]
+#filesDT <- filesDT[!(all.files %like% "rf_46")]
 
 # testing: filesDT <- filesDT[all.files %like% "rf_01"]
 processData(filesDT)

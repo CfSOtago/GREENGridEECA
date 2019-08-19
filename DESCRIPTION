@@ -23,13 +23,15 @@ Authors@R:
            email = "",
            comment = structure("", .Names = "ORCID"))
            )
-Description: What the package does (one paragraph).
+Description: The code in this package processes and reports analysis of the New Zealand GREEN Grid Household Electricity Demand Study 2014-2018.
 License: Apache License (>= 2.0)
 Encoding: UTF-8
 LazyData: true
+Suggests:
+    drake,
+    ggplot2
 Depends: 
     data.table,
-    ggplot2,
     here,
     lubridate,
     GREENGridData (>= 1.0)
