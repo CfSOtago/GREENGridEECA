@@ -67,10 +67,9 @@ authors <- "Anderson, B., Dortans, C. and Jack, M."
 # this is where we would use drake
 # > get the file list ----
 filesDT <- getFileList(dPath)
-# > remove rf_46 if it is in there by accident ----
-filesDT <- filesDT[!(fullPath %like% "rf_46")]
+
 # > get data  ----
-allDataDT <- getData(filesDT)
+origPowerDT <- getData(filesDT)
 
 # > run report ----
 doReport()
