@@ -135,10 +135,20 @@ origDT <- origDT[!(origDT$linkID=="rf_25"),]
 origDT <- origDT[!(origDT$linkID=="rf_26"),]
 origDT <- origDT[!(origDT$linkID=="rf_43"),]
 
+#Define Winter/else
+origDT <- origDT[, date := lubridate::date(r_dateTimeHalfHour)]
+origDT <- origDT[, obsHalfHour := format(ymd_hms(r_dateTimeHalfHour), "%H:%M:%S")]
+origDT <- origDT[, month := lubridate::month(r_dateTimeHalfHour)]
+
+origDT <- origDT[month >= 12 | month == 1 | month == 2, season := "Summer"]
+origDT <- origDT[month >= 3 | month == 4 | month == 5, season := "Autumn"]
+origDT <- origDT[month == 6 | month == 7 | month == 8, season := "Winter"]
+origDT <- origDT[month == 9 | month == 10 | month == 11, season := "Spring"]
+
 #Setting times of peak demand 
 
-OPS1 <- hms::as.hms("06:00:00")
-OPE1 <- hms::as.hms("10:00:00")
+OPS1 <- hms::as.hms("00:00:00")
+OPE1 <- hms::as.hms("16:30:00")
 
 PS <- hms::as.hms("17:00:00")
 PE <- hms::as.hms("21:00:00")
