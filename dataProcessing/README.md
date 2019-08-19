@@ -38,7 +38,7 @@ rf_47 Heat Pump & 2 x Bathroom Heat$4171 2015-03-25T04:30:00Z      0.000   30   
  
   * linkiD: anonyised ID to link to the [household data](http://reshare.ukdataservice.ac.uk/853334/);
   * circuit: the monitored circuit, includes imputed total load as a 'circuit'
-  * r_dateTimeHalfHour: date/time in UTC
+  * r_dateTimeHalfHour: date/time in UTC ([what does the T & Z mean?](https://stackoverflow.com/questions/8405087/what-is-this-date-format-2011-08-12t201746-384z))
   * mean/nObs/sd/min/max power in watts
   
 
