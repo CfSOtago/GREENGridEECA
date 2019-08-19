@@ -122,18 +122,25 @@ for(hh in ids){
 
 ```
 
-```{r calculations Part B: max total load per appliance @peak}
+```{r Part B: data processing}
 
 #New DT
 origDT <- allDataDT
 
 #DT modifications
 
-#Excluding households based on report
+#Excluding households based on report and setting negative values to zero
 origDT <- origDT[!(origDT$linkID=="rf_14"),]
 origDT <- origDT[!(origDT$linkID=="rf_25"),]
 origDT <- origDT[!(origDT$linkID=="rf_26"),]
 origDT <- origDT[!(origDT$linkID=="rf_43"),]
+origDT <- origDT[!(origDT$linkID=="rf_46"),]
+
+origDT <- origDT[, meanPowerW := ifelse(meanPowerW <0, NA, meanPowerW)]
+origDT <- origDT[, sdPowerW := ifelse(sdPowerW <0, NA, sdPowerW)]
+origDT <- origDT[, minPowerW := ifelse(minPowerW <0, NA, minPowerW)]
+origDT <- origDT[, maxPowerW := ifelse(maxPowerW <0, NA, maxPowerW)]
+
 
 #Define Winter/else
 origDT <- origDT[, date := lubridate::date(r_dateTimeHalfHour)]
@@ -146,7 +153,6 @@ origDT <- origDT[month == 6 | month == 7 | month == 8, season := "Winter"]
 origDT <- origDT[month == 9 | month == 10 | month == 11, season := "Spring"]
 
 #Setting times of peak demand 
-
 OPS1 <- hms::as.hms("00:00:00")
 OPE1 <- hms::as.hms("16:30:00")
 
@@ -155,6 +161,22 @@ PE <- hms::as.hms("21:00:00")
 
 OPS2 <- hms::as.hms("21:30:00")
 OPE2 <- hms::as.hms("23:30:00")
+#----------------------------
+#Actual calculations start
+#----------------------------
+
+```
+
+```{r Part B: calculations}
+
+
+
+
+
+
+
+
+
 
 
 
