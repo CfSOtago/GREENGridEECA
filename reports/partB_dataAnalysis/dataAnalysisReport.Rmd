@@ -169,11 +169,13 @@ OPE2 <- hms::as.hms("23:30:00")
 
 ```{r Part B: calculations}
 
-u
+proDT <- origDT
 
-
-
-
+proDT <- proDT[, test := ifelse(season == 'Winter' & obsHalfHour >= '17:00:00' & obsHalfHour <= '21:00:00', sum(meanPowerW), 0), keyby = .(circuit, obsHalfHour)]
+  
+proDT <- proDT[!(proDT$test==0), keyby =.(circuit, obsHalfHour)]
+proDT <- proDT[, .(test = test), 
+                    keyby = .(circuit, obsHalfHour)]
 
 
 
