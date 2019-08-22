@@ -38,6 +38,7 @@ if(user == "carsten.dortans" & sysname == "Darwin"){
 
 # > Misc data ----
 repoParams$dstNZDates <- paste0(repoParams$repoLoc, "/data/dstNZDates.csv")
+repoParams$bytesToMb <- 0.000001
 
 # For .Rmd ----
 # > Default yaml for Rmd ----
