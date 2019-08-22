@@ -114,8 +114,8 @@ powerDT <- powerDT[, obsHalfHour := hms::as.hms(r_dateTime_nz)]
 powerDT <- powerDT[, month := lubridate::month(r_dateTime_nz)]
 powerDT <- powerDT[, peak := 0]
 
-powerDT <- powerDT[month >= 12 | month == 1 | month == 2, season := "Summer"]
-powerDT <- powerDT[month >= 3 | month == 4 | month == 5, season := "Autumn"]
+powerDT <- powerDT[month == 12 | month == 1 | month == 2, season := "Summer"]
+powerDT <- powerDT[month == 3 | month == 4 | month == 5, season := "Autumn"]
 powerDT <- powerDT[month == 6 | month == 7 | month == 8, season := "Winter"]
 powerDT <- powerDT[month == 9 | month == 10 | month == 11, season := "Spring"]
 
@@ -129,9 +129,16 @@ PE <- hms::as.hms("21:00:00")
 OP2S <- hms::as.hms("21:30:00")
 OP2E <- hms::as.hms("23:30:00")
 
-powerDT <- powerDT[obsHalfHour >= OP1S & obsHalfHour <= OP1E, peak := "Off Peak 1"]
-powerDT <- powerDT[obsHalfHour >= OP2S & obsHalfHour <= OP2E, peak := "Off Peak 2"]
-powerDT <- powerDT[obsHalfHour >= PS & obsHalfHour <= PE, peak := "Peak"]
+powerDT <- powerDT[, peak := ifelse(obsHalfHour >= OP1S & obsHalfHour <= OP1E,
+                                    "Off Peak 1",
+                                    NA)]
+powerDT <- powerDT[, peak := ifelse(obsHalfHour >= OP2S & obsHalfHour <= OP2E,
+                                    "Off Peak 2",
+                                    peak)]
+powerDT <- powerDT[, peak := ifelse(obsHalfHour >= PS & obsHalfHour <= PE,
+                                    "Peak",
+                                    peak)]
+# this stops the RHS coercion errors
 
 #----------------------------
 #Actual calculations start
@@ -140,38 +147,83 @@ powerDT <- powerDT[obsHalfHour >= PS & obsHalfHour <= PE, peak := "Peak"]
 ```
 
 ```{r Part B: calculations}
+powerDT[, year := lubridate::year(r_dateTime_nz)]
 
-proDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & season == 'Winter' & obsHalfHour >= hms::as.hms("17:00:00") & obsHalfHour <= hms::as.hms("21:00:00"), .(maxMeanPoW =  max(meanPowerW)), keyby = .(linkID, season)]
-#This is the maximum total load (sum of all circuits) for peak demand in Winter per household
-print(proDT)  #RESULT#
+selectDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & 
+                   obsHalfHour >= hms::as.hms("17:00:00") & obsHalfHour <= hms::as.hms("21:00:00"), .SD[which.max(meanPowerW)], # finds only the rows which are the max of the mean total load (XX should we be using the maxPowerW?? XX)
+                   by = .(linkID, season, year)] # max vlaue within household, season, year
 
+# This is the time of maximum peak demand for each household
 
-proDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & season == 'Winter' & obsHalfHour >= hms::as.hms("17:00:00") & obsHalfHour <= hms::as.hms("21:00:00"), .(maxMeanPoW = max(meanPowerW)), keyby = .(linkID, r_dateTime_nz)]
-proDT <- proDT[, .SD[which.max(maxMeanPoW)], by = linkID]
-#This is the time of maximum peak demand for each household
-print(proDT) #RESULT#
+kableExtra::kable(head(selectDT), caption = "Extracted peak load half-hours - first 6 rows")  %>% # test result
+  kable_styling()
 
-i <- proDT$linkID
-j <- proDT$r_dateTime_nz
-cols <- c("linkID", "r_dateTime_nz", "meanPowerW", "circuit" )
-
-while (powerDT$linkID==i && powerDT$r_dateTime_nz==j) {
-  print(cols)
+dataBucketDT <- data.table::data.table()
+for(n in 1:nrow(selectDT)){
+  # extract the rows which match the dateTime
+  row <- selectDT[n]
+  dt <- powerDT[linkID == row$linkID & # matches household
+                  r_dateTime_nz == row$r_dateTime_nz, # matches dateTime
+                .(linkID, year, season, r_dateTime_nz, circuit, nObs, meanPowerW, minPowerW, maxPowerW)] # selects just the basic columns we need
+  dataBucketDT <- rbind(dataBucketDT, dt)
 }
 
+kableExtra::kable(head(dataBucketDT), caption = "Extracted peak load half-hour circuits - first 6 rows")  %>% # test result
+  kable_styling()
 
-ex
+# extract _just_ the circuits which are (or contain):
+# - total load
+# - heat pumps
+# - hot water
+# - oven
+# - lighting
 
+# dataBucketDT$eecaCircuit <- NULL
 
+# split the circuit label to leave just the string and rthe id (we need the string)
+dataBucketDT <- dataBucketDT[, c("circuitLabel","circuitID") := tstrsplit(circuit,"$", fixed = TRUE)]
 
+# these match exactly to circuit label strings by matching to the string that came before the $ 
+dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel == "Heat Pump" |
+                                                       circuitLabel == "Theatre Heat Pump" |
+                                                       circuitLabel == "Upstairs Heat Pumps" |
+                                                       circuitLabel == "Heating",
+                                                    "Heat Pump or Heating", 
+                                                    "XX_Other") # default
+                             ]
 
+# these match if the string is in the circuit label (i.e. circuit label could contain other words)
+# Be careful with these
+dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse( circuitLabel == "Oven" |
+                                                        circuitLabel == "Range" |
+                                                        circuitLabel == "Wall Oven" |
+                                                        circuitLabel %like% "Oven &" |
+                                                        circuitLabel %like% "Oven,", # if the circuit = Oven only
+                                                    "Oven", eecaCircuit)]
+dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot water", 
+                                                    "Hot water", eecaCircuit)]
+dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot Water", 
+                                                    "Hot water", eecaCircuit)]
+dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "Lighting" |
+                                                       circuitLabel %like% "Lights", 
+                                                    "Lighting", eecaCircuit)]
+dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "imputedTotalDemand_circuitsToSum_v1.1", 
+                                                    "Total", eecaCircuit)]
+# test
+t <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
 
+kableExtra::kable(t, caption = "Categoriesed circuits - XX check carefully! XX")  %>% # test result
+  kable_styling()
 
+t <- dcast(dataBucketDT[season == "Winter"], 
+           linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "meanPowerW") # take 1 household and turn data round
 
+kableExtra::kable(t, caption = "Extracted winter peak load half-hour circuits (NaN indicates no such circuit and note that the mains/incomer is included in XX_Other so don't expect all the columns to sum to Total)")  %>% # test result
+  kable_styling()
 
-
-
-
+# Now just calculate the % using the identified circuits?
 ```
 
 # Peak Contribution

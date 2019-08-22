@@ -72,4 +72,4 @@ filesDT <- getFileList(dPath)
 origPowerDT <- getData(filesDT)
 
 # > run report ----
-#doReport()
+doReport()
