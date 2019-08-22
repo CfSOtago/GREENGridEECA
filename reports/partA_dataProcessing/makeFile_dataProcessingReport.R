@@ -26,6 +26,7 @@ getFileList <- function(dPath){
   all.files <- list.files(path = dPath, pattern = ".csv.gz")
   dt <- as.data.table(all.files)
   dt[, fullPath := paste0(dPath, all.files)]
+  dt[, fSizeMb := repoParams$bytesToMb * file.size(fullPath)]
   return(dt)
 }
 
@@ -36,8 +37,6 @@ getPowerData <- function(filesDT){
   message("Loading ", nrow(filesDT), " files")
   l <- lapply(filesDT$fullPath, fread)
   dt <- rbindlist(l)
-  dt <- dt[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
-                                                     tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
   setkey(dt, linkID, circuit, r_dateTimeHalfHour)
   return(dt)
 }
@@ -56,7 +55,8 @@ doReport <- function(){
 version <- "0.1"
 
 # data ----
-dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
+impdPath <- paste0(repoParams$GreenGridData, "gridSpy/1min/data/imputed/") # imputed total load
+hhdPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
 
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
@@ -66,13 +66,26 @@ authors <- "Anderson, B."
 # --- Code ---
 
 # this is where we would use drake
-# > get the file list ----
-filesDT <- getFileList(dPath)
+impfilesDT <- getFileList(impdPath)
+
+# > get the imputed load file list ----
+hhfilesDT <- getFileList(hhdPath)
+
+# > get the halfhourly file list ----
+filesDT <- getFileList(hhdPath)
 
 # > get power data  ----
-powerDataDT <- getPowerData(filesDT)
+origHHDataDT <- getPowerData(hhfilesDT)
+hhPowerDataDT <- origHHDataDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
+                                                        tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
 
-# > get hh data  ----
+imputedLoadF <- impfilesDT[!(all.files %like% "rf_") & # not a household file
+                             all.files %like% "v1.1", # latest version
+                           fullPath]
+
+impDataDT <- data.table::fread(imputedLoadF)
+
+# > get household data  ----
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
