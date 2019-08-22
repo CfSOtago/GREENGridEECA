@@ -84,22 +84,20 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
  
 # Multi-year data availability
 
-Whilst the GREEN Grid project collected data from `r min(lubridate::date(powerDataDT$r_dateTimeHalfHour))` to `r max(lubridate::date(powerDataDT$r_dateTimeHalfHour))`, we do not have complete multi-year coverage of the `r uniqueN(powerDataDT$linkID)` households for whom data exists.
+Whilst the GREEN Grid project collected data from `r min(lubridate::date(hhPowerDataDT$r_dateTimeHalfHour))` to `r max(lubridate::date(hhPowerDataDT$r_dateTimeHalfHour))`, we do not have complete multi-year coverage of the `r uniqueN(hhPowerDataDT$linkID)` dwellings for whom data exists.
 
-As Figure \@ref(fig:reportMyTile) shows data is available for most of the `r uniqueN(hhDataDT[Location == "Taranaki"])` dwellings in the Taranaki region from mid 2014 and for most of the `r uniqueN(hhDataDT[Location == "Hawkes Bay"])` dwellings in Hawkes Bay from early 2015. In most cases the 'right' number of observations were received per half hour (30) when the dwellings were sending data. However not all households sent data continuously with substantial attrition by 2017 (Figure \@ref(fig:reportMyCol).
+As Figure \@ref(fig:reportMyTile) shows data is available for most of the `r uniqueN(hhDataDT[Location == "Taranaki"])` dwellings in the Taranaki region from mid 2014 and for most of the `r uniqueN(hhDataDT[Location == "Hawkes Bay"])` dwellings in Hawkes Bay from early 2015. In most cases the 'right' number of observations were received per half hour (30) when the dwellings were sending data. However not all dwellings sent data continuously with substantial attrition by 2017 (Figure \@ref(fig:reportMyCol).
 
 ```{r reportMyTile, fig.cap="Mean number of observations per circuit per half hour", fig.height=8}
-myCaption <- "Source: GREEN Grid Household power demand data"
+myCaption <- "Source: GREEN Grid dwelling power demand data"
 
-plotDT <- powerDataDT[, .(meanNObs = mean(nObs)), 
+plotDT <- hhPowerDataDT[, .(meanNObs = mean(nObs)), 
                     keyby = .(linkID, 
-                              date = lubridate::date(powerDataDT$r_dateTimeHalfHour))]
+                              date = lubridate::date(hhPowerDataDT$r_dateTimeHalfHour))]
 setkey(plotDT, linkID)
 setkey(hhDataDT, linkID)
 plotDT <- hhDataDT[plotDT]
 plotDT[, Location := ifelse(is.na(Location), "Test installs", Location)] # gs data but no survey etc
-
-
 
 ggplot2::ggplot(plotDT[!(Location %like% "Test")], aes(x = date, y = linkID, fill = meanNObs)) +
   geom_tile() +
@@ -124,16 +122,16 @@ ggplot2::ggplot(plotDT[!(Location %like% "Test")], aes(x = date, y = nDwellings,
    theme(legend.position="bottom")
 ```
 
-For clarity, Figure \@ref(fig:reportSeasonal) shows the mean daily number of dwellings present in the data in each year and season for each region. Whilst it is clear that 2015 provides the highest level of reporting dwellings, it would be at least possible to calculate seasonal summaries for several years.
+For clarity, Figure \@ref(fig:reportSeasonal) shows the mean daily number of dwellings present in the data in each year and season for each region. Whilst it is clear that 2015 provides the highest level of reporting dwellings, it also shows that it would be at least possible to calculate seasonal summaries for several years.
 
-```{r reportSeasonal, fig.cap="Active households by season"}
+```{r reportSeasonal, fig.cap="Active dwellings by season"}
 dt <- GREENGridEECA::addNZSeason(plotDT, date)
 dt <- dt[, year := lubridate::year(date)]
 t <- dt[, .(meanDwellings = mean(nDwellings)), keyby = .(year, season, Location)]
 ggplot2::ggplot(t, aes(x = season, y = meanDwellings, fill = Location)) +
   geom_col() +
   labs(x = "Season", y = "Mean number of dwellings per season",
-       caption = paste0(myCaption, "\nAll households")) +
+       caption = paste0(myCaption, "\nAll dwellings")) +
   facet_grid(. ~ year) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
@@ -142,25 +140,87 @@ However, it should be noted that:
 
  * not all dwellings contained the appliance circuits of analysitic interest;
  * one dwelling (rf_46) has ambiguous circuit labels and so [should be ignored](https://github.com/CfSOtago/GREENGridData/issues/1);
- * a number of dwellings have a very high proportion of -ve power values for some circuits ([rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total household load is required;
+ * a number of dwellings have a very high proportion of -ve power values for some circuits ([rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total dwelling load is required;
  * similarly [some dwellings]((https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) have a small number of -ve power values on non-PV circuits at some times, possibly due to brief incorrect fitting of the monitors.
 
-As a result the _effective_ number of households available for any given analysis will always be _lower_ than the numbers reported above and should be evaluated on a case by case basis.
+As a result the _effective_ number of dwellings available for any given analysis will always be _lower_ than the numbers reported above and should be evaluated on a case by case basis.
 
-# Imputation of 'total load' per minute per household
+# Imputation of 'total load' per minute per dwelling
+
+Whilst in theory the calculation of total load in any given minute should be a matter of merely summing all monitored circuits, in practice the task is not quite this simple. There are a number of reasons for this:
+
+ * for some dwellings the hot water circuit is seperately metered and thus monitored but for others it is part of the overall 'incomer/mains' demand;
+ * photovoltaic cells were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;
+ * several dwellings report either systematic or intemittent negative values yet do not have PV installations.
+ 
+Our previously work has shown that [with appropriate care](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html) it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each households [@GREENGridTotalLoad]. However the issues described above mean that users should:
+
+ * exclude dwellings with (link) IDs: `rf_14`,`rf_25`,`rf_26` and `rf_43` due to substantial unexplained negative values;
+ * exclude other -ve values on a per-value basis. _We recommend setting such values to NA (__not 0__)_;
+ * include households known to have PV _only if_ analysis of demand during non-daylight hours is being undertaken or if net demand is of interest.
+
+Seperately, for reasons explained [elsewhere](https://cfsotago.github.io/GREENGridData/gridSpy1mOutliersReport_v1.0.html#45_the_mysterious_case_of_rf_46) we also recommend removing `rf_46` from the data prior to analysis.
+
+In all cases we recommend that users check the data carefully before analysis and document any filtering they apply.
+
+We have therefore created a new dataset for each dwelling which comprises the estimated total load per minute for each dwelling for the entire time frame for which we have data (ref Figure \@ref(fig:reportMyCol)). For ease of use this data is available as:
+
+ * an additional set of observations added to the end of each clean data file with circuit label set to `imputedTotalDemand_circuitsToSum_v1.1` indicating that the [aggregation code](https://github.com/CfSOtago/GREENGridData/blob/master/dataProcessing/gridSpy/imputeTotalPower.R) used the [circuitsToSum definition v1.1](https://github.com/CfSOtago/GREENGridData/blob/master/data/circuitsToSum_v1.1.csv);
+ * a single file containing _only_ the estimated total load per minute per household.
+
+Note that we have _not_ applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table \@ref(tab:listLoadFiles).
+
+```{r listLoadFiles}
+kableExtra::kable(impfilesDT[all.files %like% "v1.1", .(file = all.files, fSizeMb)], caption = "Size of clean data files with estimated load", digits = 2) %>%
+  kable_styling()
+
+```
+
+Table \@ref(tab:allLoadDesc) shows basic statistics for the estimated 1 minute level load for each dwelling and illustrates some of the issues described above.
+
+```{r allLoadDesc}
+t <- impDataDT[, .(nObs = GREENGridData::tidyNum(.N),
+                   meanW = mean(powerW),
+                   minW = min(powerW),
+                   maxW = max(powerW),
+                   sdW = sd(powerW)), keyby = (linkID)]
+
+setkey(t, linkID)
+t2 <- hhDataDT[, .(linkID, `PV Inverter`, Location)][t]
+t2[, Location := ifelse(is.na(Location), "Test installs", Location)] # gs data but no survey etc
+
+kableExtra::kable(t2, caption = "Basic statistics for the estimated 1 minute level load (W) for each dwelling", digits = 2) %>%
+  kable_styling()
+
+```
 
 # Development of a half-hourly power demand dataset
 
-In response to EECA's request we have produced an aggregated half-hourly power demand dataset.
+In response to EECA's request we have used the per-dwelling files listed in Table \@ref(tab:listLoadFiles) produced an aggregated half-hourly power demand dataset.
 
-Following a decision on the utility of multi-year analysis, Otago will collate, combine, process and aggregate the raw data files into a set of .csv files with the following attributes:
+The resulting files are listed in Table \@ref(tab:listhhFiles).
 
- * dateTime (in UTC) in half hours
- * mean, min, max and standard deviation of power (W) for each half hour
- * circuit label or filter label (see list below)
- * household id (for linkage to survey data)
+```{r listhhFiles}
+kableExtra::kable(hhfilesDT[, .(file = all.files, fSizeMb)], caption = "Size of clean half hourly data files", digits = 2) %>%
+  kable_styling()
 
-These files will be created for the following circuits or (partial) circuit labels:
+```
+
+These files contain:
+
+ * `r_dateTimeHalfHour` (in UTC) in half hours;
+ * number of observations, mean, min, max and standard deviation of power (W) for each half hour;
+ * `circuit` label with total load labelled as `imputedTotalDemand_circuitsToSum_v1.1`;
+ * dwelling `linkID` (for linkage to survey data).
+ 
+```{r headhhFile}
+kableExtra::kable(head(origHHDataDT), caption = "Half hourly data format with example data", digits = 2) %>%
+  kable_styling()
+
+```
+
+
+Further, these per-dwelling files have been used to create single data files containing all observations for the following circuits or (partial) circuit labels:
 
  * Lighting
  * Hot water
@@ -174,22 +234,28 @@ These files will be created for the following circuits or (partial) circuit labe
 
 # Summary
 
-# Data Annex
 
-Descriptive statistics for aggregate half hourly power data for all households and all circuits:
 
-```{r skimData}
-skimr::skim(powerDataDT)
+```{r runToEnd}
+
 ```
 
-The following tables show descriptive statistics for the meanPowerW values for each circuit by household.
+# Data Annex
+
+Descriptive statistics for aggregate half hourly power data for all dwellings and all circuits:
+
+```{r skimData}
+skimr::skim(hhPowerDataDT)
+```
+
+The following tables show descriptive statistics for the meanPowerW values for each circuit by dwelling.
 
 ```{r powerCube, results = "asis"}
-ids <- unique(powerDataDT$linkID)
+ids <- unique(hhPowerDataDT$linkID)
 
 for(hh in ids){
   # prints a lot of tables
-    t <- data.table::cube(powerDataDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
+    t <- data.table::cube(hhPowerDataDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
                                                               minPowerW = min(meanPowerW),
                                                               maxPowerW = max(meanPowerW),
                                                               nObs = .N)), by = c("circuit"))
