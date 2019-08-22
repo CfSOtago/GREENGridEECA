@@ -95,38 +95,44 @@ powerDT <- copy(origPowerDT) # need to copy as data.table works by reference htt
 
 #Excluding households based on report
 exclude <- c("rf_14", "rf_25", "rf_26", "rf_43", "rf_46")
-powerDT[!(linkID %in% exclude)]
+powerDT <- powerDT[!(linkID %in% exclude)]
 
 # setting negative values to NA
-powerDT[, meanPowerW := ifelse(meanPowerW <0, NA, meanPowerW)]
-powerDT[, sdPowerW := ifelse(sdPowerW <0, NA, sdPowerW)]
-powerDT[, minPowerW := ifelse(minPowerW <0, NA, minPowerW)]
-powerDT[, maxPowerW := ifelse(maxPowerW <0, NA, maxPowerW)]
+powerDT <- powerDT[, meanPowerW := ifelse(meanPowerW <0, NA, meanPowerW)]
+powerDT <- powerDT[, sdPowerW := ifelse(sdPowerW <0, NA, sdPowerW)]
+powerDT <- powerDT[, minPowerW := ifelse(minPowerW <0, NA, minPowerW)]
+powerDT <- powerDT[, maxPowerW := ifelse(maxPowerW <0, NA, maxPowerW)]
 
 # set to NZ time from UTC
-powerDT[, r_dateTime_nz := lubridate::as_datetime(r_dateTimeHalfHour, 
+powerDT <- powerDT[, r_dateTime_nz := lubridate::as_datetime(r_dateTimeHalfHour, 
                                                tz = "Pacific/Auckland")] # this will be UTC unless you set this
 
 #Define Winter/else
-powerDT[, date := lubridate::date(r_dateTime_nz)]
-powerDT[, obsHalfHour := hms::as.hms(r_dateTime_nz)]
+powerDT <- powerDT[, date := lubridate::date(r_dateTime_nz)]
+powerDT <- powerDT[, obsHalfHour := hms::as.hms(r_dateTime_nz)]
 #powerDT[, obsHalfHour := format(ymd_hms(r_dateTimeHalfHour), "%H:%M:%S")]
-powerDT[, month := lubridate::month(r_dateTime_nz)]
+powerDT <- powerDT[, month := lubridate::month(r_dateTime_nz)]
+powerDT <- powerDT[, peak := 0]
 
-powerDT[month >= 12 | month == 1 | month == 2, season := "Summer"]
-powerDT[month >= 3 | month == 4 | month == 5, season := "Autumn"]
-powerDT[month == 6 | month == 7 | month == 8, season := "Winter"]
-powerDT[month == 9 | month == 10 | month == 11, season := "Spring"]
+powerDT <- powerDT[month >= 12 | month == 1 | month == 2, season := "Summer"]
+powerDT <- powerDT[month >= 3 | month == 4 | month == 5, season := "Autumn"]
+powerDT <- powerDT[month == 6 | month == 7 | month == 8, season := "Winter"]
+powerDT <- powerDT[month == 9 | month == 10 | month == 11, season := "Spring"]
 
 #Setting times of peak demand 
-OPS1 <- hms::as.hms("00:00:00")
-OPE1 <- hms::as.hms("16:30:00")
+OP1S <- hms::as.hms("00:00:00")
+OP1E <- hms::as.hms("16:30:00")
 
 PS <- hms::as.hms("17:00:00")
 PE <- hms::as.hms("21:00:00")
 
-OPS2 <- hms::as.hms("21:30:00")
-OPE2 <- hms::as.hms("23:30:00")
+OP2S <- hms::as.hms("21:30:00")
+OP2E <- hms::as.hms("23:30:00")
+
+powerDT <- powerDT[obsHalfHour >= OP1S & obsHalfHour <= OP1E, peak := "Off Peak 1"]
+powerDT <- powerDT[obsHalfHour >= OP2S & obsHalfHour <= OP2E, peak := "Off Peak 2"]
+powerDT <- powerDT[obsHalfHour >= PS & obsHalfHour <= PE, peak := "Peak"]
+
 #----------------------------
 #Actual calculations start
 #----------------------------
@@ -135,18 +141,28 @@ OPE2 <- hms::as.hms("23:30:00")
 
 ```{r Part B: calculations}
 
-proDT <- powerDT[, sumMeanPoW := ifelse(season == 'Winter' & obsHalfHour >= '17:00:00' & obsHalfHour <= '21:00:00', sum(meanPowerW), 0), keyby = .(circuit, obsHalfHour, date)]
+proDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & season == 'Winter' & obsHalfHour >= hms::as.hms("17:00:00") & obsHalfHour <= hms::as.hms("21:00:00"), .(maxMeanPoW =  max(meanPowerW)), keyby = .(linkID, season)]
+#This is the maximum total load (sum of all circuits) for peak demand in Winter per household
+print(proDT)  #RESULT#
 
 
-  
-proDT <- proDT[!(proDT$sumMeanPoW==0)]
-proDT <- proDT[, .(sumMeanPoW = sumMeanPoW), 
-                    keyby = .(circuit, obsHalfHour, date)]
-proDT <- proDT[, maxPoW := max(sumMeanPoW), keyby =.(circuit)]
+proDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & season == 'Winter' & obsHalfHour >= hms::as.hms("17:00:00") & obsHalfHour <= hms::as.hms("21:00:00"), .(maxMeanPoW = max(meanPowerW)), keyby = .(linkID, r_dateTime_nz)]
+proDT <- proDT[, .SD[which.max(maxMeanPoW)], by = linkID]
+#This is the time of maximum peak demand for each household
+print(proDT) #RESULT#
 
-proDT %>% distinct()
+i <- proDT$linkID
+j <- proDT$r_dateTime_nz
+cols <- c("linkID", "r_dateTime_nz", "meanPowerW", "circuit" )
 
-#proDT <- proDT[, .(maxPoW = maxPoW), keyby =.(circuit)]
+while (powerDT$linkID==i && powerDT$r_dateTime_nz==j) {
+  print(cols)
+}
+
+
+ex
+
+
 
 
 
