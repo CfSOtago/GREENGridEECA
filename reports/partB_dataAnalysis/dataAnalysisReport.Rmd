@@ -142,11 +142,25 @@ powerDT <- powerDT[obsHalfHour >= PS & obsHalfHour <= PE, peak := "Peak"]
 ```{r Part B: calculations}
 
 proDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & season == 'Winter' & obsHalfHour >= hms::as.hms("17:00:00") & obsHalfHour <= hms::as.hms("21:00:00"), .(maxMeanPoW =  max(meanPowerW)), keyby = .(linkID, season)]
-
 #This is the maximum total load (sum of all circuits) for peak demand in Winter per household
 print(proDT)  #RESULT#
 
 
+proDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & season == 'Winter' & obsHalfHour >= hms::as.hms("17:00:00") & obsHalfHour <= hms::as.hms("21:00:00"), .(maxMeanPoW = max(meanPowerW)), keyby = .(linkID, r_dateTime_nz)]
+proDT <- proDT[, .SD[which.max(maxMeanPoW)], by = linkID]
+#This is the time of maximum peak demand for each household
+print(proDT) #RESULT#
+
+i <- proDT$linkID
+j <- proDT$r_dateTime_nz
+cols <- c("linkID", "r_dateTime_nz", "meanPowerW", "circuit" )
+
+while (powerDT$linkID==i && powerDT$r_dateTime_nz==j) {
+  print(cols)
+}
+
+
+ex
 
 
 
