@@ -153,11 +153,11 @@ Whilst in theory the calculation of total load in any given minute should be a m
  * photovoltaic panels were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;
  * several dwellings report either systematic or intemittent negative values yet do not have PV installations.
  
-Our previously work has shown that [with appropriate care](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html) it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each households [@GREENGridTotalLoad]. However the issues described above mean that users should:
+Our previously work has shown that [with appropriate care](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html) it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each dwelling [@GREENGridTotalLoad]. However the issues described above mean that users should:
 
  * exclude dwellings with (link) IDs: `rf_14`,`rf_25`,`rf_26` and `rf_43` due to substantial unexplained negative values;
  * exclude other -ve values on a per-value basis. _We recommend setting such values to NA (__not 0__)_;
- * include households known to have PV _only if_ analysis of demand during non-daylight hours is being undertaken or if net demand is of interest.
+ * include dwellings known to have PV _only if_ analysis of demand during non-daylight hours is being undertaken or if net demand is of interest.
 
 Seperately, for reasons explained [elsewhere](https://cfsotago.github.io/GREENGridData/gridSpy1mOutliersReport_v1.0.html#45_the_mysterious_case_of_rf_46) we also recommend removing `rf_46` from the data prior to analysis.
 
@@ -166,9 +166,9 @@ In all cases we recommend that users check the data carefully before analysis an
 We have therefore created a new dataset for each dwelling which comprises the estimated total load per minute for each dwelling for the entire time frame for which we have data (ref Figure \@ref(fig:reportMyCol)). For ease of use this data is available as:
 
  * an additional set of observations added to the end of each clean data file with circuit label set to `imputedTotalDemand_circuitsToSum_v1.1` indicating that the [aggregation code](https://github.com/CfSOtago/GREENGridData/blob/master/dataProcessing/gridSpy/imputeTotalPower.R) used the [circuitsToSum definition v1.1](https://github.com/CfSOtago/GREENGridData/blob/master/data/circuitsToSum_v1.1.csv);
- * a single file containing _only_ the estimated total load per minute per household.
+ * a single file containing _only_ the estimated total load per minute per dwelling.
 
-Note that we have _not_ applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table \@ref(tab:listLoadFiles). Whilst we can make these data files available, potential users should note that they are _larger_ than the original data files. The single file containing _only_ the estimated total load per minute per household is especially large. 
+Note that we have _not_ applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table \@ref(tab:listLoadFiles). Whilst we can make these data files available, potential users should note that they are _larger_ than the original data files. The single file containing _only_ the estimated total load per minute per dwelling is especially large. 
 
 ```{r listLoadFiles}
 kableExtra::kable(impfilesDT[all.files %like% "v1.1", .(file = all.files, "Mb (gzipped)" = fSizeMb)], caption = "Size of clean data files with estimated load", digits = 2) %>%
@@ -197,7 +197,7 @@ kableExtra::kable(t2, caption = "Basic statistics for the estimated 1 minute lev
 
 # Development of a half-hourly power demand dataset
 
-In response to EECA's request we have used the per-dwelling files listed in Table \@ref(tab:listLoadFiles) to produce an aggregated half-hourly power demand dataset.
+In response to EECA's request we have used the per-dwelling files listed in Table \@ref(tab:listLoadFiles) to produce an aggregated half-hourly power demand dataset __for each dwelling__.
 
 These files contain:
 
