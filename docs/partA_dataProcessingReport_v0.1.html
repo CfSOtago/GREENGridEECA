@@ -1630,7 +1630,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Processing (Part A) Report v0.1</h3>
 <h4 class="author">Anderson, B.</h4>
-<h4 class="date">Last run at: 2019-08-29 09:37:08 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2019-08-29 09:45:46 (Pacific/Auckland)</h4>
 
 </div>
 
@@ -1744,20 +1744,20 @@ Figure 4.3: Active dwellings by season
 <li>photovoltaic panels were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;</li>
 <li>several dwellings report either systematic or intemittent negative values yet do not have PV installations.</li>
 </ul>
-<p>Our previously work has shown that <a href="https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html">with appropriate care</a> it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each households <span class="citation">(Anderson 2019)</span>. However the issues described above mean that users should:</p>
+<p>Our previously work has shown that <a href="https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html">with appropriate care</a> it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each dwelling <span class="citation">(Anderson 2019)</span>. However the issues described above mean that users should:</p>
 <ul>
 <li>exclude dwellings with (link) IDs: <code>rf_14</code>,<code>rf_25</code>,<code>rf_26</code> and <code>rf_43</code> due to substantial unexplained negative values;</li>
 <li>exclude other -ve values on a per-value basis. <em>We recommend setting such values to NA (<strong>not 0</strong>)</em>;</li>
-<li>include households known to have PV <em>only if</em> analysis of demand during non-daylight hours is being undertaken or if net demand is of interest.</li>
+<li>include dwellings known to have PV <em>only if</em> analysis of demand during non-daylight hours is being undertaken or if net demand is of interest.</li>
 </ul>
 <p>Seperately, for reasons explained <a href="https://cfsotago.github.io/GREENGridData/gridSpy1mOutliersReport_v1.0.html#45_the_mysterious_case_of_rf_46">elsewhere</a> we also recommend removing <code>rf_46</code> from the data prior to analysis.</p>
 <p>In all cases we recommend that users check the data carefully before analysis and document any filtering they apply.</p>
 <p>We have therefore created a new dataset for each dwelling which comprises the estimated total load per minute for each dwelling for the entire time frame for which we have data (ref Figure <a href="#fig:reportMyCol">4.2</a>). For ease of use this data is available as:</p>
 <ul>
 <li>an additional set of observations added to the end of each clean data file with circuit label set to <code>imputedTotalDemand_circuitsToSum_v1.1</code> indicating that the <a href="https://github.com/CfSOtago/GREENGridData/blob/master/dataProcessing/gridSpy/imputeTotalPower.R">aggregation code</a> used the <a href="https://github.com/CfSOtago/GREENGridData/blob/master/data/circuitsToSum_v1.1.csv">circuitsToSum definition v1.1</a>;</li>
-<li>a single file containing <em>only</em> the estimated total load per minute per household.</li>
+<li>a single file containing <em>only</em> the estimated total load per minute per dwelling.</li>
 </ul>
-<p>Note that we have <em>not</em> applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table <a href="#tab:listLoadFiles">5.1</a>. Whilst we can make these data files available, potential users should note that they are <em>larger</em> than the original data files. The single file containing <em>only</em> the estimated total load per minute per household is especially large.</p>
+<p>Note that we have <em>not</em> applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table <a href="#tab:listLoadFiles">5.1</a>. Whilst we can make these data files available, potential users should note that they are <em>larger</em> than the original data files. The single file containing <em>only</em> the estimated total load per minute per dwelling is especially large.</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:listLoadFiles">Table 5.1: </span>Size of clean data files with estimated load
@@ -3313,7 +3313,7 @@ Hawkes Bay
 </div>
 <div id="development-of-a-half-hourly-power-demand-dataset" class="section level1">
 <h1><span class="header-section-number">6</span> Development of a half-hourly power demand dataset</h1>
-<p>In response to EECA’s request we have used the per-dwelling files listed in Table <a href="#tab:listLoadFiles">5.1</a> to produce an aggregated half-hourly power demand dataset.</p>
+<p>In response to EECA’s request we have used the per-dwelling files listed in Table <a href="#tab:listLoadFiles">5.1</a> to produce an aggregated half-hourly power demand dataset <strong>for each dwelling</strong>.</p>
 <p>These files contain:</p>
 <ul>
 <li><code>r_dateTimeHalfHour</code> (in UTC) in half hours;</li>
@@ -11751,7 +11751,7 @@ All
 </div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">9</span> Runtime</h1>
-<p>Analysis completed in 61.22 seconds ( 1.02 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 73.88 seconds ( 1.23 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">10</span> R environment</h1>
