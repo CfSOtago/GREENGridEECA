@@ -108,7 +108,7 @@ ggplot2::ggplot(plotDT[!(Location %like% "Test")], aes(x = date, y = linkID, fil
 ```
 
 
-```{r reportMyCol, fig.cap="Number of dwellings sending data per half hour", fig.height=8}
+```{r reportMyCol, fig.cap="Number of dwellings sending data per day", fig.height=8}
 
 plotDT <- plotDT[, .(nDwellings = uniqueN(linkID)), 
                     keyby = .(Location, date)]
@@ -138,9 +138,9 @@ ggplot2::ggplot(t, aes(x = season, y = meanDwellings, fill = Location)) +
 
 However, it should be noted that:
 
- * not all dwellings contained the appliance circuits of analysitic interest;
+ * not all dwellings contained the appliance circuits of analyitic interest;
  * one dwelling (rf_46) has ambiguous circuit labels and so [should be ignored](https://github.com/CfSOtago/GREENGridData/issues/1);
- * a number of dwellings have a very high proportion of -ve power values for some circuits ([rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total dwelling load is required;
+ * a number of dwellings have a very high proportion of -ve power values for some circuits mostl likely due to PV installation (e.g. [rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total dwelling load is required;
  * similarly [some dwellings]((https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) have a small number of -ve power values on non-PV circuits at some times, possibly due to brief incorrect fitting of the monitors.
 
 As a result the _effective_ number of dwellings available for any given analysis will always be _lower_ than the numbers reported above and should be evaluated on a case by case basis.
@@ -150,7 +150,7 @@ As a result the _effective_ number of dwellings available for any given analysis
 Whilst in theory the calculation of total load in any given minute should be a matter of merely summing all monitored circuits, in practice the task is not quite this simple. There are a number of reasons for this:
 
  * for some dwellings the hot water circuit is seperately metered and thus monitored but for others it is part of the overall 'incomer/mains' demand;
- * photovoltaic cells were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;
+ * photovoltaic panels were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;
  * several dwellings report either systematic or intemittent negative values yet do not have PV installations.
  
 Our previously work has shown that [with appropriate care](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html) it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each households [@GREENGridTotalLoad]. However the issues described above mean that users should:
@@ -168,10 +168,10 @@ We have therefore created a new dataset for each dwelling which comprises the es
  * an additional set of observations added to the end of each clean data file with circuit label set to `imputedTotalDemand_circuitsToSum_v1.1` indicating that the [aggregation code](https://github.com/CfSOtago/GREENGridData/blob/master/dataProcessing/gridSpy/imputeTotalPower.R) used the [circuitsToSum definition v1.1](https://github.com/CfSOtago/GREENGridData/blob/master/data/circuitsToSum_v1.1.csv);
  * a single file containing _only_ the estimated total load per minute per household.
 
-Note that we have _not_ applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table \@ref(tab:listLoadFiles).
+Note that we have _not_ applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table \@ref(tab:listLoadFiles). Whilst we can make these data files available, potential users should note that they are _larger_ than the original data files. The single file containing _only_ the estimated total load per minute per household is especially large. 
 
 ```{r listLoadFiles}
-kableExtra::kable(impfilesDT[all.files %like% "v1.1", .(file = all.files, fSizeMb)], caption = "Size of clean data files with estimated load", digits = 2) %>%
+kableExtra::kable(impfilesDT[all.files %like% "v1.1", .(file = all.files, "Mb (gzipped)" = fSizeMb)], caption = "Size of clean data files with estimated load", digits = 2) %>%
   kable_styling()
 
 ```
@@ -194,9 +194,17 @@ kableExtra::kable(t2, caption = "Basic statistics for the estimated 1 minute lev
 
 ```
 
+
 # Development of a half-hourly power demand dataset
 
-In response to EECA's request we have used the per-dwelling files listed in Table \@ref(tab:listLoadFiles) produced an aggregated half-hourly power demand dataset.
+In response to EECA's request we have used the per-dwelling files listed in Table \@ref(tab:listLoadFiles) to produce an aggregated half-hourly power demand dataset.
+
+These files contain:
+
+ * `r_dateTimeHalfHour` (in UTC) in half hours;
+ * number of observations, mean, min, max and standard deviation of power (W) for each half hour;
+ * `circuit` label with total load labelled as `imputedTotalDemand_circuitsToSum_v1.1`;
+ * dwelling `linkID` (for linkage to survey data).
 
 The resulting files are listed in Table \@ref(tab:listhhFiles).
 
@@ -206,12 +214,7 @@ kableExtra::kable(hhfilesDT[, .(file = all.files, fSizeMb)], caption = "Size of 
 
 ```
 
-These files contain:
 
- * `r_dateTimeHalfHour` (in UTC) in half hours;
- * number of observations, mean, min, max and standard deviation of power (W) for each half hour;
- * `circuit` label with total load labelled as `imputedTotalDemand_circuitsToSum_v1.1`;
- * dwelling `linkID` (for linkage to survey data).
  
 ```{r headhhFile}
 kableExtra::kable(head(origHHDataDT), caption = "Half hourly data format with example data", digits = 2) %>%
@@ -220,7 +223,9 @@ kableExtra::kable(head(origHHDataDT), caption = "Half hourly data format with ex
 ```
 
 
-Further, these per-dwelling files have been used to create single data files containing all observations for the following circuits or (partial) circuit labels:
+Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the following circuits or (partial) circuit labels:
+
+> XX to do
 
  * Lighting
  * Hot water
@@ -234,7 +239,7 @@ Further, these per-dwelling files have been used to create single data files con
 
 # Summary
 
-
+> XX tbc
 
 ```{r runToEnd}
 
