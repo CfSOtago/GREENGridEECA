@@ -61,7 +61,7 @@ hhdPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Processing (Part A) Report v", version)
-authors <- "Anderson, B."
+authors <- "Ben Anderson"
 
 # --- Code ---
 
