@@ -1630,7 +1630,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Processing (Part A) Report v0.1</h3>
 <h4 class="author">Anderson, B.</h4>
-<h4 class="date">Last run at: 2019-08-29 08:39:50 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2019-08-29 08:53:20 (Pacific/Auckland)</h4>
 
 </div>
 
@@ -1729,9 +1729,9 @@ Figure 4.3: Active dwellings by season
 </div>
 <p>However, it should be noted that:</p>
 <ul>
-<li>not all dwellings contained the appliance circuits of analysitic interest;</li>
+<li>not all dwellings contained the appliance circuits of analyitic interest;</li>
 <li>one dwelling (rf_46) has ambiguous circuit labels and so <a href="https://github.com/CfSOtago/GREENGridData/issues/1">should be ignored</a>;</li>
-<li>a number of dwellings have a very high proportion of -ve power values for some circuits (<a href="https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications">rf_14,rf_25,rf_26,rf_43</a>) and so should be ignored if total dwelling load is required;</li>
+<li>a number of dwellings have a very high proportion of -ve power values for some circuits mostl likely due to PV installation (e.g. <a href="https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications">rf_14,rf_25,rf_26,rf_43</a>) and so should be ignored if total dwelling load is required;</li>
 <li>similarly <a href="(https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)">some dwellings</a> have a small number of -ve power values on non-PV circuits at some times, possibly due to brief incorrect fitting of the monitors.</li>
 </ul>
 <p>As a result the <em>effective</em> number of dwellings available for any given analysis will always be <em>lower</em> than the numbers reported above and should be evaluated on a case by case basis.</p>
@@ -1741,7 +1741,7 @@ Figure 4.3: Active dwellings by season
 <p>Whilst in theory the calculation of total load in any given minute should be a matter of merely summing all monitored circuits, in practice the task is not quite this simple. There are a number of reasons for this:</p>
 <ul>
 <li>for some dwellings the hot water circuit is seperately metered and thus monitored but for others it is part of the overall ‘incomer/mains’ demand;</li>
-<li>photovoltaic cells were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;</li>
+<li>photovoltaic panels were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;</li>
 <li>several dwellings report either systematic or intemittent negative values yet do not have PV installations.</li>
 </ul>
 <p>Our previously work has shown that <a href="https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html">with appropriate care</a> it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each households <span class="citation">(Anderson 2019)</span>. However the issues described above mean that users should:</p>
@@ -1757,7 +1757,7 @@ Figure 4.3: Active dwellings by season
 <li>an additional set of observations added to the end of each clean data file with circuit label set to <code>imputedTotalDemand_circuitsToSum_v1.1</code> indicating that the <a href="https://github.com/CfSOtago/GREENGridData/blob/master/dataProcessing/gridSpy/imputeTotalPower.R">aggregation code</a> used the <a href="https://github.com/CfSOtago/GREENGridData/blob/master/data/circuitsToSum_v1.1.csv">circuitsToSum definition v1.1</a>;</li>
 <li>a single file containing <em>only</em> the estimated total load per minute per household.</li>
 </ul>
-<p>Note that we have <em>not</em> applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table <a href="#tab:listLoadFiles">5.1</a>.</p>
+<p>Note that we have <em>not</em> applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table <a href="#tab:listLoadFiles">5.1</a>. Whilst we can make these data files available, potential users should note that they are <em>larger</em> than the original data files. The single file containing <em>only</em> the estimated total load per minute per household is especially large.</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:listLoadFiles">Table 5.1: </span>Size of clean data files with estimated load
@@ -1768,7 +1768,7 @@ Figure 4.3: Active dwellings by season
 file
 </th>
 <th style="text-align:right;">
-fSizeMb
+Mb (gzipped)
 </th>
 </tr>
 </thead>
@@ -3313,7 +3313,14 @@ Hawkes Bay
 </div>
 <div id="development-of-a-half-hourly-power-demand-dataset" class="section level1">
 <h1><span class="header-section-number">6</span> Development of a half-hourly power demand dataset</h1>
-<p>In response to EECA’s request we have used the per-dwelling files listed in Table <a href="#tab:listLoadFiles">5.1</a> produced an aggregated half-hourly power demand dataset.</p>
+<p>In response to EECA’s request we have used the per-dwelling files listed in Table <a href="#tab:listLoadFiles">5.1</a> to produce an aggregated half-hourly power demand dataset.</p>
+<p>These files contain:</p>
+<ul>
+<li><code>r_dateTimeHalfHour</code> (in UTC) in half hours;</li>
+<li>number of observations, mean, min, max and standard deviation of power (W) for each half hour;</li>
+<li><code>circuit</code> label with total load labelled as <code>imputedTotalDemand_circuitsToSum_v1.1</code>;</li>
+<li>dwelling <code>linkID</code> (for linkage to survey data).</li>
+</ul>
 <p>The resulting files are listed in Table <a href="#tab:listhhFiles">6.1</a>.</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
@@ -3692,13 +3699,6 @@ rf_47_allObs_halfHourly.csv.gz
 </tr>
 </tbody>
 </table>
-<p>These files contain:</p>
-<ul>
-<li><code>r_dateTimeHalfHour</code> (in UTC) in half hours;</li>
-<li>number of observations, mean, min, max and standard deviation of power (W) for each half hour;</li>
-<li><code>circuit</code> label with total load labelled as <code>imputedTotalDemand_circuitsToSum_v1.1</code>;</li>
-<li>dwelling <code>linkID</code> (for linkage to survey data).</li>
-</ul>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:headhhFile">Table 6.2: </span>Half hourly data format with example data
@@ -3890,7 +3890,10 @@ Heating$1633
 </tr>
 </tbody>
 </table>
-<p>Further, these per-dwelling files have been used to create single data files containing all observations for the following circuits or (partial) circuit labels:</p>
+<p>Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the following circuits or (partial) circuit labels:</p>
+<blockquote>
+<p>XX to do</p>
+</blockquote>
 <ul>
 <li>Lighting</li>
 <li>Hot water</li>
@@ -3904,6 +3907,9 @@ Heating$1633
 </div>
 <div id="summary" class="section level1">
 <h1><span class="header-section-number">7</span> Summary</h1>
+<blockquote>
+<p>XX tbc</p>
+</blockquote>
 </div>
 <div id="data-annex" class="section level1">
 <h1><span class="header-section-number">8</span> Data Annex</h1>
@@ -11827,7 +11833,7 @@ All
 </div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">9</span> Runtime</h1>
-<p>Analysis completed in 70.04 seconds ( 1.17 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 62.41 seconds ( 1.04 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">10</span> R environment</h1>
