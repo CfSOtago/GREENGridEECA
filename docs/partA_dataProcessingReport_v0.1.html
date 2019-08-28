@@ -1630,7 +1630,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Processing (Part A) Report v0.1</h3>
 <h4 class="author">Anderson, B.</h4>
-<h4 class="date">Last run at: 2019-08-29 08:53:20 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2019-08-29 09:06:26 (Pacific/Auckland)</h4>
 
 </div>
 
@@ -3332,7 +3332,7 @@ Hawkes Bay
 file
 </th>
 <th style="text-align:right;">
-fSizeMb
+Mb (gzipped)
 </th>
 </tr>
 </thead>
@@ -3913,6 +3913,8 @@ Heating$1633
 </div>
 <div id="data-annex" class="section level1">
 <h1><span class="header-section-number">8</span> Data Annex</h1>
+<div id="half-hourly-total-load-summary" class="section level2">
+<h2><span class="header-section-number">8.1</span> Half hourly total load summary</h2>
 <p>Descriptive statistics for aggregate half hourly power data for all dwellings and all circuits:</p>
 <pre><code>## Skim summary statistics
 ##  n obs: 13489366 
@@ -3946,9 +3948,14 @@ Heating$1633
 ##  r_dateTimeHalfHour       0 13489366 13489366 2014-01-06 2018-11-22
 ##      median n_unique
 ##  2016-04-19    82757</code></pre>
+</div>
+<div id="per-dwelling-summaries-of-half-hourly-power-data" class="section level2">
+<h2><span class="header-section-number">8.2</span> Per dwelling summaries of half-hourly power data</h2>
 <p>The following tables show descriptive statistics for the meanPowerW values for each circuit by dwelling.</p>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf</code></pre>
-<pre><code>## Warning in max(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf</code></pre>
+<pre><code>## Warning in max(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_01: Mean of half-hourly mean power (W) by circuit type
@@ -4111,9 +4118,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_02: Mean of half-hourly mean power (W) by circuit type
@@ -4276,9 +4285,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_06: Mean of half-hourly mean power (W) by circuit type
@@ -4441,9 +4452,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_07: Mean of half-hourly mean power (W) by circuit type
@@ -4606,9 +4619,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_08: Mean of half-hourly mean power (W) by circuit type
@@ -4771,9 +4786,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_09: Mean of half-hourly mean power (W) by circuit type
@@ -4936,9 +4953,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_10: Mean of half-hourly mean power (W) by circuit type
@@ -5101,9 +5120,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_11: Mean of half-hourly mean power (W) by circuit type
@@ -5266,9 +5287,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_12: Mean of half-hourly mean power (W) by circuit type
@@ -5431,9 +5454,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_13: Mean of half-hourly mean power (W) by circuit type
@@ -5596,9 +5621,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_14: Mean of half-hourly mean power (W) by circuit type
@@ -5761,9 +5788,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_15b: Mean of half-hourly mean power (W) by circuit type
@@ -5926,9 +5955,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_16: Mean of half-hourly mean power (W) by circuit type
@@ -6091,9 +6122,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_17a: Mean of half-hourly mean power (W) by circuit type
@@ -6256,9 +6289,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_17b: Mean of half-hourly mean power (W) by circuit type
@@ -6421,9 +6456,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_18: Mean of half-hourly mean power (W) by circuit type
@@ -6586,9 +6623,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_19: Mean of half-hourly mean power (W) by circuit type
@@ -6802,9 +6841,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_20: Mean of half-hourly mean power (W) by circuit type
@@ -6967,9 +7008,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_21: Mean of half-hourly mean power (W) by circuit type
@@ -7132,9 +7175,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_22: Mean of half-hourly mean power (W) by circuit type
@@ -7297,9 +7342,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_23: Mean of half-hourly mean power (W) by circuit type
@@ -7462,9 +7509,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_24: Mean of half-hourly mean power (W) by circuit type
@@ -7627,9 +7676,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_25: Mean of half-hourly mean power (W) by circuit type
@@ -7792,9 +7843,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_26: Mean of half-hourly mean power (W) by circuit type
@@ -7957,9 +8010,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_27: Mean of half-hourly mean power (W) by circuit type
@@ -8122,9 +8177,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_28: Mean of half-hourly mean power (W) by circuit type
@@ -8287,9 +8344,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_29: Mean of half-hourly mean power (W) by circuit type
@@ -8452,9 +8511,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_30: Mean of half-hourly mean power (W) by circuit type
@@ -8617,9 +8678,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_31: Mean of half-hourly mean power (W) by circuit type
@@ -8782,9 +8845,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_32: Mean of half-hourly mean power (W) by circuit type
@@ -8947,9 +9012,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_33: Mean of half-hourly mean power (W) by circuit type
@@ -9112,9 +9179,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_34: Mean of half-hourly mean power (W) by circuit type
@@ -9277,9 +9346,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_35: Mean of half-hourly mean power (W) by circuit type
@@ -9442,9 +9513,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_36: Mean of half-hourly mean power (W) by circuit type
@@ -9607,9 +9680,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_37: Mean of half-hourly mean power (W) by circuit type
@@ -9772,9 +9847,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_38: Mean of half-hourly mean power (W) by circuit type
@@ -9937,9 +10014,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_39: Mean of half-hourly mean power (W) by circuit type
@@ -10085,9 +10164,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_40: Mean of half-hourly mean power (W) by circuit type
@@ -10250,9 +10331,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_41: Mean of half-hourly mean power (W) by circuit type
@@ -10415,9 +10498,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_42: Mean of half-hourly mean power (W) by circuit type
@@ -10580,9 +10665,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_43: Mean of half-hourly mean power (W) by circuit type
@@ -10745,9 +10832,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_44: Mean of half-hourly mean power (W) by circuit type
@@ -10910,9 +10999,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_45: Mean of half-hourly mean power (W) by circuit type
@@ -11075,9 +11166,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_46: Mean of half-hourly mean power (W) by circuit type
@@ -11665,9 +11758,11 @@ All
 </tr>
 </tbody>
 </table>
-<pre><code>## Warning in min(meanPowerW): no non-missing arguments to min; returning Inf
+<pre><code>## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to min;
+## returning Inf
 
-## Warning in min(meanPowerW): no non-missing arguments to max; returning -Inf</code></pre>
+## Warning in min(meanPowerW, na.rm = TRUE): no non-missing arguments to max;
+## returning -Inf</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:powerCube">Table 8.1: </span>rf_47: Mean of half-hourly mean power (W) by circuit type
@@ -11831,9 +11926,10 @@ All
 </tbody>
 </table>
 </div>
+</div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">9</span> Runtime</h1>
-<p>Analysis completed in 62.41 seconds ( 1.04 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 66.9 seconds ( 1.11 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">10</span> R environment</h1>

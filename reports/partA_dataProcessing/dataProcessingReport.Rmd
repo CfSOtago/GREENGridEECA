@@ -209,7 +209,7 @@ These files contain:
 The resulting files are listed in Table \@ref(tab:listhhFiles).
 
 ```{r listhhFiles}
-kableExtra::kable(hhfilesDT[, .(file = all.files, fSizeMb)], caption = "Size of clean half hourly data files", digits = 2) %>%
+kableExtra::kable(hhfilesDT[, .(file = all.files, "Mb (gzipped)" = fSizeMb)], caption = "Size of clean half hourly data files", digits = 2) %>%
   kable_styling()
 
 ```
@@ -247,11 +247,14 @@ Further, these per-dwelling files have been used to attempt to create single dat
 
 # Data Annex
 
+## Half hourly total load summary 
 Descriptive statistics for aggregate half hourly power data for all dwellings and all circuits:
 
 ```{r skimData}
 skimr::skim(hhPowerDataDT)
 ```
+
+## Per dwelling summaries of half-hourly power data
 
 The following tables show descriptive statistics for the meanPowerW values for each circuit by dwelling.
 
@@ -260,9 +263,9 @@ ids <- unique(hhPowerDataDT$linkID)
 
 for(hh in ids){
   # prints a lot of tables
-    t <- data.table::cube(hhPowerDataDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
-                                                              minPowerW = min(meanPowerW),
-                                                              maxPowerW = max(meanPowerW),
+    t <- data.table::cube(hhPowerDataDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW, na.rm = TRUE),
+                                                              minPowerW = min(meanPowerW, na.rm = TRUE),
+                                                              maxPowerW = max(meanPowerW, na.rm = TRUE),
                                                               nObs = .N)), by = c("circuit"))
     # NA in circuit column of ersults table = All
     t[, circuit := ifelse(is.na(circuit), "All", circuit)]
