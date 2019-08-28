@@ -108,7 +108,7 @@ ggplot2::ggplot(plotDT[!(Location %like% "Test")], aes(x = date, y = linkID, fil
 ```
 
 
-```{r reportMyCol, fig.cap="Number of dwellings sending data per half hour", fig.height=8}
+```{r reportMyCol, fig.cap="Number of dwellings sending data per day", fig.height=8}
 
 plotDT <- plotDT[, .(nDwellings = uniqueN(linkID)), 
                     keyby = .(Location, date)]
@@ -138,9 +138,9 @@ ggplot2::ggplot(t, aes(x = season, y = meanDwellings, fill = Location)) +
 
 However, it should be noted that:
 
- * not all dwellings contained the appliance circuits of analysitic interest;
+ * not all dwellings contained the appliance circuits of analyitic interest;
  * one dwelling (rf_46) has ambiguous circuit labels and so [should be ignored](https://github.com/CfSOtago/GREENGridData/issues/1);
- * a number of dwellings have a very high proportion of -ve power values for some circuits ([rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total dwelling load is required;
+ * a number of dwellings have a very high proportion of -ve power values for some circuits mostl likely due to PV installation (e.g. [rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total dwelling load is required;
  * similarly [some dwellings]((https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) have a small number of -ve power values on non-PV circuits at some times, possibly due to brief incorrect fitting of the monitors.
 
 As a result the _effective_ number of dwellings available for any given analysis will always be _lower_ than the numbers reported above and should be evaluated on a case by case basis.
