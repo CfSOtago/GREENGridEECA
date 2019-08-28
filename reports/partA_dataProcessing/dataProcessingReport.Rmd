@@ -53,7 +53,7 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 ## Report circulation:
 
- * Public – this report is intended for publication.
+ * Public – this report is intended for publication following EECA approval.
  
 ## License
 
@@ -206,6 +206,14 @@ These files contain:
  * `circuit` label with total load labelled as `imputedTotalDemand_circuitsToSum_v1.1`;
  * dwelling `linkID` (for linkage to survey data).
 
+Table \@ref(tab:headhhFile) shows the first few rows of one of these files.
+
+```{r headhhFile}
+kableExtra::kable(head(origHHDataDT), caption = "Half hourly data format with example data", digits = 2) %>%
+  kable_styling()
+
+```
+
 The resulting files are listed in Table \@ref(tab:listhhFiles).
 
 ```{r listhhFiles}
@@ -213,15 +221,6 @@ kableExtra::kable(hhfilesDT[, .(file = all.files, "Mb (gzipped)" = fSizeMb)], ca
   kable_styling()
 
 ```
-
-
- 
-```{r headhhFile}
-kableExtra::kable(head(origHHDataDT), caption = "Half hourly data format with example data", digits = 2) %>%
-  kable_styling()
-
-```
-
 
 Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the following circuits or (partial) circuit labels:
 

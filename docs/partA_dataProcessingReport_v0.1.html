@@ -1630,7 +1630,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Processing (Part A) Report v0.1</h3>
 <h4 class="author">Anderson, B.</h4>
-<h4 class="date">Last run at: 2019-08-29 09:27:57 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2019-08-29 09:37:08 (Pacific/Auckland)</h4>
 
 </div>
 
@@ -1649,7 +1649,7 @@ div.tocify {
 <div id="report-circulation" class="section level2">
 <h2><span class="header-section-number">1.2</span> Report circulation:</h2>
 <ul>
-<li>Public – this report is intended for publication.</li>
+<li>Public – this report is intended for publication following EECA approval.</li>
 </ul>
 </div>
 <div id="license" class="section level2">
@@ -3321,10 +3321,202 @@ Hawkes Bay
 <li><code>circuit</code> label with total load labelled as <code>imputedTotalDemand_circuitsToSum_v1.1</code>;</li>
 <li>dwelling <code>linkID</code> (for linkage to survey data).</li>
 </ul>
-<p>The resulting files are listed in Table <a href="#tab:listhhFiles">6.1</a>.</p>
+<p>Table <a href="#tab:headhhFile">6.1</a> shows the first few rows of one of these files.</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
-<span id="tab:listhhFiles">Table 6.1: </span>Size of clean half hourly data files
+<span id="tab:headhhFile">Table 6.1: </span>Half hourly data format with example data
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+linkID
+</th>
+<th style="text-align:left;">
+circuit
+</th>
+<th style="text-align:left;">
+r_dateTimeHalfHour
+</th>
+<th style="text-align:right;">
+meanPowerW
+</th>
+<th style="text-align:right;">
+nObs
+</th>
+<th style="text-align:right;">
+sdPowerW
+</th>
+<th style="text-align:right;">
+minPowerW
+</th>
+<th style="text-align:right;">
+maxPowerW
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+rf_01
+</td>
+<td style="text-align:left;">
+Heating$1633
+</td>
+<td style="text-align:left;">
+2014-01-06 16:00:00
+</td>
+<td style="text-align:right;">
+28.39
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+28.39
+</td>
+<td style="text-align:right;">
+28.39
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rf_01
+</td>
+<td style="text-align:left;">
+Heating$1633
+</td>
+<td style="text-align:left;">
+2014-03-07 15:30:00
+</td>
+<td style="text-align:right;">
+28.27
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0.24
+</td>
+<td style="text-align:right;">
+27.91
+</td>
+<td style="text-align:right;">
+28.39
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rf_01
+</td>
+<td style="text-align:left;">
+Heating$1633
+</td>
+<td style="text-align:left;">
+2014-03-07 16:00:00
+</td>
+<td style="text-align:right;">
+393.55
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+423.92
+</td>
+<td style="text-align:right;">
+27.91
+</td>
+<td style="text-align:right;">
+925.09
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rf_01
+</td>
+<td style="text-align:left;">
+Heating$1633
+</td>
+<td style="text-align:left;">
+2014-03-07 16:30:00
+</td>
+<td style="text-align:right;">
+909.96
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+7.65
+</td>
+<td style="text-align:right;">
+897.09
+</td>
+<td style="text-align:right;">
+921.28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rf_01
+</td>
+<td style="text-align:left;">
+Heating$1633
+</td>
+<td style="text-align:left;">
+2014-03-07 17:00:00
+</td>
+<td style="text-align:right;">
+896.36
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+2.77
+</td>
+<td style="text-align:right;">
+891.39
+</td>
+<td style="text-align:right;">
+903.27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rf_01
+</td>
+<td style="text-align:left;">
+Heating$1633
+</td>
+<td style="text-align:left;">
+2014-03-07 17:30:00
+</td>
+<td style="text-align:right;">
+905.08
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+17.19
+</td>
+<td style="text-align:right;">
+885.21
+</td>
+<td style="text-align:right;">
+936.97
+</td>
+</tr>
+</tbody>
+</table>
+<p>The resulting files are listed in Table <a href="#tab:listhhFiles">6.2</a>.</p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:listhhFiles">Table 6.2: </span>Size of clean half hourly data files
 </caption>
 <thead>
 <tr>
@@ -3695,197 +3887,6 @@ rf_47_allObs_halfHourly.csv.gz
 </td>
 <td style="text-align:right;">
 2.03
-</td>
-</tr>
-</tbody>
-</table>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-<span id="tab:headhhFile">Table 6.2: </span>Half hourly data format with example data
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-linkID
-</th>
-<th style="text-align:left;">
-circuit
-</th>
-<th style="text-align:left;">
-r_dateTimeHalfHour
-</th>
-<th style="text-align:right;">
-meanPowerW
-</th>
-<th style="text-align:right;">
-nObs
-</th>
-<th style="text-align:right;">
-sdPowerW
-</th>
-<th style="text-align:right;">
-minPowerW
-</th>
-<th style="text-align:right;">
-maxPowerW
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-rf_01
-</td>
-<td style="text-align:left;">
-Heating$1633
-</td>
-<td style="text-align:left;">
-2014-01-06 16:00:00
-</td>
-<td style="text-align:right;">
-28.39
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-0.00
-</td>
-<td style="text-align:right;">
-28.39
-</td>
-<td style="text-align:right;">
-28.39
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rf_01
-</td>
-<td style="text-align:left;">
-Heating$1633
-</td>
-<td style="text-align:left;">
-2014-03-07 15:30:00
-</td>
-<td style="text-align:right;">
-28.27
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.24
-</td>
-<td style="text-align:right;">
-27.91
-</td>
-<td style="text-align:right;">
-28.39
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rf_01
-</td>
-<td style="text-align:left;">
-Heating$1633
-</td>
-<td style="text-align:left;">
-2014-03-07 16:00:00
-</td>
-<td style="text-align:right;">
-393.55
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-423.92
-</td>
-<td style="text-align:right;">
-27.91
-</td>
-<td style="text-align:right;">
-925.09
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rf_01
-</td>
-<td style="text-align:left;">
-Heating$1633
-</td>
-<td style="text-align:left;">
-2014-03-07 16:30:00
-</td>
-<td style="text-align:right;">
-909.96
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-7.65
-</td>
-<td style="text-align:right;">
-897.09
-</td>
-<td style="text-align:right;">
-921.28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rf_01
-</td>
-<td style="text-align:left;">
-Heating$1633
-</td>
-<td style="text-align:left;">
-2014-03-07 17:00:00
-</td>
-<td style="text-align:right;">
-896.36
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-2.77
-</td>
-<td style="text-align:right;">
-891.39
-</td>
-<td style="text-align:right;">
-903.27
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rf_01
-</td>
-<td style="text-align:left;">
-Heating$1633
-</td>
-<td style="text-align:left;">
-2014-03-07 17:30:00
-</td>
-<td style="text-align:right;">
-905.08
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-17.19
-</td>
-<td style="text-align:right;">
-885.21
-</td>
-<td style="text-align:right;">
-936.97
 </td>
 </tr>
 </tbody>
@@ -11750,7 +11751,7 @@ All
 </div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">9</span> Runtime</h1>
-<p>Analysis completed in 64.6 seconds ( 1.08 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 61.22 seconds ( 1.02 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">10</span> R environment</h1>
