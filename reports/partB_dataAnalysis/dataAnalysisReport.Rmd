@@ -224,6 +224,51 @@ kableExtra::kable(t, caption = "Extracted winter peak load half-hour circuits (N
   kable_styling()
 
 # Now just calculate the % using the identified circuits?
+
+
+ResDT <- dcast(dataBucketDT, 
+           linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "meanPowerW") # take 1 household and turn data round
+
+ResDT <- ResDT[, contribution_HW := `Hot water`/Total]
+ResDT <- ResDT[, contribution_HP := `Heat Pump or Heating`/Total]
+ResDT <- ResDT[, contribution_LI := `Lighting`/Total]
+ResDT <- ResDT[, contribution_OV := `Oven`/Total]
+ResDT <- ResDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+
+#ResDT <- ResDT[, test := `contribution_HW` +
+                       #  `contribution_HP`+
+                       # `contribution_LI`+
+                      #  `contribution_OV`+
+                      #   `contribution_XX`]
+
+##Visualisation---------------------------------
+
+
+myPlot <- ggplot2::ggplot(subset(dataBucketDT, circuit %in% c("imputedTotalDemand_circuitsToSum_v1.1") & season %in% c("Winter") & year %in% c("2015")), aes(x=meanPowerW)) +
+  geom_histogram() +
+  scale_x_continuous( limits = c(0,13000))+
+     geom_vline(aes(xintercept=mean(meanPowerW)),
+            color="blue", linetype="dashed", size=0.5)+
+  theme(text = element_text(family = "Cambria")) +
+  ggtitle("Test") 
+ # facet_grid(DOW ~ .) +
+myPlot
+
+
+myPlot <- ggplot2::ggplot(subset(dataBucketDT, eecaCircuit %in% c("Heat Pump or Heating") & season %in% c("Winter") & year %in% c("2015")), aes(x=lubridate::date(r_dateTime_nz))) +
+  geom_boxplot(aes(y=maxPowerW, colour = maxPowerW), size=0.5, outlier.alpha = 0.1) +
+  #scale_x_continuous( limits = c(0,13000))+
+  theme(text = element_text(family = "Cambria")) +
+  ggtitle("Test") 
+ # facet_grid(DOW ~ .) +
+myPlot
+
+
+
+
+
 ```
 
 # Peak Contribution
