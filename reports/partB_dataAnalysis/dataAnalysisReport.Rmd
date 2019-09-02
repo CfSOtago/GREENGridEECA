@@ -42,6 +42,10 @@ libs <- c("ggplot2", # plots
           )
           
 # Local functions ----
+
+library(kableExtra)
+library(dplyr)
+library(ggplot2)
 ```
 
 \newpage
@@ -146,7 +150,7 @@ powerDT <- powerDT[, peak := ifelse(obsHalfHour >= PS & obsHalfHour <= PE,
 
 ```
 
-```{r Part B: calculations}
+```{r Part B: calculations for peak contribution}
 powerDT[, year := lubridate::year(r_dateTime_nz)]
 
 selectDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' & 
@@ -265,6 +269,77 @@ myPlot <- ggplot2::ggplot(subset(dataBucketDT, eecaCircuit %in% c("Heat Pump or 
  # facet_grid(DOW ~ .) +
 myPlot
 
+
+
+
+
+```
+```{r Part B: calculations for annual kWh consumption}
+
+
+energyDT <- copy(powerDT)
+
+#energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]#Converting W into Wh energy 
+
+
+
+# split the circuit label to leave just the string and rthe id (we need the string)
+energyDT <- energyDT[, c("circuitLabel","circuitID") := tstrsplit(circuit,"$", fixed = TRUE)]
+
+# these match exactly to circuit label strings by matching to the string that came before the $ 
+energyDT <- energyDT[, eecaCircuit := ifelse(circuitLabel == "Heat Pump" |
+                                                       circuitLabel == "Theatre Heat Pump" |
+                                                       circuitLabel == "Upstairs Heat Pumps" |
+                                                       circuitLabel == "Heating",
+                                                    "Heat Pump or Heating", 
+                                                    "XX_Other") # default
+                             ]
+
+# these match if the string is in the circuit label (i.e. circuit label could contain other words)
+# Be careful with these
+energyDT <- energyDT[, eecaCircuit := ifelse( circuitLabel == "Oven" |
+                                                        circuitLabel == "Range" |
+                                                        circuitLabel == "Wall Oven" |
+                                                        circuitLabel %like% "Oven &" |
+                                                        circuitLabel %like% "Oven,", # if the circuit = Oven only
+                                                    "Oven", eecaCircuit)]
+energyDT <- energyDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot water", 
+                                                    "Hot water", eecaCircuit)]
+energyDT <- energyDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot Water", 
+                                                    "Hot water", eecaCircuit)]
+energyDT <- energyDT[, eecaCircuit := ifelse(circuitLabel %like% "Lighting" |
+                                                       circuitLabel %like% "Lights", 
+                                                    "Lighting", eecaCircuit)]
+energyDT <- energyDT[, eecaCircuit := ifelse(circuitLabel %like% "imputedTotalDemand_circuitsToSum_v1.1", 
+                                                    "Total", eecaCircuit)]
+# test
+t <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
+
+kableExtra::kable(t, caption = "Categoriesed circuits - XX check carefully! XX")  %>% # test result
+  kable_styling()
+
+#Conversion to energy Wh
+energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]
+analysisDT <- copy(energyDT)
+analysisDT <- analysisDT[, totalEnergyWh := sum(meanEnergyWh), keyby = .(linkID, season, eecaCircuit, year)]
+analysisDT <- analysisDT[, .(totalEnergyWh = totalEnergyWh), by = .(linkID, season, eecaCircuit, year)]#For some reson by does not remove duplicates without crashing....
+analysisDT <- unique(analysisDT)#Removing duplicates
+
+#Calculating the contribution to annual energy consumption and turning off e-notation
+
+options(scipen = 999)
+
+analysisDT <- dcast(analysisDT, 
+           linkID + year + season ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "totalEnergyWh") # take 1 household and turn data round
+
+analysisDT <- analysisDT[, contribution_HW := `Hot water`/Total]
+analysisDT <- analysisDT[, contribution_HP := `Heat Pump or Heating`/Total]
+analysisDT <- analysisDT[, contribution_LI := `Lighting`/Total]
+analysisDT <- analysisDT[, contribution_OV := `Oven`/Total]
+analysisDT <- analysisDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+# Tere are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
 
 
 
