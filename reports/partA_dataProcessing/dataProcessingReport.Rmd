@@ -645,7 +645,8 @@ t <- hhPowerDataDT[, .(nObs = .N,
                   keyby = .(circuitLabel)]
 
 kableExtra::kable(t, 
-                  caption = "Summary statistics by circuit label")
+                  caption = "Summary statistics by circuit label") %>%
+  kable_styling()
 
 # save as a data file for ease of use
 of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
