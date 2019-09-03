@@ -77,6 +77,8 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 This report uses the GREEN Grid project [@stephenson_smart_2017] research data to...
 
+> XX tbc
+
 # Data
 
 ```{r generic sample, child=repoParams$data}
@@ -222,18 +224,301 @@ kableExtra::kable(hhfilesDT[, .(file = all.files, "Mb (gzipped)" = fSizeMb)], ca
 
 ```
 
-Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the following circuits or (partial) circuit labels:
+Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the circuits or (partial) circuit labels set out in the following sections. Table \@ref(tab:getCircuitLabels) in Section \@ref(circuitLabels) of the Data Annex shows the unique circuit labels available as a guide to what can be meaningfully extracted.
 
-> XX to do
+```{r fixCircuitLabels}
+hhPowerDataDT[, c("circuitLabel", "circuitID") := tstrsplit(circuit, "$", fixed = TRUE)]
+```
 
- * Lighting
- * Hot water
- * Heat pumps
- * ‘Kitchen’ – noting that this may include other areas of the dwelling
- * Non-heat pump ‘Heat’ – noting that this circuit label may include other appliances
- * ‘Refrigerator’ – noting that this circuit label may include other appliances
- * ‘Freezer’ – noting that this circuit label may include other appliances
- * Total load
+
+
+## Lighting
+
+```{r setFilter_Lighting}
+filter <- "Lighting"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourLighting) and Figure \@ref(fig:extractHalfHourLighting) show summary statistics of the half-hourly mean values for all observations extracted by circuit label. Note that the process may have matched a number of circuits and in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourLighting, fig.cap = "Lighting data summary"}
+
+makeTable <- function(dt){
+  t <- dt[, .(nObs = .N,
+              nDwellings = uniqueN(linkID),
+              meanW = mean(meanPowerW, na.rm = TRUE),
+              minW = min(meanPowerW, na.rm = TRUE),
+              maxW = max(meanPowerW, na.rm = TRUE),
+              sdW = sd(meanPowerW, na.rm = TRUE)
+              ),
+                  keyby = .(circuitLabel)]
+  return(t)
+}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourLighting.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+
+makeTilePlot <- function(dt){
+  plotDT <- dt[, .(meanW = mean(meanPowerW),
+                   nObs = .N), keyby = .(r_dateTimeHalfHour, circuitLabel)]
+  p <- ggplot2::ggplot(plotDT, aes(x = r_dateTimeHalfHour, 
+                                   y = circuitLabel, 
+                                   fill = meanW,
+                                   alpha = nObs)) +
+    geom_tile() +
+    scale_fill_continuous(low = "green", high = "red") +
+    labs(x = "Half hour", y = "Circuit label", caption = "Fill colour (meanW): Mean of half-hourly mean power\nAlpha (nObs): Number of half hourly observations contributing")
+  return(p)
+}
+makeTilePlot(dt)
+```
+
+We therefore have _Lighting_ data for `r sum(t$nDwellings)` dwellings.
+
+## Hot water
+
+```{r setFilter_HotWater}
+# more complex
+filter1 <- "Hot water"
+filter2 <- "Hot Water"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit`
+ * the string "`r filter2`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourHotWater) and Figure \@ref(fig:extractHalfHourHotWater) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourHotWater, fig.cap = "Hot water data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1 |
+                                circuitLabel %like% filter2]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourHotWater.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have _Hot Water_ data for `r sum(t$nDwellings)` dwellings.
+
+
+## Heat pumps
+ 
+
+```{r setFilter_HeatPump}
+# more complex
+filter1 <- "Heat Pump"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourHeatPump) and Figure \@ref(fig:extractHalfHourHeatPump) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourHeatPump, fig.cap = "Heat Pump data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourHeatPump.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have _Heat Pump_ data for `r sum(t$nDwellings)` dwellings.
+
+## Kitchen
+
+Noting that this may include other areas of the dwelling...
+
+```{r setFilter_Kitchen}
+# more complex
+filter1 <- "Kitchen"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourKitchen) and Figure \@ref(fig:extractHalfHourKitchen) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourKitchen, fig.cap = "Kitchen data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourKitchen.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have _Kitchen_ data for `r sum(t$nDwellings)` dwellings.
+
+## Non-heat pump ‘Heat’ 
+
+Noting that this circuit label may include other appliances...
+
+
+```{r setFilter_Heat}
+# more complex
+filter1 <- "Heat"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit` but excluding 'Heat Pump'
+ 
+Table \@ref(tab:extractHalfHourHeat) and Figure \@ref(fig:extractHalfHourHeat) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourHeat, fig.cap = "Heat data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1 &
+                      !circuitLabel %like% "Heat Pump"]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourNonHP_Heat.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have non Heat Pump _Heat_ data for `r sum(t$nDwellings)` dwellings.
+
+## Refrigerator/Fridge
+
+Noting that this circuit label may include other appliances...
+
+```{r setFilter_Fridge}
+# more complex
+filter1 <- "Fridge"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourFridge) and Figure \@ref(fig:extractHalfHourFridge) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourFridge, fig.cap = "Fridge data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourFridge.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have _Fridge_ data for `r sum(t$nDwellings)` dwellings.
+
+## Freezer
+
+Noting that this circuit label may include other appliances...
+
+```{r setFilter_Freezer}
+# more complex
+filter1 <- "Freezer"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourFreezer) and Figure \@ref(fig:extractHalfHourFreezer) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourFreezer, fig.cap = "Freezer data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourFreezer.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have _Freezer_ data for `r sum(t$nDwellings)` dwellings.
+
+## Total load
+
+In this section we extract every record where:
+
+ * the string "`imputedTotalDemand`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourtotalLoad) and Figure \@ref(fig:extractHalfHourtotalLoad) show the mean power (mean of the half-hourly mean values) for all observations extracted by circuit label.
+
+```{r extractHalfHourtotalLoad, fig.cap = "Total load data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% "imputedTotalDemand"]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have _imputedTotalDemand_ data for `r sum(t$nDwellings)` dwellings.
 
 
 # Summary
@@ -277,6 +562,23 @@ for(hh in ids){
 
 ```
 
+## Circuit labels (all){#circuitLabels}
+
+```{r getCircuitLabels}
+
+t <- hhPowerDataDT[, .(nObs = .N,
+                      nDwellings = uniqueN(linkID),
+                      meanW = mean(meanPowerW, na.rm = TRUE)),
+                  keyby = .(circuitLabel)]
+
+kableExtra::kable(t, 
+                  caption = "Summary statistics by circuit label")
+
+# save as a data file for ease of use
+of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
+data.table::fwrite(t, file = of)
+
+```
 
 # Runtime
 
