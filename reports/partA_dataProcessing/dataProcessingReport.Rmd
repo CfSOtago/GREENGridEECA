@@ -529,6 +529,43 @@ makeTilePlot(dt)
 
 We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
 
+
+## Photovoltaic panels
+
+Noting that this circuit label may include other appliances...
+
+```{r setFilter_PV}
+# more complex
+filter1 <- "PV"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourPV) and Figure \@ref(fig:extractHalfHourPV) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourPV, fig.cap = "PV data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourPV.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+p <- makeTilePlot(dt)
+p + scale_fill_continuous(low = "red", high = "green") # reverse colours
+```
+
+We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
+
+
 ## Total load
 
 In this section we extract every record where:
