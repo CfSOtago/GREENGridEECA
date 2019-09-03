@@ -222,11 +222,71 @@ kableExtra::kable(hhfilesDT[, .(file = all.files, "Mb (gzipped)" = fSizeMb)], ca
 
 ```
 
-Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the following circuits or (partial) circuit labels:
+Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the circuits or (partial) circuit labels set out in the following sections. Table \@ref(tab:getCircuitLabels) shows the unique circuit labels available as a guide to what can be meaningfully extracted.
 
-> XX to do
+```{r fixCircuitLabels}
+hhPowerDataDT[, c("circuitLabel", "circuitID") := tstrsplit(circuit, "$", fixed = TRUE)]
+```
 
- * Lighting
+
+
+## Lighting
+
+```{r setFilter_Lighting}
+filter <- "Lighting"
+```
+
+In this section we extract every record where:
+
+ * the string `r filter` is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHour_Lighting) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by dwelling ID. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHour_Lighting}
+
+makeTable <- function(dt){
+  t <- dt[, .(nObs = .N,
+                      nDwellings = uniqueN(linkID),
+                      meanW = mean(meanPowerW, na.rm = TRUE)),
+                  keyby = .(circuit)]
+  return(t)
+}
+
+hhLightingDT <- hhPowerDataDT[circuit %like% filter]
+
+kableExtra::kable(makeTable(hhLightingDT), 
+                  caption = paste0("Summary statistics for `", filter, "` extract"))
+```
+
+
+## Hot water
+
+```{r setFilter_HotWater}
+# more complex
+filter1 <- "Hot water"
+filter2 <- "Hot Water"
+```
+
+In this section we extract every record where:
+
+ * the string `r filter1` is found in `circuit`
+ * the string `r filter2` is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHour_HotWater) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by dwelling ID. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHour_HotWater}
+
+hhHotWaterDT <- hhPowerDataDT[circuit %in% filter1 |
+                                circuit %in% filter2]
+
+kableExtra::kable(makeTable(hhHotWaterDT), 
+                  caption = paste0("Summary statistics for `", filter, "` extract"))
+```
+
+## Heat pumps
+ 
  * Hot water
  * Heat pumps
  * ‘Kitchen’ – noting that this may include other areas of the dwelling
@@ -277,6 +337,23 @@ for(hh in ids){
 
 ```
 
+## Circuit labels (all)
+
+```{r getCircuitLabels}
+
+t <- hhPowerDataDT[, .(nObs = .N,
+                      nDwellings = uniqueN(linkID),
+                      meanW = mean(meanPowerW, na.rm = TRUE)),
+                  keyby = .(circuitLabel)]
+
+kableExtra::kable(t, 
+                  caption = "Summary statistics by circuit label")
+
+# save as a data file for ease of use
+of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
+data.table::fwrite(t, file = of)
+
+```
 
 # Runtime
 
