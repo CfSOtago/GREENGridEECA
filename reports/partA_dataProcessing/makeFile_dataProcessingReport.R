@@ -41,7 +41,8 @@ getPowerData <- function(filesDT){
   return(dt)
 }
 
-doReport <- function(){
+makeReport <- function(){
+  # default = html
   rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
   rmarkdown::render(input = rmdFile,
                     params = list(title = title,
@@ -49,6 +50,20 @@ doReport <- function(){
                                   authors = authors),
                     output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".html")
   )
+}
+
+makeWordReport <- function(){
+  # reuse last .md for speed will fail is no .md
+  mdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.knit.md")
+  if(file.exists(mdFile)){
+    rmarkdown::render(input = mdFile,
+                    output_format = "word_document2",
+                    params = list(title = title,
+                                  subtitle = subtitle,
+                                  authors = authors),
+                    output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".docx")
+                    )
+  }
 }
 
 # Local parameters ----
@@ -89,4 +104,5 @@ impDataDT <- data.table::fread(imputedLoadF)
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-doReport()
+makeReport()
+#makeWordReport()
