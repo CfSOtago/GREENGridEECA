@@ -18,6 +18,13 @@ output:
   bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
+  bookdown::word_document2:
+    fig_caption: yes
+    code_folding: hide
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    toc_float: TRUE
 bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
 ---
 
