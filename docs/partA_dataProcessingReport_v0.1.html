@@ -1630,7 +1630,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Processing (Part A) Report v0.1</h3>
 <h4 class="author">Ben Anderson</h4>
-<h4 class="date">Last run at: 2019-09-03 14:28:42 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2019-09-03 14:53:52 (Pacific/Auckland)</h4>
 
 </div>
 
@@ -1693,6 +1693,9 @@ div.tocify {
 <div id="introduction" class="section level1">
 <h1><span class="header-section-number">2</span> Introduction</h1>
 <p>This report uses the GREEN Grid project <span class="citation">(Stephenson et al. 2017)</span> research data to…</p>
+<blockquote>
+<p>XX tbc</p>
+</blockquote>
 </div>
 <div id="data" class="section level1">
 <h1><span class="header-section-number">3</span> Data</h1>
@@ -3933,7 +3936,7 @@ rf_47_allObs_halfHourly.csv.gz
 </tr>
 </tbody>
 </table>
-<p>Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the circuits or (partial) circuit labels set out in the following sections. Table <a href="#tab:getCircuitLabels">8.2</a> shows the unique circuit labels available as a guide to what can be meaningfully extracted.</p>
+<p>Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the circuits or (partial) circuit labels set out in the following sections. Table <a href="#tab:getCircuitLabels">8.2</a> in Section <a href="#circuitLabels">8.3</a> of the Data Annex shows the unique circuit labels available as a guide to what can be meaningfully extracted.</p>
 <div id="lighting" class="section level2">
 <h2><span class="header-section-number">6.1</span> Lighting</h2>
 <p>In this section we extract every record where:</p>
@@ -5482,10 +5485,6 @@ Oven &amp; Kitchen Appliances
 </tr>
 </tbody>
 </table>
-<pre><code>## 
-Written 47.9% of 1913029 rows in 2 secs using 2 threads. anyBufferGrown=no; maxBuffUsed=49%. ETA 2 secs.      
-Written 91.5% of 1913029 rows in 3 secs using 2 threads. anyBufferGrown=no; maxBuffUsed=49%. ETA 0 secs.      
-                                                                                                                                     </code></pre>
 <pre><code>## Gziping /Users/ben/Data/NZ_GREENGrid/safe//gridSpy/halfHour/extracts/halfHourKitchen.csv</code></pre>
 <pre><code>## Gzipped /Users/ben/Data/NZ_GREENGrid/safe//gridSpy/halfHour/extracts/halfHourKitchen.csv</code></pre>
 <div class="figure"><span id="fig:extractHalfHourKitchen"></span>
@@ -13980,7 +13979,7 @@ All
 </tbody>
 </table>
 </div>
-<div id="circuit-labels-all" class="section level2">
+<div id="circuitLabels" class="section level2">
 <h2><span class="header-section-number">8.3</span> Circuit labels (all)</h2>
 <table>
 <caption>
@@ -15955,7 +15954,7 @@ imputedTotalDemand_circuitsToSum_v1.1
 </div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">9</span> Runtime</h1>
-<p>Analysis completed in 324.54 seconds ( 5.41 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 295.36 seconds ( 4.92 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">10</span> R environment</h1>

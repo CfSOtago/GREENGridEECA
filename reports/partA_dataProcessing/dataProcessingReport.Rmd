@@ -77,6 +77,8 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 This report uses the GREEN Grid project [@stephenson_smart_2017] research data to...
 
+> XX tbc
+
 # Data
 
 ```{r generic sample, child=repoParams$data}
