@@ -6,6 +6,17 @@ library(curl)
 # parameters ----
 nDays <- 30
 
+# NZ Electricity Authority generation data
+# > set months to refreash ----
+months <- c("201801", "201802","201803","201804","201805", "201806", "201807","201808","201809","201810","201811","201812")
+# months <- c("201806","201807")
+
+# > EA gpx data location ----
+rDataLoc <- "https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export/"
+
+# > where to save data ----
+dPath <- path.expand("~/Data/NZ_EA_EMI/gpx/") # fix for your platform
+
 # > defn of peak ----
 amPeakStart <- hms::as.hms("07:00:00")
 amPeakEnd <- hms::as.hms("09:00:00")
@@ -85,23 +96,17 @@ setEAGenTimePeriod <- function(dt){
   return(dt)
 }
 
-# NZ Electricity Authority generation data
-months <- c("201801", "201802","201803","201804","201805", "201806", "201807","201808","201809","201810","201811","201812")
-#months <- c("201806","201807")
-rDataLoc <- "https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export/"
-
 refreshGPXData <- function(){
   for(m in months){
     rDataF <- paste0(rDataLoc, m, "_Grid_export.csv")
     print(paste0("Getting, processing and cleaning ", m, " (", rDataF, ")"))
     dt <- getData(rDataF)
-    data.table::fwrite(dt, file = paste0(here::here(), "/data/EA_", m, "_GPX_MD.csv"))
+    data.table::fwrite(dt, file = paste0(dPath, "/EA_", m, "_GPX_MD.csv"))
   } 
 }
 
 
-# load the EA gpx data ----
-gpxPath <- paste0(here::here(), "/data/")
+# check for EA gpx files ----
 getGpxFileList <- function(dPath){
   all.files <- list.files(path = dPath, pattern = ".csv")
   dt <- as.data.table(all.files)
@@ -109,7 +114,8 @@ getGpxFileList <- function(dPath){
   return(dt)
 }
 
-getGPXData <- function(files){
+# load the EA gpx data ----
+loadGPXData <- function(files){
   # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
   # this is where we need drake
   # and probably more memory
@@ -142,5 +148,5 @@ getGPXData <- function(files){
 
 # code ----
 #refreshGPXData()
-gpxFiles <- getGpxFileList(gpxPath)
-gpxDataDT <- getGPXData(gpxFiles)
+gpxFiles <- getGpxFileList(dPath)
+gpxDataDT <- loadGPXData(gpxFiles)
