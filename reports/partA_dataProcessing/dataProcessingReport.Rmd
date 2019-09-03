@@ -550,7 +550,8 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
-makeTilePlot(dt)
+p <- makeTilePlot(dt)
+p + theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
 ```
 
 We therefore have _imputedTotalDemand_ data for `r sum(t$nDwellings)` dwellings.
