@@ -494,11 +494,46 @@ makeTilePlot(dt)
 
 We therefore have _Freezer_ data for `r sum(t$nDwellings)` dwellings.
 
+
+## Oven
+
+Noting that this circuit label may include other appliances...
+
+```{r setFilter_Oven}
+# more complex
+filter1 <- "Oven"
+```
+
+In this section we extract every record where:
+
+ * the string "`r filter1`" is found in `circuit`
+ 
+Table \@ref(tab:extractHalfHourOven) and Figure \@ref(fig:extractHalfHourOven) show the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+
+```{r extractHalfHourOven, fig.cap = "Oven data summary"}
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
+t <- makeTable(dt)
+
+kableExtra::kable(t, digits = 3, 
+                  caption = paste0("Summary statistics for extract")) %>%
+  kable_styling()
+
+of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourOven.csv")
+data.table::fwrite(dt, of)
+GREENGridEECA::gzipIt(of)
+makeTilePlot(dt)
+```
+
+We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
+
 ## Total load
 
 In this section we extract every record where:
 
- * the string "`imputedTotalDemand`" is found in `circuit`
+ * the string "imputedTotalDemand" is found in `circuit`
  
 Table \@ref(tab:extractHalfHourtotalLoad) and Figure \@ref(fig:extractHalfHourtotalLoad) show the mean power (mean of the half-hourly mean values) for all observations extracted by circuit label.
 
