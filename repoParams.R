@@ -18,11 +18,7 @@ login <- info[6]
 user <- info[7]
 
 #> Green Grid data ----
-if(user == "dataknut" & sysname == "Linux"){
-  message("We're on the CS RStudio server as ", user, " using " , sysname)
-  repoParams$GreenGridData <- "~/greenGridData/cleanData/safe/"
-}
-if(user == "carsten" & sysname == "Linux"){
+if((user == "dataknut" | user == "carsten" ) & sysname == "Linux"){
   message("We're on the CS RStudio server as ", user, " using " , sysname)
   repoParams$GreenGridData <- "~/greenGridData/cleanData/safe/"
 }
