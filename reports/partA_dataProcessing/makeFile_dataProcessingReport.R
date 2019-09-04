@@ -24,14 +24,6 @@ GREENGridEECA::loadLibraries(rLibs)
 
 # Local functions (if any) ----
 
-getFileList <- function(dPath){
-  all.files <- list.files(path = dPath, pattern = ".csv.gz")
-  dt <- as.data.table(all.files)
-  dt[, fullPath := paste0(dPath, all.files)]
-  dt[, fSizeMb := repoParams$bytesToMb * file.size(fullPath)]
-  return(dt)
-}
-
 getPowerData <- function(filesDT){
   # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
   # this is where we need drake
@@ -83,13 +75,13 @@ authors <- "Ben Anderson"
 # --- Code ---
 
 # this is where we would use drake
-impfilesDT <- getFileList(impdPath)
+impfilesDT <- GREENGridEECA::getFileList(impdPath, pattern = ".csv.gz")
 
 # > get the imputed load file list ----
-hhfilesDT <- getFileList(hhdPath)
+hhfilesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 
 # > get the halfhourly file list ----
-filesDT <- getFileList(hhdPath)
+filesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 
 # > get power data  ----
 origHHDataDT <- getPowerData(hhfilesDT)
@@ -106,5 +98,5 @@ impDataDT <- data.table::fread(imputedLoadF)
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-makeReport()
+#makeReport()
 #makeWordReport()
