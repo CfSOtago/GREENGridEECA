@@ -7,7 +7,9 @@ print(paste0("#-> Load GREENGridEECA package"))
 library(GREENGridEECA) # local utilities
 print(paste0("#-> Done "))
 
-GREENGridEECA::setup() # run setup to set repo level parameters
+# run setup to set repo level parameters including data paths
+# does this by sourcing repoParams.R
+GREENGridEECA::setup() 
 
 # Load libraries needed across all .Rmd files ----
 rLibs <- c("rmarkdown",
