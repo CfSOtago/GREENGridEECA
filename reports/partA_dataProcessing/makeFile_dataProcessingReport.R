@@ -85,10 +85,14 @@ hhfilesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 filesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 
 # > get power data  ----
+# aggegated half hourly data
 origHHDataDT <- getPowerData(hhfilesDT)
 hhPowerDataDT <- origHHDataDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
                                                         tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
 
+# imputed total load (1 minute) data
+# this is in the same place as the per-household files so
+# need to extract it from the list
 imputedLoadF <- impfilesDT[!(all.files %like% "rf_") & # not a household file
                              all.files %like% "v1.1", # latest version
                            fullPath]
