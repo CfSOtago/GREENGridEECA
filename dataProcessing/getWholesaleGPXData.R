@@ -124,7 +124,7 @@ loadGPXData <- function(files){
   l <- lapply(files$fullPath, fread)
   dt <- rbindlist(l)
   setkey(dt, rDateTime)
-  file.remove("temp.csv") # side effect
+  try(file.remove("temp.csv")) # side effect
   # fix dates & times ----
   dt <- dt[!is.na(rTime)] # drop the TP49 & TP50
   dt[, rDateTime := lubridate::as_datetime(rDateTime)]
