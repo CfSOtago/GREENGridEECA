@@ -75,13 +75,14 @@ authors <- "Ben Anderson"
 # --- Code ---
 
 # this is where we would use drake
-impfilesDT <- getFileList(impdPath, pattern = ".csv.gz")
+
+impfilesDT <- GREENGridEECA::getFileList(impdPath, pattern = ".csv.gz")
 
 # > get the imputed load file list ----
-hhfilesDT <- getFileList(hhdPath, pattern = ".csv.gz")
+hhfilesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 
 # > get the halfhourly file list ----
-filesDT <- getFileList(hhdPath, pattern = ".csv.gz")
+filesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 
 # > get power data  ----
 origHHDataDT <- getPowerData(hhfilesDT)
@@ -98,5 +99,5 @@ impDataDT <- data.table::fread(imputedLoadF)
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-makeReport()
+#makeReport()
 #makeWordReport()
