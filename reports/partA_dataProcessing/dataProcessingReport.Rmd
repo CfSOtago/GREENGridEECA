@@ -15,16 +15,16 @@ output:
     toc: yes
     toc_depth: 2
     toc_float: TRUE
+    fig_width: 6
   bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
   bookdown::word_document2:
     fig_caption: yes
-    code_folding: hide
     number_sections: yes
     toc: yes
     toc_depth: 2
-    toc_float: TRUE
+    fig_width: 6
 bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
 ---
 
@@ -82,10 +82,23 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 # Introduction
 
-This report uses the GREEN Grid project [@stephenson_smart_2017] research data to...
+This report uses the full New Zealand GREEN Grid household electricity demand study research data to:
 
-> XX tbc
+ * test the feasibility of multi-year data analysis beyond the single year made possible by the public available data [@stephenson_smart_2017];
+ * impute total dwelling load (W) per minute using the original circuit level data;
+ * produce a smaller mean half-hourly power demand (W) per circuit (and total load) per dwelling dataset for further analysis;
+ * extract half-hourly data for specified circuits.
 
+This report describes the results of this work and directs the reader to relevant R code where necessary.
+
+All code used to create this report is available from:
+
+ * https://github.com/CfSOtago/GREENGridEECA
+ 
+The archived and most recent version of the report is available from:
+ 
+ * https://cfsotago.github.io/GREENGridEECA/
+ 
 # Data
 
 ```{r generic sample, child=repoParams$data}
@@ -95,7 +108,7 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 
 Whilst the GREEN Grid project collected data from `r min(lubridate::date(hhPowerDataDT$r_dateTimeHalfHour))` to `r max(lubridate::date(hhPowerDataDT$r_dateTimeHalfHour))`, we do not have complete multi-year coverage of the `r uniqueN(hhPowerDataDT$linkID)` dwellings for whom data exists.
 
-As Figure \@ref(fig:reportMyTile) shows data is available for most of the `r uniqueN(hhDataDT[Location == "Taranaki"])` dwellings in the Taranaki region from mid 2014 and for most of the `r uniqueN(hhDataDT[Location == "Hawkes Bay"])` dwellings in Hawkes Bay from early 2015. In most cases the 'right' number of observations were received per half hour (30) when the dwellings were sending data. However not all dwellings sent data continuously with substantial attrition by 2017 (Figure \@ref(fig:reportMyCol).
+As Figure \@ref(fig:reportMyTile) shows data is available for most of the `r uniqueN(hhDataDT[Location == "Taranaki"])` dwellings in the Taranaki region from mid 2014 and for most of the `r uniqueN(hhDataDT[Location == "Hawkes Bay"])` dwellings in Hawkes Bay from early 2015. In most cases the 'right' number of observations were received per half hour (30) when the dwellings were sending data. However not all dwellings sent data continuously with substantial attrition by 2017 (Figure \@ref(fig:reportMyCol)).
 
 ```{r reportMyTile, fig.cap="Mean number of observations per circuit per half hour", fig.height=8}
 myCaption <- "Source: GREEN Grid dwelling power demand data"
@@ -147,9 +160,10 @@ ggplot2::ggplot(t, aes(x = season, y = meanDwellings, fill = Location)) +
 
 However, it should be noted that:
 
- * not all dwellings contained the appliance circuits of analyitic interest;
- * one dwelling (rf_46) has ambiguous circuit labels and so [should be ignored](https://github.com/CfSOtago/GREENGridData/issues/1);
- * a number of dwellings have a very high proportion of -ve power values for some circuits mostl likely due to PV installation (e.g. [rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total dwelling load is required;
+ * not all dwellings contained the appliance circuits of analytic interest;
+ * two dwellings (`rf_01` and `rf_02`) were test installs in researchers' homes for whom no survey data exists;
+ * one dwelling (`rf_46`) has ambiguous circuit labels and so [should be ignored](https://github.com/CfSOtago/GREENGridData/issues/1);
+ * a number of dwellings have a very high proportion of -ve power values for some circuits which is probably due to PV installation (e.g. [rf_14,rf_25,rf_26,rf_43](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) and so should be ignored if total dwelling load is required;
  * similarly [some dwellings]((https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html#6_implications)) have a small number of -ve power values on non-PV circuits at some times, possibly due to brief incorrect fitting of the monitors.
 
 As a result the _effective_ number of dwellings available for any given analysis will always be _lower_ than the numbers reported above and should be evaluated on a case by case basis.
@@ -158,9 +172,9 @@ As a result the _effective_ number of dwellings available for any given analysis
 
 Whilst in theory the calculation of total load in any given minute should be a matter of merely summing all monitored circuits, in practice the task is not quite this simple. There are a number of reasons for this:
 
- * for some dwellings the hot water circuit is seperately metered and thus monitored but for others it is part of the overall 'incomer/mains' demand;
+ * for some dwellings the hot water circuit is separately metered and thus monitored but for others it is part of the overall 'incomer/mains' demand;
  * photovoltaic panels were installed in several dwellings which produce negative power values and so would reduce apparent demand if naively aggregated;
- * several dwellings report either systematic or intemittent negative values yet do not have PV installations.
+ * several dwellings report either systematic or intermittent negative values yet do not have PV installations.
  
 Our previously work has shown that [with appropriate care](https://cfsotago.github.io/GREENGridData/reportTotalPower_circuitsToSum_v1.1.html) it is possible to derive best effort estimates of total dwelling power load by summing a small number of particular circuits for each dwelling [@GREENGridTotalLoad]. However the issues described above mean that users should:
 
@@ -168,7 +182,7 @@ Our previously work has shown that [with appropriate care](https://cfsotago.gith
  * exclude other -ve values on a per-value basis. _We recommend setting such values to NA (__not 0__)_;
  * include dwellings known to have PV _only if_ analysis of demand during non-daylight hours is being undertaken or if net demand is of interest.
 
-Seperately, for reasons explained [elsewhere](https://cfsotago.github.io/GREENGridData/gridSpy1mOutliersReport_v1.0.html#45_the_mysterious_case_of_rf_46) we also recommend removing `rf_46` from the data prior to analysis.
+Separately, for reasons explained [elsewhere](https://cfsotago.github.io/GREENGridData/gridSpy1mOutliersReport_v1.0.html#45_the_mysterious_case_of_rf_46) we also recommend removing `rf_46` from the data prior to analysis.
 
 In all cases we recommend that users check the data carefully before analysis and document any filtering they apply.
 
@@ -206,7 +220,7 @@ kableExtra::kable(t2, caption = "Basic statistics for the estimated 1 minute lev
 
 # Development of a half-hourly power demand dataset
 
-In response to EECA's request we have used the per-dwelling files listed in Table \@ref(tab:listLoadFiles) to produce an aggregated half-hourly power demand dataset __for each dwelling__.
+In response to EECA's request we have used the per-dwelling files listed in Table \@ref(tab:listLoadFiles) and the code available from our [github repo](https://github.com/CfSOtago/GREENGridEECA/blob/master/dataProcessing/makeHalfHourlyData.R) to produce an aggregated half-hourly power demand dataset __for each dwelling__.
 
 These files contain:
 
@@ -231,25 +245,39 @@ kableExtra::kable(hhfilesDT[, .(file = all.files, "Mb (gzipped)" = fSizeMb)], ca
 
 ```
 
-Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the circuits or (partial) circuit labels set out in the following sections. Table \@ref(tab:getCircuitLabels) in Section \@ref(circuitLabels) of the Data Annex shows the unique circuit labels available as a guide to what can be meaningfully extracted.
+Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the circuits or (partial) circuit labels set out in the following sections. Table \@ref(tab:getCircuitLabels) in Section \@ref(circuitLabels) of the Data Annex shows the unique circuit labels available as a guide to what can be meaningfully extracted. The process of extraction uses partial string matching so, for example, the string `Lighting` would match to circuits with the following labels:
+
+ * `"Lighting"`
+ * `"Lighting and spa"`
+ * `"Lighting and garage"`
+ 
+but not:
+
+ * `"Outside Lights"`
+
+Note that the process may therefore match a number of circuits and in some cases circuits may contain other appliances. Analysis should therefore proceed with caution since some circuits may have been missed that were required and some extracted which were not. For the avoidance of doubt, the [code](https://github.com/CfSOtago/GREENGridEECA/blob/master/reports/partA_dataProcessing/dataProcessingReport.Rmd) used to extract these circuits should be checked against Table \@ref(tab:getCircuitLabels) in Section \@ref(circuitLabels) of the Data Annex.
 
 ```{r fixCircuitLabels}
 hhPowerDataDT[, c("circuitLabel", "circuitID") := tstrsplit(circuit, "$", fixed = TRUE)]
 ```
 
+In each section we extract and save the relevant half-hourly observations and provide two plots:
 
+ * a tile plot showing the data avilability and mean power for the extracted circuits over the entire data collection;
+ * a mean power demand profile plot by time of day and season as a sense-check on the patterns of demand for the extracted circuits.
 
 ## Lighting
 
-```{r setFilter_Lighting}
+```{r setFilter_Lighting, echo = TRUE}
 filter <- "Lighting"
+dt <- hhPowerDataDT[circuitLabel %like% filter] # extraction
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourLighting) and Figure \@ref(fig:extractHalfHourLighting) show summary statistics of the half-hourly mean values for all observations extracted by circuit label. Note that the process may have matched a number of circuits and in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourLighting) shows summary statistics of the half-hourly mean values for all observations extracted by circuit label.
 
 ```{r extractHalfHourLighting, fig.cap = "Lighting data summary"}
 
@@ -264,8 +292,6 @@ makeTable <- function(dt){
                   keyby = .(circuitLabel)]
   return(t)
 }
-
-dt <- hhPowerDataDT[circuitLabel %like% filter]
 
 t <- makeTable(dt)
 
@@ -285,21 +311,46 @@ makeTilePlot <- function(dt){
                                    fill = meanW,
                                    alpha = nObs)) +
     geom_tile() +
+    scale_alpha_continuous(name = "N dwellings") +
     scale_fill_continuous(low = "green", high = "red") +
-    labs(x = "Half hour", y = "Circuit label", caption = "Fill colour (meanW): Mean of half-hourly mean power\nAlpha (nObs): Number of half hourly observations contributing")
+    labs(x = "Half hour", y = "Circuit label", caption = "N dwellings (transparency) indicates\n the number of dwellings with a given circuit label") +
+    theme_bw()
+  return(p)
+}
+
+
+makeProfilePlot <- function(dt){
+  dt[, halfHour := hms::trunc_hms(hms::as.hms(r_dateTimeHalfHour), 30*60)] # add hms as half hours for plots
+  dt[, date := lubridate::date(dt$r_dateTimeHalfHour)] # add date for season
+  dt <- GREENGridEECA::addNZSeason(dt) # add season
+  plotDT <- dt[, .(meanW = mean(meanPowerW),
+                   nObs = uniqueN(linkID)), keyby = .(halfHour, circuitLabel, season)]
+  p <- ggplot2::ggplot(plotDT, aes(x = halfHour, 
+                                   y = meanW, 
+                                   colour = circuitLabel,
+                                   alpha = nObs)) +
+    geom_line()  +
+    scale_alpha_continuous(name = "N dwellings") +
+    facet_grid(season ~ .) +
+    labs(x = "Half hour", y = "Mean power (W)", caption = "N dwellings (shown using transparency) indicates\nthe number of dwellings with a given circuit label") +
+    theme_bw()
   return(p)
 }
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have _Lighting_ data for `r sum(t$nDwellings)` dwellings.
 
 ## Hot water
 
-```{r setFilter_HotWater}
-# more complex
-filter1 <- "Hot water"
+```{r setFilter_HotWater, echo = TRUE}
+# more complex (we could de-capitalise first)
+filter1 <- "Hot water" # or
 filter2 <- "Hot Water"
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1 |
+                                circuitLabel %like% filter2]
 ```
 
 In this section we extract every record where:
@@ -307,13 +358,10 @@ In this section we extract every record where:
  * the string "`r filter1`" is found in `circuit`
  * the string "`r filter2`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourHotWater) and Figure \@ref(fig:extractHalfHourHotWater) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourHotWater) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label.
 
 ```{r extractHalfHourHotWater, fig.cap = "Hot water data summary"}
-
-dt <- hhPowerDataDT[circuitLabel %like% filter1 |
-                                circuitLabel %like% filter2]
 
 t <- makeTable(dt)
 
@@ -324,7 +372,9 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourHotWater.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
+
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have _Hot Water_ data for `r sum(t$nDwellings)` dwellings.
@@ -333,21 +383,21 @@ We therefore have _Hot Water_ data for `r sum(t$nDwellings)` dwellings.
 ## Heat pumps
  
 
-```{r setFilter_HeatPump}
-# more complex
+```{r setFilter_HeatPump, echo = TRUE}
 filter1 <- "Heat Pump"
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter1`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourHeatPump) and Figure \@ref(fig:extractHalfHourHeatPump) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourHeatPump) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label.
 
 ```{r extractHalfHourHeatPump, fig.cap = "Heat Pump data summary"}
 
-dt <- hhPowerDataDT[circuitLabel %like% filter1]
 
 t <- makeTable(dt)
 
@@ -358,7 +408,9 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourHeatPump.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
+
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have _Heat Pump_ data for `r sum(t$nDwellings)` dwellings.
@@ -367,21 +419,21 @@ We therefore have _Heat Pump_ data for `r sum(t$nDwellings)` dwellings.
 
 Noting that this may include other areas of the dwelling...
 
-```{r setFilter_Kitchen}
-# more complex
+```{r setFilter_Kitchen, echo = TRUE}
 filter1 <- "Kitchen"
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter1`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourKitchen) and Figure \@ref(fig:extractHalfHourKitchen) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourKitchen) and shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. 
 
 ```{r extractHalfHourKitchen, fig.cap = "Kitchen data summary"}
 
-dt <- hhPowerDataDT[circuitLabel %like% filter1]
 
 t <- makeTable(dt)
 
@@ -392,7 +444,9 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourKitchen.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
+
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have _Kitchen_ data for `r sum(t$nDwellings)` dwellings.
@@ -402,22 +456,24 @@ We therefore have _Kitchen_ data for `r sum(t$nDwellings)` dwellings.
 Noting that this circuit label may include other appliances...
 
 
-```{r setFilter_Heat}
+```{r setFilter_Heat, echo = TRUE}
 # more complex
 filter1 <- "Heat"
+# and not "Heat Pump" 
+dt <- hhPowerDataDT[circuitLabel %like% filter1 &
+                      !circuitLabel %like% "Heat Pump"]
+
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter1`" is found in `circuit` but excluding 'Heat Pump'
  
-Table \@ref(tab:extractHalfHourHeat) and Figure \@ref(fig:extractHalfHourHeat) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourHeat) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. 
 
 ```{r extractHalfHourHeat, fig.cap = "Heat data summary"}
 
-dt <- hhPowerDataDT[circuitLabel %like% filter1 &
-                      !circuitLabel %like% "Heat Pump"]
 
 t <- makeTable(dt)
 
@@ -428,7 +484,9 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourNonHP_Heat.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
+
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have non Heat Pump _Heat_ data for `r sum(t$nDwellings)` dwellings.
@@ -437,21 +495,20 @@ We therefore have non Heat Pump _Heat_ data for `r sum(t$nDwellings)` dwellings.
 
 Noting that this circuit label may include other appliances...
 
-```{r setFilter_Fridge}
-# more complex
+```{r setFilter_Fridge, echo = TRUE}
 filter1 <- "Fridge"
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter1`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourFridge) and Figure \@ref(fig:extractHalfHourFridge) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourFridge) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. 
 
 ```{r extractHalfHourFridge, fig.cap = "Fridge data summary"}
-
-dt <- hhPowerDataDT[circuitLabel %like% filter1]
 
 t <- makeTable(dt)
 
@@ -462,7 +519,9 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourFridge.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
+
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have _Fridge_ data for `r sum(t$nDwellings)` dwellings.
@@ -471,21 +530,20 @@ We therefore have _Fridge_ data for `r sum(t$nDwellings)` dwellings.
 
 Noting that this circuit label may include other appliances...
 
-```{r setFilter_Freezer}
-# more complex
+```{r setFilter_Freezer, echo = TRUE}
 filter1 <- "Freezer"
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter1`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourFreezer) and Figure \@ref(fig:extractHalfHourFreezer) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourFreezer) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. 
 
 ```{r extractHalfHourFreezer, fig.cap = "Freezer data summary"}
-
-dt <- hhPowerDataDT[circuitLabel %like% filter1]
 
 t <- makeTable(dt)
 
@@ -496,7 +554,9 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourFreezer.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
+
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have _Freezer_ data for `r sum(t$nDwellings)` dwellings.
@@ -506,21 +566,21 @@ We therefore have _Freezer_ data for `r sum(t$nDwellings)` dwellings.
 
 Noting that this circuit label may include other appliances...
 
-```{r setFilter_Oven}
-# more complex
+```{r setFilter_Oven, echo = TRUE}
 filter1 <- "Oven"
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter1`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourOven) and Figure \@ref(fig:extractHalfHourOven) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourOven) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label. 
 
 ```{r extractHalfHourOven, fig.cap = "Oven data summary"}
-
-dt <- hhPowerDataDT[circuitLabel %like% filter1]
 
 t <- makeTable(dt)
 
@@ -531,7 +591,9 @@ kableExtra::kable(t, digits = 3,
 of <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourOven.csv")
 data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
+
 makeTilePlot(dt)
+makeProfilePlot(dt)
 ```
 
 We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
@@ -541,21 +603,21 @@ We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
 
 Noting that this circuit label may include other appliances...
 
-```{r setFilter_PV}
-# more complex
+```{r setFilter_PV, echo = TRUE}
 filter1 <- "PV"
+
+dt <- hhPowerDataDT[circuitLabel %like% filter1]
+
 ```
 
 In this section we extract every record where:
 
  * the string "`r filter1`" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourPV) and Figure \@ref(fig:extractHalfHourPV) show the mean power (mean of the half-hourly mean values)
-for all observations extracted by circuit label. Note that in some cases circuits may contain other appliances. Analysis should therefore proceed with caution.
+Table \@ref(tab:extractHalfHourPV) shows the mean power (mean of the half-hourly mean values)
+for all observations extracted by circuit label.
 
 ```{r extractHalfHourPV, fig.cap = "PV data summary"}
-
-dt <- hhPowerDataDT[circuitLabel %like% filter1]
 
 t <- makeTable(dt)
 
@@ -568,6 +630,8 @@ data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
 p <- makeTilePlot(dt)
 p + scale_fill_continuous(low = "red", high = "green") # reverse colours
+
+makeProfilePlot(dt)
 ```
 
 We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
@@ -575,15 +639,18 @@ We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
 
 ## Total load
 
+```{r extractTotal, echo = TRUE}
+dt <- hhPowerDataDT[circuitLabel %like% "imputedTotalDemand"]
+```
+
 In this section we extract every record where:
 
  * the string "imputedTotalDemand" is found in `circuit`
  
-Table \@ref(tab:extractHalfHourtotalLoad) and Figure \@ref(fig:extractHalfHourtotalLoad) show the mean power (mean of the half-hourly mean values) for all observations extracted by circuit label.
+Table \@ref(tab:extractHalfHourtotalLoad) shows the mean power (mean of the half-hourly mean values) for all observations extracted by circuit label.
 
 ```{r extractHalfHourtotalLoad, fig.cap = "Total load data summary"}
 
-dt <- hhPowerDataDT[circuitLabel %like% "imputedTotalDemand"]
 
 t <- makeTable(dt)
 
@@ -596,6 +663,8 @@ data.table::fwrite(dt, of)
 GREENGridEECA::gzipIt(of)
 p <- makeTilePlot(dt)
 p + theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
+
+makeProfilePlot(dt)
 ```
 
 We therefore have _imputedTotalDemand_ data for `r sum(t$nDwellings)` dwellings.
@@ -603,13 +672,49 @@ We therefore have _imputedTotalDemand_ data for `r sum(t$nDwellings)` dwellings.
 
 # Summary
 
-> XX tbc
+This report used the full New Zealand GREEN Grid household electricity demand study research data to:
+
+ * test the feasibility of multi-year data analysis beyond the single year made possible by the public available data [@stephenson_smart_2017]. __We conclude that multi-year analysis is feasible but potentially limited due to sample attrition over time__;
+ * impute total dwelling load (W) per minute using the original circuit level data - __completed__;
+ * produce a smaller mean half-hourly power demand (W) per circuit (and total load) per dwelling dataset for further analysis - __completed__;
+ * extract half-hourly data for specified circuits - __completed__.
+
+This report described the results of this work and directed the reader to relevant R code where necessary.
+
+All code used to create this report is available from:
+
+ * https://github.com/CfSOtago/GREENGridEECA
+ 
+The archived and most recent version of the report is available from:
+ 
+ * https://cfsotago.github.io/GREENGridEECA/
+
+The half-hourly mean power demand data together with the circuit level extracts can be made available on request.
 
 ```{r runToEnd}
 
 ```
 
 # Data Annex
+
+## Circuit labels (all){#circuitLabels}
+
+```{r getCircuitLabels}
+
+t <- hhPowerDataDT[, .(nObs = .N,
+                      nDwellings = uniqueN(linkID),
+                      meanW = mean(meanPowerW, na.rm = TRUE)),
+                  keyby = .(circuitLabel)]
+
+kableExtra::kable(t, 
+                  caption = "Summary statistics by circuit label") %>%
+  kable_styling()
+
+# save as a data file for ease of use
+of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
+data.table::fwrite(t, file = of)
+
+```
 
 ## Half hourly total load summary 
 Descriptive statistics for aggregate half hourly power data for all dwellings and all circuits:
@@ -642,24 +747,6 @@ for(hh in ids){
 
 ```
 
-## Circuit labels (all){#circuitLabels}
-
-```{r getCircuitLabels}
-
-t <- hhPowerDataDT[, .(nObs = .N,
-                      nDwellings = uniqueN(linkID),
-                      meanW = mean(meanPowerW, na.rm = TRUE)),
-                  keyby = .(circuitLabel)]
-
-kableExtra::kable(t, 
-                  caption = "Summary statistics by circuit label") %>%
-  kable_styling()
-
-# save as a data file for ease of use
-of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
-data.table::fwrite(t, file = of)
-
-```
 
 # Runtime
 
