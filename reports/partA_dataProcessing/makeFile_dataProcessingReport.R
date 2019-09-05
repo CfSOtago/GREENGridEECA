@@ -61,7 +61,7 @@ makeWordReport <- function(){
 }
 
 # Local parameters ----
-version <- "0.1"
+version <- "0.9b"
 
 # data ----
 impdPath <- paste0(repoParams$GreenGridData, "gridSpy/1min/data/imputed/") # imputed total load
@@ -103,5 +103,5 @@ impDataDT <- data.table::fread(imputedLoadF)
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-#makeReport()
+makeReport()
 #makeWordReport()
