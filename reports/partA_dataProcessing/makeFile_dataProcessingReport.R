@@ -35,9 +35,9 @@ getPowerData <- function(filesDT){
   return(dt)
 }
 
-makeReport <- function(){
+
+makeReport <- function(f){
   # default = html
-  rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
   rmarkdown::render(input = rmdFile,
                     params = list(title = title,
                                   subtitle = subtitle,
@@ -46,17 +46,18 @@ makeReport <- function(){
   )
 }
 
-makeWordReport <- function(){
+makeWordReport <- function(f){
   # reuse last .md for speed will fail is no .md
-  mdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.knit.md")
-  if(file.exists(mdFile)){
-    rmarkdown::render(input = mdFile,
+  if(file.exists(rmdFile)){
+    rmarkdown::render(input = rmdFile,
                     output_format = "word_document2",
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
                     output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".docx")
                     )
+  } else {
+    message("No such file: ", rmdFile)
   }
 }
 
@@ -104,5 +105,6 @@ halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-makeReport()
-#makeWordReport()
+rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
+makeReport(rmdFile)
+makeWordReport(rmdFile)
