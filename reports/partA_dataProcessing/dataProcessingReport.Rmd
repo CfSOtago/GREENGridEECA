@@ -63,7 +63,7 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
  * Public – this report is intended for publication following EECA approval.
  
-## License
+## License {#license}
 
 ```{r ccby license, child=repoParams$licenseCCBY}
 ```
