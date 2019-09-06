@@ -35,9 +35,9 @@ getPowerData <- function(filesDT){
   return(dt)
 }
 
-makeReport <- function(){
+
+makeReport <- function(f){
   # default = html
-  rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
   rmarkdown::render(input = rmdFile,
                     params = list(title = title,
                                   subtitle = subtitle,
@@ -46,22 +46,23 @@ makeReport <- function(){
   )
 }
 
-makeWordReport <- function(){
+makeWordReport <- function(f){
   # reuse last .md for speed will fail is no .md
-  mdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.knit.md")
-  if(file.exists(mdFile)){
-    rmarkdown::render(input = mdFile,
+  if(file.exists(rmdFile)){
+    rmarkdown::render(input = rmdFile,
                     output_format = "word_document2",
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
                     output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".docx")
                     )
+  } else {
+    message("No such file: ", rmdFile)
   }
 }
 
 # Local parameters ----
-version <- "0.9b"
+version <- "0.95b"
 
 # data ----
 impdPath <- paste0(repoParams$GreenGridData, "gridSpy/1min/data/imputed/") # imputed total load
@@ -76,32 +77,34 @@ authors <- "Ben Anderson"
 
 # this is where we would use drake
 
+# > get the single imputed load file ----
+# this will include files created using different versions of circuitToSum
 impfilesDT <- GREENGridEECA::getFileList(impdPath, pattern = ".csv.gz")
-
-# > get the imputed load file list ----
-hhfilesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
-
-# > get the halfhourly file list ----
-filesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
-
-# > get power data  ----
-# aggegated half hourly data
-origHHDataDT <- getPowerData(hhfilesDT)
-hhPowerDataDT <- origHHDataDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
-                                                        tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
 
 # imputed total load (1 minute) data
 # this is in the same place as the per-household files so
 # need to extract it from the list
 imputedLoadF <- impfilesDT[!(all.files %like% "rf_") & # not a household file
-                             all.files %like% "v1.1", # latest version
+                             all.files %like% "v1.1", # latest version of circuitToSum
                            fullPath]
 
 impDataDT <- data.table::fread(imputedLoadF)
+
+
+# > get the halfhourly files ----
+halfHourlyFilesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
+
+# aggegated half hourly data
+origHalfHourlyPowerDT <- getPowerData(halfHourlyFilesDT)
+# note that the circuit column will tell us which version of circuitToSum was used
+# in the aggregation - it is not included in the filename
+halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
+                                                        tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
 
 # > get household data  ----
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-makeReport()
-#makeWordReport()
+rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
+makeReport(rmdFile)
+makeWordReport(rmdFile)

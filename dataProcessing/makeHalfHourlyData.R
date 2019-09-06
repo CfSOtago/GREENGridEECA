@@ -19,10 +19,12 @@ GREENGridEECA::loadLibraries(localLibs) # load them
 
 # Local functions (if any) ----
 
-getFileList <- function(iPath){
+getFileList <- function(iPath, version){
   # should be fast
   all.files <- list.files(path = iPath, pattern = "^[rf_]") # list individual dwelling files
   dt <- as.data.table(all.files)
+  # keep the right version
+  dt <- dt[all.files %like% version]
   return(dt)
 }
 
@@ -40,8 +42,8 @@ processData <- function(filesDT){
     dt <- data.table::fread(iFile) # make a data.table for speed https://github.com/Rdatatable/data.table/wiki
     dt[, r_dateTime := lubridate::as_datetime(r_dateTime, tz = "Pacific/Auckland")] # this will be UTC unless you set this
     dt[, r_dateTimeHalfHour := lubridate::floor_date(r_dateTime, "30 minutes")] # create half-hour dateTime
-    hhDT <- dt[, .(meanPowerW = mean(powerW), # aggregate stats - add more if  you wish
-                   nObs = .N,
+    hhDT <- dt[, .(nObs = .N,
+                   meanPowerW = mean(powerW), # aggregate stats - add more if  you wish
                    sdPowerW = sd(powerW),
                    minPowerW = min(powerW),
                    maxPowerW = max(powerW)),
@@ -56,7 +58,7 @@ processData <- function(filesDT){
 }
 
 # Local parameters ----
-version <- "1.0"
+version <- "1.1" # this is the version of circuitsToSum we used
 repoParams$repoLoc <- here::here() # where are we?
 
 # data paths
@@ -65,7 +67,7 @@ oPath <- paste0(repoParams$GreenGridData,"gridSpy/halfHour/data/") # where to sa
 
 # --- Code ---
 
-filesDT <- getFileList(iPath) # get the input file list
+filesDT <- getFileList(iPath, version) # get the input file list
 
 # testing: filesDT <- filesDT[all.files %like% "rf_01"]
 processData(filesDT) # do the processing
