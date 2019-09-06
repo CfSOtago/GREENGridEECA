@@ -15,7 +15,7 @@ output:
     toc: yes
     toc_depth: 2
     toc_float: TRUE
-    fig_width: 6
+    fig_width: 4
   bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
@@ -24,7 +24,8 @@ output:
     number_sections: yes
     toc: yes
     toc_depth: 2
-    fig_width: 6
+    fig_width: 4
+always_allow_html: yes
 bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
 ---
 
@@ -299,6 +300,11 @@ makeTable <- function(dt){
               sdW = sd(meanPowerW, na.rm = TRUE)
               ),
                   keyby = .(circuitLabel)]
+  message("# -> ", nrow(dt), " rows of data for ", 
+          uniqueN(dt$circuitLabel), " unique circuit labels from ", 
+          uniqueN(dt$linkID), " dwellings covering the period \n# -> ",
+          min(dt$r_dateTimeHalfHour), " to ", max(dt$r_dateTimeHalfHour),
+          " (NB: data may not be continuous)")
   return(t)
 }
 
@@ -320,8 +326,8 @@ makeTilePlot <- function(dt){
                                    fill = meanW,
                                    alpha = nObs)) +
     geom_tile() +
-    scale_alpha_continuous(name = "N dwellings") +
-    scale_fill_continuous(low = "green", high = "red") +
+    scale_alpha_continuous(name = "N dwellings per half-hour") +
+    scale_fill_continuous(name = "Mean power (W)", low = "green", high = "red") +
     labs(x = "Half hour", y = "Circuit label", caption = "N dwellings (transparency) indicates\n the number of dwellings with a given circuit label") +
     theme_bw()
   return(p)
@@ -339,7 +345,8 @@ makeProfilePlot <- function(dt){
                                    colour = circuitLabel,
                                    alpha = nObs)) +
     geom_line()  +
-    scale_alpha_continuous(name = "N dwellings") +
+    scale_colour_discrete(name = "Matching circuit labels") +
+    scale_alpha_continuous(name = "N dwellings per half hour per label") +
     facet_grid(season ~ .) +
     labs(x = "Half hour", y = "Mean power (W)", caption = "N dwellings (shown using transparency) indicates\nthe number of dwellings with a given circuit label") +
     theme_bw()
@@ -645,7 +652,7 @@ p + scale_fill_continuous(low = "red", high = "green") # reverse colours
 makeProfilePlot(dt)
 ```
 
-We therefore have _Oven_ data for `r sum(t$nDwellings)` dwellings.
+We therefore have _PV_ data for `r sum(t$nDwellings)` dwellings. It is interesting to note that most of the PV output for the dwelling with `PV & Storage` (`rf_23`) appears, on average, to be absorbed by its storage.
 
 
 ## Total load
