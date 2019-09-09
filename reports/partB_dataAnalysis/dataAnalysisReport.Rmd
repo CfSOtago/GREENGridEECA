@@ -46,6 +46,7 @@ libs <- c("ggplot2", # plots
 library(kableExtra)
 library(dplyr)
 library(ggplot2)
+library(tidyr)
 ```
 
 \newpage
@@ -106,6 +107,7 @@ powerDT <- powerDT[, meanPowerW := ifelse(meanPowerW <0, NA, meanPowerW)]
 powerDT <- powerDT[, sdPowerW := ifelse(sdPowerW <0, NA, sdPowerW)]
 powerDT <- powerDT[, minPowerW := ifelse(minPowerW <0, NA, minPowerW)]
 powerDT <- powerDT[, maxPowerW := ifelse(maxPowerW <0, NA, maxPowerW)]
+
 
 # set to NZ time from UTC
 powerDT <- powerDT[, r_dateTime_nz := lubridate::as_datetime(r_dateTimeHalfHour, 
@@ -273,6 +275,62 @@ myPlot
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+ResDT <- gather(ResDT, eecaCircuit, maxPowerW, `Heat Pump or Heating`:`XX_Other`, factor_key = TRUE)
+
+
+
+myPlot <- ggplot2::ggplot(subset(dataBucketDT, eecaCircuit =="Hot water"& year=="2015"), aes(x=meanPowerW, colour = season)) +
+  geom_density() +
+  #scale_x_continuous( limits = c(0,2000000))+
+     #geom_vline(aes(xintercept=mean(totalEnergyWh)),
+           # color="blue", linetype="dashed", size=0.5)+
+  theme(text = element_text(family = "Cambria")) +
+  ggtitle("Test") 
+myPlot
+
+
+
+
+ResDT <- as.data.table(ResDT)
+
+ResDT <- ResDT[, HP := NA]
+ResDT <- ResDT[, `HP` := ifelse(`eecaCircuit`== "Heat Pump or Heating", maxPowerW, NA)]
+
+
+
+myPlot <- ggplot2::ggplot(subset(ResDT, year %in% c("2015") & season %in% c("Winter")),  fill = linkID) +
+  geom_bar(aes(y= eecaCircuit, x = HP), stat = "identity", position = "dodge") +
+  #geom_line(aes(y= V1)) +
+  theme(text = element_text(family = "Cambria"))+
+  #facet_grid(season ~ .) +
+  ggtitle("XX") 
+  #labs(x='Period', y='Cost in million NZD') 
+myPlot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```
 ```{r Part B: calculations for annual kWh consumption}
 
@@ -321,31 +379,119 @@ kableExtra::kable(t, caption = "Categoriesed circuits - XX check carefully! XX")
 #Conversion to energy Wh
 energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]
 analysisDT <- copy(energyDT)
-analysisDT <- analysisDT[, totalEnergyWh := sum(meanEnergyWh), keyby = .(linkID, season, eecaCircuit, year)]
-analysisDT <- analysisDT[, .(totalEnergyWh = totalEnergyWh), by = .(linkID, season, eecaCircuit, year)]#For some reson by does not remove duplicates without crashing....
-analysisDT <- unique(analysisDT)#Removing duplicates
+analysisDT <- analysisDT[, totalEnergyWh := sum(meanEnergyWh, na.rm = TRUE), keyby = .(linkID, season, eecaCircuit, year)]#Ignores NAs
+analysisShortDT <- analysisDT[, .(totalEnergyWh = totalEnergyWh), keyby = .(linkID, season, eecaCircuit, year)]#For some reson by does not remove duplicates without crashing....
+analysisShortDT <- unique(analysisShortDT)#Removing duplicates
 
 #Calculating the contribution to annual energy consumption and turning off e-notation
 
 options(scipen = 999)
 
-analysisDT <- dcast(analysisDT, 
+analysisShortDT <- dcast(analysisShortDT, 
            linkID + year + season ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
            value.var = "totalEnergyWh") # take 1 household and turn data round
 
-analysisDT <- analysisDT[, contribution_HW := `Hot water`/Total]
-analysisDT <- analysisDT[, contribution_HP := `Heat Pump or Heating`/Total]
-analysisDT <- analysisDT[, contribution_LI := `Lighting`/Total]
-analysisDT <- analysisDT[, contribution_OV := `Oven`/Total]
-analysisDT <- analysisDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+analysisShortDT <- analysisShortDT[, contribution_HW := `Hot water`/Total]
+analysisShortDT <- analysisShortDT[, contribution_HP := `Heat Pump or Heating`/Total]
+analysisShortDT <- analysisShortDT[, contribution_LI := `Lighting`/Total]
+analysisShortDT <- analysisShortDT[, contribution_OV := `Oven`/Total]
+analysisShortDT <- analysisShortDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
 # Tere are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
+
+
+#Summarising the variation in demand
+#We need to dcast it back into the original form
+analysisShortDT <- gather(analysisShortDT, eecaCircuit, totalEnergyWh, `Heat Pump or Heating`:`XX_Other`, factor_key = TRUE)
+
+
+myPlot <- ggplot2::ggplot(subset(analysisShortDT, eecaCircuit =="Hot water"), aes(x=totalEnergyWh, colour=season)) +
+  geom_density() +
+  scale_x_continuous( limits = c(0,2000000))+
+     geom_vline(aes(xintercept=mean(totalEnergyWh)),
+            color="blue", linetype="dashed", size=0.5)+
+  #facet_grid( season ~ year)+
+  theme(text = element_text(family = "Cambria")) +
+  ggtitle("Test") 
+myPlot
+
+```
+```{r coincident sample peak: Part B}
+
+sampleDT <- copy(powerDT)
+
+# split the circuit label to leave just the string and rthe id (we need the string)
+sampleDT <- sampleDT[, c("circuitLabel","circuitID") := tstrsplit(circuit,"$", fixed = TRUE)]
+
+# these match exactly to circuit label strings by matching to the string that came before the $ 
+sampleDT <- sampleDT[, eecaCircuit := ifelse(circuitLabel == "Heat Pump" |
+                                                       circuitLabel == "Theatre Heat Pump" |
+                                                       circuitLabel == "Upstairs Heat Pumps" |
+                                                       circuitLabel == "Heating",
+                                                    "Heat Pump or Heating", 
+                                                    "XX_Other") # default
+                             ]
+
+# these match if the string is in the circuit label (i.e. circuit label could contain other words)
+# Be careful with these
+sampleDT <- sampleDT[, eecaCircuit := ifelse( circuitLabel == "Oven" |
+                                                        circuitLabel == "Range" |
+                                                        circuitLabel == "Wall Oven" |
+                                                        circuitLabel %like% "Oven &" |
+                                                        circuitLabel %like% "Oven,", # if the circuit = Oven only
+                                                    "Oven", eecaCircuit)]
+sampleDT <- sampleDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot water", 
+                                                    "Hot water", eecaCircuit)]
+sampleDT <- sampleDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot Water", 
+                                                    "Hot water", eecaCircuit)]
+sampleDT <- sampleDT[, eecaCircuit := ifelse(circuitLabel %like% "Lighting" |
+                                                       circuitLabel %like% "Lights", 
+                                                    "Lighting", eecaCircuit)]
+sampleDT <- sampleDT[, eecaCircuit := ifelse(circuitLabel %like% "imputedTotalDemand_circuitsToSum_v1.1", 
+                                                    "Total", eecaCircuit)]
+
+sampleDT <- sampleDT[, summeanPowerW := NA]
+
+sampleShortDT <- sampleDT[, .(summeanPowerW = sum(meanPowerW, na.rm = TRUE), 
+                              nobs=.N), keyby=.(eecaCircuit, date, season, year, obsHalfHour)]#This is the aggregated Wattage for each circuit month etc. see keyby in order to conduct sample coincident peak analysis 
+
+
+sampleShortDT <- sampleShortDT[, averagePowerW := summeanPowerW/nobs]#We have to consider that some of the obs have only one obs, some have up to 200. We need to take the average to identify the top 20 entries (their time of occurance)
+
+
+sample2015DT <- sampleShortDT[ !(year %in% c(2014, 2016, 2017, 2018))]#Getting rid of years that are not necessary for this analysis
+
+sort(sample2015DT$averagePowerW, decreasing = TRUE)#Now identufy these top20 times in the original data table and conduct analysis again
+
+####Filtering the top20 peak half-hours based on our sample. XXThis is hard-coded - is there a better way to do it??XX
+
+filteredDT <- copy(powerDT)
+filteredDT = filteredDT %>% filter(date == "2015-06-28" & obsHalfHour == hms::as.hms("18:00:00") |
+                                   date == "2015-08-21" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-06-23" & obsHalfHour == hms::as.hms("18:00:00") |
+                                   date == "2015-06-24" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-05-29" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-06-17" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-08-12" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-06-23" & obsHalfHour == hms::as.hms("17:30:00") |
+                                   date == "2015-06-26" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-06-25" & obsHalfHour == hms::as.hms("07:30:00") |
+                                   date == "2015-06-23" & obsHalfHour == hms::as.hms("18:30:00") |
+                                   date == "2015-05-25" & obsHalfHour == hms::as.hms("19:00:00") |
+                                   date == "2015-06-23" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-08-10" & obsHalfHour == hms::as.hms("20:00:00") |
+                                   date == "2015-06-26" & obsHalfHour == hms::as.hms("07:30:00") |
+                                   date == "2015-07-10" & obsHalfHour == hms::as.hms("07:30:00") |
+                                   date == "2015-08-28" & obsHalfHour == hms::as.hms("07:00:00") |
+                                   date == "2015-07-09" & obsHalfHour == hms::as.hms("07:30:00") |
+                                   date == "2015-06-23" & obsHalfHour == hms::as.hms("19:30:00") |
+                                   date == "2015-05-27" & obsHalfHour == hms::as.hms("07:00:00"))
+
 
 
 
 
 ```
-
 # Peak Contribution
 
 ```{r peakContrib}
