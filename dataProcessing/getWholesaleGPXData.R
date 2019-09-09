@@ -1,21 +1,24 @@
 # gets wholesale EA elec gen data
-library(data.table)
-library(here)
-library(curl)
+libs <- c(curl, # pulling data off t'interweb
+          data.table, # data munching
+          forcats, # for cats
+          here) # here. not there
+library(GREENGridEECA)
+GREENGridEECA::loadLibraries(libs) # should install any that are missing
+
+GREENGridEECA::setup() # set data paths etc
 
 # parameters ----
 nDays <- 30
 
 # NZ Electricity Authority generation data
-# > set months to refreash ----
-months <- c("201801", "201802","201803","201804","201805", "201806", "201807","201808","201809","201810","201811","201812")
+# > set months to refresh ----
+months <- c("201501", "201502","201503","201504","201505", "201506", "201507","201508","201509","201510","201511","201512")
+#months <- c("201801", "201802","201803","201804","201805", "201806", "201807","201808","201809","201810","201811","201812")
 # months <- c("201806","201807")
 
 # > EA gpx data location ----
 rDataLoc <- "https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export/"
-
-# > where to save data ----
-dPath <- path.expand("~/Data/NZ_EA_EMI/gpx/") # fix for your platform
 
 # > defn of peak ----
 amPeakStart <- hms::as.hms("07:00:00")
@@ -96,18 +99,20 @@ setEAGenTimePeriod <- function(dt){
   return(dt)
 }
 
-refreshGPXData <- function(){
+refreshGPXData <- function(months){
+  # assumes months is a list of months of the form "201801" to match EA url
   for(m in months){
     rDataF <- paste0(rDataLoc, m, "_Grid_export.csv")
     print(paste0("Getting, processing and cleaning ", m, " (", rDataF, ")"))
     dt <- getData(rDataF)
-    data.table::fwrite(dt, file = paste0(dPath, "/EA_", m, "_GPX_MD.csv"))
+    data.table::fwrite(dt, file = paste0(repoParams$gpxData, "/EA_", m, "_GPX_MD.csv"))
   } 
 }
 
 
 # check for EA gpx files ----
 getGpxFileList <- function(dPath){
+  message("Checking for data files")
   all.files <- list.files(path = dPath, pattern = ".csv")
   dt <- as.data.table(all.files)
   dt[, fullPath := paste0(dPath, all.files)]
@@ -147,6 +152,34 @@ loadGPXData <- function(files){
 
 
 # code ----
-#refreshGPXData()
-gpxFiles <- getGpxFileList(dPath)
-gpxDataDT <- loadGPXData(gpxFiles)
+refreshGPXData(months) # assumes we just get them all, doesn't check if we have any already. Avoid running this if low bandwith
+gpxFiles <- getGpxFileList(repoParams$gpxData) # will be empty if never run before so
+if(nrow(gpxFiles) == 0){
+  message("No data, refreshing!")
+  refreshGPXData(months)
+} else {
+  message("Yep, we've got (some) data")
+  gpxDataDT <- loadGPXData(gpxFiles)
+}
+
+table(gpxDataDT$POC) # which one(s) do we need?
+
+head(gpxDataDT)
+
+# find the GPX peaks
+top100DT <- head(gpxDataDT[order(-gpxDataDT$kWh)], 100)
+
+plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
+
+ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + geom_tile()
+# OK, so that's all Tiwai
+
+top100DT <- head(gpxDataDT[POC != "TWI2201"][order(-gpxDataDT$kWh)], 100)
+
+plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
+
+ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + 
+  geom_tile() +
+  theme(axis.text.x = element_text(angle = 90))
+
+# Let's draw a map
