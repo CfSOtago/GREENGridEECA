@@ -105,7 +105,7 @@ refreshGXPData <- function(months){
     rDataF <- paste0(rDataLoc, m, "_Grid_export.csv")
     print(paste0("Getting, processing and cleaning ", m, " (", rDataF, ")"))
     dt <- getData(rDataF)
-    data.table::fwrite(dt, file = paste0(repoParams$GXPData, "/EA_", m, "_GXP_MD.csv"))
+    data.table::fwrite(dt, file = paste0(repoParams$gxpData, "/EA_", m, "_GXP_MD.csv"))
   } 
 }
 
@@ -116,6 +116,7 @@ getGXPFileList <- function(dPath){
   all.files <- list.files(path = dPath, pattern = ".csv")
   dt <- as.data.table(all.files)
   dt[, fullPath := paste0(dPath, all.files)]
+  message("Found ", nrow(dt))
   return(dt)
 }
 
@@ -125,7 +126,7 @@ loadGXPData <- function(files){
   # this is where we need drake
   # and probably more memory
   # if this breaks you need to run R/getWholesaleGenData.R
-  message("Loading ", nrow(files), " files")
+  message("Loading ", nrow(files), "GXP files")
   l <- lapply(files$fullPath, fread)
   dt <- rbindlist(l)
   setkey(dt, rDateTime)
@@ -152,29 +153,30 @@ loadGXPData <- function(files){
 
 
 # code ----
-refreshGXPData(months) # assumes we just get them all, doesn't check if we have any already. Avoid running this if low bandwith
-GXPFiles <- getGXPFileList(repoParams$GXPData) # will be empty if never run before so
+#refreshGXPData(months) # assumes we just get them all, doesn't check if we have any already. Avoid running this if low bandwith
+gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
 if(nrow(GXPFiles) == 0){
   message("No data, refreshing!")
   refreshGXPData(months)
+  gxpDataDT <- loadGXPData(gxpFiles)
 } else {
   message("Yep, we've got (some) data")
-  GXPDataDT <- loadGXPData(GXPFiles)
+  gxpDataDT <- loadGXPData(gxpFiles)
 }
 
-table(GXPDataDT$POC) # which one(s) do we need?
+table(gxpDataDT$POC) # which one(s) do we need?
 
-head(GXPDataDT)
+head(gxpDataDT)
 
 # find the GXP peaks
-top100DT <- head(GXPDataDT[order(-GXPDataDT$kWh)], 100)
+top100DT <- head(gxpDataDT[order(-gxpDataDT$kWh)], 100)
 
 plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
 
 ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + geom_tile()
 # OK, so that's all Tiwai
 
-top100DT <- head(GXPDataDT[POC != "TWI2201"][order(-GXPDataDT$kWh)], 100)
+top100DT <- head(gxpDataDT[POC != "TWI2201"][order(-gxpDataDT$kWh)], 100)
 
 plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
 
