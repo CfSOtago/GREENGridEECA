@@ -21,7 +21,7 @@ user <- info[7]
 if((user == "dataknut" | user == "carsten" ) & sysname == "Linux"){
   message("We're on the CS RStudio server as ", user, " using " , sysname)
   repoParams$GreenGridData <- "~/greenGridData/cleanData/safe/"
-  repoParams$gpxData <- path.expand("~/greenGridData/externalData/EA_GPX_Data/") # fix for your platform
+  repoParams$gxpData <- path.expand("~/greenGridData/externalData/EA_GXP_Data/") # fix for your platform
 }
 if(user == "ben" & sysname == "Darwin"){
   message("We're on Ben's laptop as : ", user, " using " , sysname)
