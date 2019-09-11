@@ -148,5 +148,13 @@ loadGPXData <- function(files){
 
 # code ----
 #refreshGPXData()
-gpxFiles <- getGpxFileList(dPath)
-gpxDataDT <- loadGPXData(gpxFiles)
+gxpFiles <- getGpxFileList(dPath)
+gxpDataDT <- loadGXPData(gxpxFiles)
+
+# now load the lookup table Vince sent
+f <- paste0(here::here(), "/data/gxp-lookup.csv")
+gxpDT <- data.table::fread(f)
+
+head(gxpDT)
+
+
