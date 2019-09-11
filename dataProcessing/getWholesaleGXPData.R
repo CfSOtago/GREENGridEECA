@@ -1,4 +1,6 @@
 # gets wholesale EA elec gen data
+
+# Load some packages
 libs <- c("curl", # pulling data off t'interweb
           "data.table", # data munching
           "forcats", # for cats, obviously
@@ -107,7 +109,9 @@ refreshGXPData <- function(years){
       rDataF <- paste0(rDataLoc, y, m, "_Grid_export.csv")
       print(paste0("Getting, processing and cleaning ", y,m, " (", rDataF, ")"))
       dt <- getData(rDataF)
-      data.table::fwrite(dt, file = paste0(repoParams$gxpData, "/EA_",y, m, "_GXP_MD.csv"))
+      of <- paste0(repoParams$gxpData, "/EA_",y, m, "_GXP_MD.csv")
+      data.table::fwrite(dt, file = of)
+      GREENGridEECA::gzipIt(of)
     }
   }
 }
@@ -130,7 +134,7 @@ loadGXPData <- function(files){
   # and probably more memory
   # if this breaks you need to run R/getWholesaleGenData.R
   message("Loading ", nrow(files), "GXP files")
-  l <- lapply(files$fullPath, fread)
+  l <- lapply(files$fullPath, data.table::fread)
   dt <- rbindlist(l)
   setkey(dt, rDateTime)
   try(file.remove("temp.csv")) # side effect
