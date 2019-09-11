@@ -1,21 +1,24 @@
 # gets wholesale EA elec gen data
-library(data.table)
-library(here)
-library(curl)
+libs <- c("curl", # pulling data off t'interweb
+          "data.table", # data munching
+          "forcats", # for cats, obviously
+          "here") # here. not there
+library(GREENGridEECA)
+GREENGridEECA::loadLibraries(libs) # should install any that are missing
+
+GREENGridEECA::setup() # set data paths etc
+
+# check
+message("GXP data: ", repoParams$gxpData, " (exists = ", file.exists(repoParams$gxpData), ")")
+
 
 # parameters ----
 nDays <- 30
 
 # NZ Electricity Authority generation data
-# > set months to refreash ----
-months <- c("201801", "201802","201803","201804","201805", "201806", "201807","201808","201809","201810","201811","201812")
-# months <- c("201806","201807")
 
-# > EA gpx data location ----
+# > EA GXP data location ----
 rDataLoc <- "https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export/"
-
-# > where to save data ----
-dPath <- path.expand("~/Data/NZ_EA_EMI/gpx/") # fix for your platform
 
 # > defn of peak ----
 amPeakStart <- hms::as.hms("07:00:00")
@@ -60,14 +63,14 @@ getData <- function(f){
   if(req$status_code != 404){ #https://cran.r-project.org/web/packages/curl/vignettes/intro.html#exception_handling
     df <- readr::read_csv(req$content)
     print("File downloaded successfully")
-    dt <- cleanGPX(df) # clean up to a dt
+    dt <- cleanGXP(df) # clean up to a dt
     return(dt)
   } else {
     print(paste0("File download failed (Error = ", req$status_code, ") - does it exist at that location?"))
   }
 }
 
-cleanGPX <- function(df){
+cleanGXP <- function(df){
   # takes a df, cleans & returns a dt
   dt <- data.table::as.data.table(df) # make dt
   # reshape the data as it comes in a rather unhelpful form
@@ -96,31 +99,37 @@ setEAGenTimePeriod <- function(dt){
   return(dt)
 }
 
-refreshGPXData <- function(){
-  for(m in months){
-    rDataF <- paste0(rDataLoc, m, "_Grid_export.csv")
-    print(paste0("Getting, processing and cleaning ", m, " (", rDataF, ")"))
-    dt <- getData(rDataF)
-    data.table::fwrite(dt, file = paste0(dPath, "/EA_", m, "_GPX_MD.csv"))
-  } 
+refreshGXPData <- function(years){
+  # assumes months is a list of months of the form "201801" to match EA url
+  months <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12") # srsly
+  for(y in years){
+    for(m in months){
+      rDataF <- paste0(rDataLoc, y, m, "_Grid_export.csv")
+      print(paste0("Getting, processing and cleaning ", y,m, " (", rDataF, ")"))
+      dt <- getData(rDataF)
+      data.table::fwrite(dt, file = paste0(repoParams$gxpData, "/EA_",y, m, "_GXP_MD.csv"))
+    }
+  }
 }
 
 
-# check for EA gpx files ----
-getGpxFileList <- function(dPath){
+# check for EA GXP files ----
+getGXPFileList <- function(dPath){
+  message("Checking for data files")
   all.files <- list.files(path = dPath, pattern = ".csv")
   dt <- as.data.table(all.files)
   dt[, fullPath := paste0(dPath, all.files)]
+  message("Found ", nrow(dt))
   return(dt)
 }
 
-# load the EA gpx data ----
-loadGPXData <- function(files){
+# load the EA GXP data ----
+loadGXPData <- function(files){
   # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
   # this is where we need drake
   # and probably more memory
   # if this breaks you need to run R/getWholesaleGenData.R
-  message("Loading ", nrow(files), " files")
+  message("Loading ", nrow(files), "GXP files")
   l <- lapply(files$fullPath, fread)
   dt <- rbindlist(l)
   setkey(dt, rDateTime)
@@ -147,14 +156,44 @@ loadGPXData <- function(files){
 
 
 # code ----
-#refreshGPXData()
-gxpFiles <- getGpxFileList(dPath)
-gxpDataDT <- loadGXPData(gxpxFiles)
+years <- c("2015","2016")
+
+gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
+if(nrow(gxpFiles) == 0){
+  message("No data, refreshing!")
+  refreshGXPData(years)
+  gxpDataDT <- loadGXPData(gxpFiles)
+} else {
+  message("Yep, we've got (some) data")
+  gxpDataDT <- loadGXPData(gxpFiles)
+}
+
+table(gxpDataDT$POC) # which one(s) do we need?
+
+head(gxpDataDT)
+
+# find the GXP peaks
+top100DT <- head(gxpDataDT[order(-gxpDataDT$kWh)], 100)
+
+plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
+
+ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + geom_tile()
+# OK, so that's all Tiwai
+
+top100DT <- head(gxpDataDT[POC != "TWI2201"][order(-gxpDataDT$kWh)], 100)
+
+plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
+
+ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + 
+  geom_tile() +
+  theme(axis.text.x = element_text(angle = 90))
+
+# Let's draw a map
+# sometime
 
 # now load the lookup table Vince sent
 f <- paste0(here::here(), "/data/gxp-lookup.csv")
 gxpDT <- data.table::fread(f)
 
 head(gxpDT)
-
-
+head(gxpDataDT)
