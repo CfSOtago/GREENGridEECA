@@ -224,9 +224,12 @@ regionSumGxpDT[, month := lubridate::month(r_dateTimeHalfHour, label = TRUE)]
 # find the top 10 for each region
 taranakiDT <- head(regionSumGxpDT[region == "t"][order(-sumkWh)], 100)
 table(taranakiDT$peakPeriod, taranakiDT$month)
+# save it: NB saves r_dateTimeHalfHour as UTC
 data.table::fwrite(taranakiDT, paste0(here::here(), "/data/taranakiGxpTop100DT.csv"))
 
 hawkesBayDT <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
 table(hawkesBayDT$peakPeriod, hawkesBayDT$month)
+# save it: NB saves r_dateTimeHalfHour as UTC
+
 data.table::fwrite(hawkesBayDT, paste0(here::here(), "/data/hawkesBayGxpTop100DT.csv"))
 
