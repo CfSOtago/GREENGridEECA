@@ -92,12 +92,14 @@ cleanGXP <- function(df){
 setEAGenTimePeriod <- function(dt){
   # convert the given time periods (TP1 -> TP48, 49. 50) to hh:mm
   dt <- dt[, c("t","tp") := tstrsplit(Time_Period, "P")]
-  dt <- dt[, mins := ifelse(as.numeric(tp)%%2 == 0, "45", "15")] # set to q past/to (mid points)
+  dt <- dt[, mins := ifelse(as.numeric(tp)%%2 == 0, "30", "00")] # set to start point. 
+  # TPX -> if X is even = 30 past the hour
+  # So TP1 -> 00:00, TP2 -> 00:30, TP3 -> 01:00, TP4 -> 01:30 etc
   dt <- dt[, hours := floor((as.numeric(tp)+1)/2) - 1]
   dt <- dt[, strTime := paste0(hours, ":", mins, ":00")]
   dt <- dt[, rTime := hms::as.hms(strTime)]
   # head(dt)
-  dt <- dt[, c("t","tp","mins","hours","strTime") := NULL]  #remove these now we're happy
+  #dt <- dt[, c("t","tp","mins","hours","strTime") := NULL]  #remove these now we're happy
   return(dt)
 }
 
@@ -160,76 +162,81 @@ loadGXPData <- function(files){
 
 
 # code ----
-years <- c("2015","2016")
+years <- c("2015")
 
 gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
+
 if(nrow(gxpFiles) == 0){
   message("No data, refreshing!")
-  refreshGXPData(years)
+  refreshGXPData(years) # use this line to force a refresh
   gxpDataDT <- loadGXPData(gxpFiles)
 } else {
   message("Yep, we've got (some) data")
   gxpDataDT <- loadGXPData(gxpFiles)
 }
 
-table(gxpDataDT$POC) # which one(s) do we need?
+doAnalysis <- function(){
+  
+  table(gxpDataDT$POC) # which one(s) do we need?
+  
+  head(gxpDataDT)
+  
+  # find the GXP peaks
+  top100DT <- head(gxpDataDT[order(-gxpDataDT$kWh)], 100)
+  
+  plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
+  
+  ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + geom_tile()
+  # OK, so that's all Tiwai
+  
+  top100DT <- head(gxpDataDT[POC != "TWI2201"][order(-gxpDataDT$kWh)], 100)
+  
+  plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
+  
+  ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + 
+    geom_tile() +
+    theme(axis.text.x = element_text(angle = 90))
+  
+  # Let's draw a map
+  # sometime
+  
+  # now load the lookup table Vince sent
+  f <- paste0(here::here(), "/data/gxp-lookup.csv")
+  gxpDT <- data.table::fread(f)
+  
+  head(gxpDT)
+  head(gxpDataDT)
+  
+  setkey(gxpDT, node)
+  setkey(gxpDataDT, POC)
+  
+  gxp2015DT <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015]]
+  
+  summary(gxp2015DT)
+  gxp2015DT[,regionName := `region name`]
+  table(gxp2015DT$regionName, useNA = "always")
+  
+  # grab the GXPs we want
+  regionGxp2015DT <- gxp2015DT[!is.na(regionName)]
+  
+  # collapse them by region
+  regionGxp2015DT[, r_dateTimeHalfHour := lubridate::floor_date(rDateTime, "30 mins" )] # make date time half hours
+  regionSumGxpDT <- regionGxp2015DT[, .(sumkWh = sum(kWh)),
+                                    keyby = .(region, regionName, r_dateTimeHalfHour, weekdays, peakPeriod)]
+  
+  regionSumGxpDT[, month := lubridate::month(r_dateTimeHalfHour, label = TRUE)]
+  
+  # find the top 10 for each region
+  taranakiDT <- head(regionSumGxpDT[region == "t"][order(-sumkWh)], 100)
+  table(taranakiDT$peakPeriod, taranakiDT$month)
+  # save it: NB saves r_dateTimeHalfHour as UTC
+  data.table::fwrite(taranakiDT, paste0(here::here(), "/data/taranakiGxpTop100DT.csv"))
+  
+  hawkesBayDT <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
+  table(hawkesBayDT$peakPeriod, hawkesBayDT$month)
+  # save it: NB saves r_dateTimeHalfHour as UTC
+  
+  data.table::fwrite(hawkesBayDT, paste0(here::here(), "/data/hawkesBayGxpTop100DT.csv"))
+}
 
-head(gxpDataDT)
-
-# find the GXP peaks
-top100DT <- head(gxpDataDT[order(-gxpDataDT$kWh)], 100)
-
-plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
-
-ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + geom_tile()
-# OK, so that's all Tiwai
-
-top100DT <- head(gxpDataDT[POC != "TWI2201"][order(-gxpDataDT$kWh)], 100)
-
-plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
-
-ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + 
-  geom_tile() +
-  theme(axis.text.x = element_text(angle = 90))
-
-# Let's draw a map
-# sometime
-
-# now load the lookup table Vince sent
-f <- paste0(here::here(), "/data/gxp-lookup.csv")
-gxpDT <- data.table::fread(f)
-
-head(gxpDT)
-head(gxpDataDT)
-
-setkey(gxpDT, node)
-setkey(gxpDataDT, POC)
-
-gxp2015DT <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015]]
-
-summary(gxp2015DT)
-gxp2015DT[,regionName := `region name`]
-table(gxp2015DT$regionName, useNA = "always")
-
-# grab the GXPs we want
-regionGxp2015DT <- gxp2015DT[!is.na(regionName)]
-
-# collapse them by region
-regionGxp2015DT[, r_dateTimeHalfHour := lubridate::floor_date(rDateTime, "30 mins" )] # make date time half hours
-regionSumGxpDT <- regionGxp2015DT[, .(sumkWh = sum(kWh)),
-                                  keyby = .(region, regionName, r_dateTimeHalfHour, weekdays, peakPeriod)]
-
-regionSumGxpDT[, month := lubridate::month(r_dateTimeHalfHour, label = TRUE)]
-
-# find the top 10 for each region
-taranakiDT <- head(regionSumGxpDT[region == "t"][order(-sumkWh)], 100)
-table(taranakiDT$peakPeriod, taranakiDT$month)
-# save it: NB saves r_dateTimeHalfHour as UTC
-data.table::fwrite(taranakiDT, paste0(here::here(), "/data/taranakiGxpTop100DT.csv"))
-
-hawkesBayDT <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
-table(hawkesBayDT$peakPeriod, hawkesBayDT$month)
-# save it: NB saves r_dateTimeHalfHour as UTC
-
-data.table::fwrite(hawkesBayDT, paste0(here::here(), "/data/hawkesBayGxpTop100DT.csv"))
-
+#doAnalysis()
