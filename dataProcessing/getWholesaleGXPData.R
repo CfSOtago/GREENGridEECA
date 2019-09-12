@@ -133,7 +133,7 @@ loadGXPData <- function(files){
   # this is where we need drake
   # and probably more memory
   # if this breaks you need to run R/getWholesaleGenData.R
-  message("Loading ", nrow(files), "GXP files")
+  message("Loading ", nrow(files), " GXP files")
   l <- lapply(files$fullPath, data.table::fread)
   dt <- rbindlist(l)
   setkey(dt, rDateTime)
@@ -201,3 +201,32 @@ gxpDT <- data.table::fread(f)
 
 head(gxpDT)
 head(gxpDataDT)
+
+setkey(gxpDT, node)
+setkey(gxpDataDT, POC)
+
+gxp2015DT <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015]]
+
+summary(gxp2015DT)
+gxp2015DT[,regionName := `region name`]
+table(gxp2015DT$regionName, useNA = "always")
+
+# grab the GXPs we want
+regionGxp2015DT <- gxp2015DT[!is.na(regionName)]
+
+# collapse them by region
+regionGxp2015DT[, r_dateTimeHalfHour := lubridate::floor_date(rDateTime, "30 mins" )] # make date time half hours
+regionSumGxpDT <- regionGxp2015DT[, .(sumkWh = sum(kWh)),
+                                  keyby = .(region, regionName, r_dateTimeHalfHour, weekdays, peakPeriod)]
+
+regionSumGxpDT[, month := lubridate::month(r_dateTimeHalfHour, label = TRUE)]
+
+# find the top 10 for each region
+taranakiDT <- head(regionSumGxpDT[region == "t"][order(-sumkWh)], 100)
+table(taranakiDT$peakPeriod, taranakiDT$month)
+data.table::fwrite(taranakiDT, paste0(here::here(), "/data/taranakiGxpTop100DT.csv"))
+
+hawkesBayDT <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
+table(hawkesBayDT$peakPeriod, hawkesBayDT$month)
+data.table::fwrite(hawkesBayDT, paste0(here::here(), "/data/hawkesBayGxpTop100DT.csv"))
+
