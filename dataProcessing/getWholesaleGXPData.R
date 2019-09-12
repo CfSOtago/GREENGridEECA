@@ -1,11 +1,15 @@
 # gets wholesale EA elec gen data
 
 # Load some packages
+library(GREENGridEECA)
+
 libs <- c("curl", # pulling data off t'interweb
           "data.table", # data munching
           "forcats", # for cats, obviously
-          "here") # here. not there
-library(GREENGridEECA)
+          "ggplot2", # for plots
+          "here", # here. not there
+          "skimr") # skimming data for fast descriptives
+
 GREENGridEECA::loadLibraries(libs) # should install any that are missing
 
 GREENGridEECA::setup() # set data paths etc
@@ -168,7 +172,9 @@ gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run befo
 
 if(nrow(gxpFiles) == 0){
   message("No data, refreshing!")
+  # this just brute force overwrites whatever years you set above. Nothing fancy or clever
   refreshGXPData(years) # use this line to force a refresh
+  gxpFiles <- getGXPFileList(repoParams$gxpData) # should be some now
   gxpDataDT <- loadGXPData(gxpFiles)
 } else {
   message("Yep, we've got (some) data")
@@ -177,11 +183,9 @@ if(nrow(gxpFiles) == 0){
 
 doAnalysis <- function(){
   
-  table(gxpDataDT$POC) # which one(s) do we need?
+  table(gxpDataDT$POC) # which one(s) do we need? Vince (EECA) knows...
   
-  head(gxpDataDT)
-  
-  # find the GXP peaks
+  # find the overall GXP peaks
   top100DT <- head(gxpDataDT[order(-gxpDataDT$kWh)], 100)
   
   plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
@@ -198,9 +202,9 @@ doAnalysis <- function(){
     theme(axis.text.x = element_text(angle = 90))
   
   # Let's draw a map
-  # sometime
+  # when we've added lat/long
   
-  # now load the lookup table Vince sent
+  # load the POC lookup table Vince sent
   f <- paste0(here::here(), "/data/gxp-lookup.csv")
   gxpDT <- data.table::fread(f)
   
@@ -210,19 +214,37 @@ doAnalysis <- function(){
   setkey(gxpDT, node)
   setkey(gxpDataDT, POC)
   
-  gxp2015DT <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015]]
+  c <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015 & 
+                                 rDate >= "2015-06-01" & # Vince's extract seems to start 1st June
+                                   rDate <= "2015-08-31"]] # and end 31st August 
   
-  summary(gxp2015DT)
-  gxp2015DT[,regionName := `region name`]
-  table(gxp2015DT$regionName, useNA = "always")
+  summary(gxpWinter2015DT)
+  
+  gxpWinter2015DT[,regionName := `region name`]
   
   # grab the GXPs we want
-  regionGxp2015DT <- gxp2015DT[!is.na(regionName)]
+  gxpSelectWinter2015DT <- gxpWinter2015DT[!is.na(regionName)]
+  table(gxpSelectWinter2015DT$node, gxpSelectWinter2015DT$regionName, useNA = "always")
+  # one of them seems to have double the observations. Why?
+  table(gxpSelectWinter2015DT$node, gxpSelectWinter2015DT$NWK_Code, useNA = "always")
+  # it has 2 network codes. Why?
+  gxpSelectWinter2015DT[, .(meankWh = mean(kWh, na.rm = TRUE),
+                            sumkWh = sum(kWh, na.rm = TRUE),
+                            nObs = .N), keyby = .(node, NWK_Code)]
+  
+  # so it seems to be small but we should include it as the GXP must be feeding 2 networks?
+  # checks before aggreating
+  
+  skimr::skim(gxpSelectWinter2015DT)
+  # to confirm
+  table(gxpSelectWinter2015DT$NWK_Code)
+  table(gxpSelectWinter2015DT$FLOW_DIRECTION)
+  table(gxpSelectWinter2015DT$GENERATION_TYPE)
+  # OK, what does that mean?
   
   # collapse them by region
-  regionGxp2015DT[, r_dateTimeHalfHour := lubridate::floor_date(rDateTime, "30 mins" )] # make date time half hours
-  regionSumGxpDT <- regionGxp2015DT[, .(sumkWh = sum(kWh)),
-                                    keyby = .(region, regionName, r_dateTimeHalfHour, weekdays, peakPeriod)]
+  regionSumGxpDT <- gxpSelectWinter2015DT[, .(sumkWh = sum(kWh)),
+                                    keyby = .(region, regionName, rDateTime, weekdays, peakPeriod)]
   
   regionSumGxpDT[, month := lubridate::month(r_dateTimeHalfHour, label = TRUE)]
   
