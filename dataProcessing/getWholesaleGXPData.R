@@ -122,6 +122,15 @@ refreshGXPData <- function(years){
   }
 }
 
+testGxp <- function(dt){
+  dt[, .(meankWh = mean(kWh),
+         nObs = .N,
+         nRegions = uniqueN(regionName),
+         nPOCs = uniqueN(node),
+         nNetworks = uniqueN(NWK_Code),
+         nGenTypes = uniqueN(GENERATION_TYPE)), keyby = .(hours, Time_Period)]
+  
+}
 
 # check for EA GXP files ----
 getGXPFileList <- function(dPath){
@@ -164,24 +173,7 @@ loadGXPData <- function(files){
   return(dt)
 }
 
-
-# code ----
-years <- c("2015")
-
-gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
-
-if(nrow(gxpFiles) == 0){
-  message("No data, refreshing!")
-  # this just brute force overwrites whatever years you set above. Nothing fancy or clever
-  refreshGXPData(years) # use this line to force a refresh
-  gxpFiles <- getGXPFileList(repoParams$gxpData) # should be some now
-  gxpDataDT <- loadGXPData(gxpFiles)
-} else {
-  message("Yep, we've got (some) data")
-  gxpDataDT <- loadGXPData(gxpFiles)
-}
-
-doAnalysis <- function(){
+testData <- function(){
   
   table(gxpDataDT$POC) # which one(s) do we need? Vince (EECA) knows...
   
@@ -203,7 +195,9 @@ doAnalysis <- function(){
   
   # Let's draw a map
   # when we've added lat/long
-  
+}
+
+extractData <- function(){
   # load the POC lookup table Vince sent
   f <- paste0(here::here(), "/data/gxp-lookup.csv")
   gxpDT <- data.table::fread(f)
@@ -214,7 +208,7 @@ doAnalysis <- function(){
   setkey(gxpDT, node)
   setkey(gxpDataDT, POC)
   
-  c <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015 & 
+  gxpWinter2015DT <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015 & 
                                  rDate >= "2015-06-01" & # Vince's extract seems to start 1st June
                                    rDate <= "2015-08-31"]] # and end 31st August 
   
@@ -222,15 +216,30 @@ doAnalysis <- function(){
   
   gxpWinter2015DT[,regionName := `region name`]
   
+  # test what we've got
+  
+  testGxp(gxpWinter2015DT)
+
+  # the NA in TP = 49 is expected, this is the DST break placeholder
+  t <- gxpWinter2015DT[is.na(kWh), .(node, Time_Period, rDateTime, kWh)]
+  head(t, 10)
+  # check
+  summary(t)
+  # yep, all NA
+  # so let's just kick it out
+  gxpWinter2015DT <- gxpWinter2015DT[!is.na(kWh)]
+  testGxp(gxpWinter2015DT)
+  
   # grab the GXPs we want
   gxpSelectWinter2015DT <- gxpWinter2015DT[!is.na(regionName)]
+  
+  testGxp(gxpSelectWinter2015DT)
+  
   table(gxpSelectWinter2015DT$node, gxpSelectWinter2015DT$regionName, useNA = "always")
   # one of them seems to have double the observations. Why?
   table(gxpSelectWinter2015DT$node, gxpSelectWinter2015DT$NWK_Code, useNA = "always")
   # it has 2 network codes. Why?
-  gxpSelectWinter2015DT[, .(meankWh = mean(kWh, na.rm = TRUE),
-                            sumkWh = sum(kWh, na.rm = TRUE),
-                            nObs = .N), keyby = .(node, NWK_Code)]
+
   
   # so it seems to be small but we should include it as the GXP must be feeding 2 networks?
   # checks before aggreating
@@ -241,24 +250,86 @@ doAnalysis <- function(){
   table(gxpSelectWinter2015DT$FLOW_DIRECTION)
   table(gxpSelectWinter2015DT$GENERATION_TYPE)
   # OK, what does that mean?
+  table(gxpSelectWinter2015DT$TRADER)
   
+  # check for NA
+  summary(gxpSelectWinter2015DT)
+  head(gxpSelectWinter2015DT[is.na(kWh)], 10)
   # collapse them by region
-  regionSumGxpDT <- gxpSelectWinter2015DT[, .(sumkWh = sum(kWh)),
-                                    keyby = .(region, regionName, rDateTime, weekdays, peakPeriod)]
+  regionSumGxpDT <- gxpSelectWinter2015DT[, .(sumkWh = sum(kWh),
+                                              nObs = .N,
+                                              nRegions = uniqueN(regionName),
+                                              nPOCs = uniqueN(node),
+                                              nNetworks = uniqueN(NWK_Code),
+                                              nGenTypes = uniqueN(GENERATION_TYPE)), # number of half-hourly records contributing
+                                    keyby = .(region, regionName, Time_Period, hours, rDateTime, weekdays, peakPeriod)]
   
-  regionSumGxpDT[, month := lubridate::month(r_dateTimeHalfHour, label = TRUE)]
+  regionSumGxpDT[, month := lubridate::month(rDateTime, label = TRUE)]
+  
+  summary(regionSumGxpDT)
   
   # find the top 10 for each region
   taranakiDT <- head(regionSumGxpDT[region == "t"][order(-sumkWh)], 100)
   table(taranakiDT$peakPeriod, taranakiDT$month)
-  # save it: NB saves r_dateTimeHalfHour as UTC
+  # save it: NB saves rDateTime as UTC
   data.table::fwrite(taranakiDT, paste0(here::here(), "/data/taranakiGxpTop100DT.csv"))
+  taranakiDT[, .(nPeaks = .N), keyby = .(regionName, hours, Time_Period)]
+  # almost completely matches Vince's extract but the kWh values here are _exactly_ 1/2 of Vince's. Why?
   
   hawkesBayDT <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
   table(hawkesBayDT$peakPeriod, hawkesBayDT$month)
-  # save it: NB saves r_dateTimeHalfHour as UTC
+  # save it: NB saves rDateTime as UTC
+  hawkesBayDT[, .(nPeaks = .N), keyby = .(regionName, hours, Time_Period)]
+  # almost completely matches Vince's extract but the kWh values here are _exactly_ 1/2 of Vince's. Why?
   
   data.table::fwrite(hawkesBayDT, paste0(here::here(), "/data/hawkesBayGxpTop100DT.csv"))
 }
 
-#doAnalysis()
+makeReport <- function(f){
+  # default = html
+  rmarkdown::render(input = rmdFile,
+                    params = list(title = title,
+                                  subtitle = subtitle,
+                                  authors = authors),
+                    output_file = paste0(repoParams$repoLoc,"/docs/gpxReport_v", version, ".html")
+  )
+}
+
+# code ----
+
+# > get data ----
+years <- c("2015")
+
+gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
+
+if(nrow(gxpFiles) == 0){
+  message("No data, refreshing!")
+  # this just brute force overwrites whatever years you set above. Nothing fancy or clever
+  refreshGXPData(years) # use this line to force a refresh
+  gxpFiles <- getGXPFileList(repoParams$gxpData) # should be some now
+  gxpDataDT <- loadGXPData(gxpFiles)
+} else {
+  message("Yep, we've got (some) data")
+  gxpDataDT <- loadGXPData(gxpFiles)
+}
+
+# > do stuff ----
+testData()
+extractData()
+
+head(taranakiDT)
+head(hawkesBayDT)
+
+# > run report ----
+# >> yaml ----
+version <- "0.5"
+title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
+subtitle <- paste0("EECA Data Analysis (Part B) GXP Data Report v", version)
+authors <- "Ben Anderson"
+
+
+# >> run report ----
+rmdFile <- paste0(repoParams$repoLoc, "/dataProcessing/gxpReport.Rmd")
+makeReport(rmdFile)
+
+
