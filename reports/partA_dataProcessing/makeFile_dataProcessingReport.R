@@ -62,7 +62,7 @@ makeWordReport <- function(f){
 }
 
 # Local parameters ----
-version <- "0.95b"
+version <- "1.0"
 
 # data ----
 impdPath <- paste0(repoParams$GreenGridData, "gridSpy/1min/data/imputed/") # imputed total load
