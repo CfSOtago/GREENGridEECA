@@ -291,7 +291,7 @@ makeReport <- function(f){
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
-                    output_file = paste0(repoParams$repoLoc,"/docs/gpxReport_v", version, ".html")
+                    output_file = paste0(repoParams$repoLoc,"/docs/gxpReport_v", version, ".html")
   )
 }
 
