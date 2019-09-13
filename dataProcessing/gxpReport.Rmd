@@ -236,7 +236,7 @@ The selected half-hours can be found in the [github repo](https://cfsotago.githu
 Descriptive statistics for original EA GXP data:
 
 ```{r skimData}
-skimr::skim(gxpDT)
+skimr::skim(gxpDataDT)
 ```
 
 

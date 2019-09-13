@@ -1630,7 +1630,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Analysis (Part B) GXP Data Report v0.5</h3>
 <h4 class="author">Ben Anderson</h4>
-<h4 class="date">Last run at: 2019-09-13 13:48:22 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2019-09-13 15:13:35 (Pacific/Auckland)</h4>
 
 </div>
 
@@ -3180,19 +3180,77 @@ Evening peak
 <h2><span class="header-section-number">7.1</span> GXP summary</h2>
 <p>Descriptive statistics for original EA GXP data:</p>
 <pre><code>## Skim summary statistics
-##  n obs: 10 
-##  n variables: 3 
+##  n obs: 4280591 
+##  n variables: 25 
 ## 
-## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────────────────────────────────
-##     variable missing complete  n min max empty n_unique
-##         node       0       10 10   7   7     0       10
-##       region       0       10 10   1   1     0        2
-##  region name       0       10 10   8  11     0        2</code></pre>
+## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────
+##         variable missing complete       n min max empty n_unique
+##   FLOW_DIRECTION       0  4280591 4280591   1   1     0        1
+##  GENERATION_TYPE       0  4280591 4280591   2   2     0        3
+##         NWK_Code       0  4280591 4280591   4   4     0       56
+##              POC       0  4280591 4280591   7   7     0      230
+##            rDate       0  4280591 4280591  10  10     0      365
+##          strTime       0  4280591 4280591   7   8     0       49
+##                t       0  4280591 4280591   1   1     0        1
+##      Time_Period       0  4280591 4280591   3   4     0       49
+##           TRADER       0  4280591 4280591   4   4     0        9
+##     TRADING_DATE       0  4280591 4280591  10  10     0      365
+##     UNIT_MEASURE       0  4280591 4280591   3   3     0        1
+##         weekdays     476  4280115 4280591   8   8     0        2
+## 
+## ── Variable type:Date ──────────────────────────────────────────────────────────────────────────────────
+##  variable missing complete       n        min        max     median
+##      date     476  4280115 4280591 2015-01-01 2016-01-01 2015-07-01
+##  n_unique
+##       366
+## 
+## ── Variable type:difftime ──────────────────────────────────────────────────────────────────────────────
+##  variable missing complete       n    min        max   median n_unique
+##  halfHour     476  4280115 4280591 0 secs 84600 secs 11:30:00       48
+##       hms     476  4280115 4280591 0 secs 84600 secs 11:30:00       48
+## 
+## ── Variable type:factor ────────────────────────────────────────────────────────────────────────────────
+##     variable missing complete       n n_unique
+##  day_of_week     476  4280115 4280591        7
+##   peakPeriod     476  4280115 4280591        5
+##                                            top_counts ordered
+##    Thu: 621319, Fri: 610189, Sat: 609952, Tue: 609853    TRUE
+##  Day: 1397744, Ear: 1309909, Eve: 698872, Lat: 524154   FALSE
+## 
+## ── Variable type:integer ───────────────────────────────────────────────────────────────────────────────
+##  variable missing complete       n     mean       sd p0   p25   p50   p75
+##     hours       0  4280591 4280591    11.76     7.08  0     6    12    18
+##      mins       0  4280591 4280591    14.69    15     0     0     0    30
+##     rTime       0  4280591 4280591 43200    25455.85  0 21600 43200 64800
+##        tp       0  4280591 4280591    25       14.14  1    13    25    37
+##   p100     hist
+##     24 ▇▆▆▆▆▆▆▅
+##     30 ▇▁▁▁▁▁▁▇
+##  86400 ▇▇▇▇▇▇▇▇
+##     49 ▇▇▇▇▇▇▇▇
+## 
+## ── Variable type:logical ───────────────────────────────────────────────────────────────────────────────
+##  variable missing complete       n mean               count
+##    STATUS       0  4280591 4280591    0 FAL: 4280591, NA: 0
+## 
+## ── Variable type:numeric ───────────────────────────────────────────────────────────────────────────────
+##  variable missing complete       n    mean       sd p0 p25  p50   p75
+##       kWh   87599  4192992 4280591 9094.06 22181.99  0  58 2975 10882
+##     month     476  4280115 4280591    6.5      3.46  1   3    7    10
+##    p100     hist
+##  291767 ▇▁▁▁▁▁▁▁
+##      12 ▇▅▇▃▅▇▅▇
+## 
+## ── Variable type:POSIXct ───────────────────────────────────────────────────────────────────────────────
+##   variable missing complete       n        min        max     median
+##  rDateTime     476  4280115 4280591 2015-01-01 2016-01-01 2015-07-01
+##  n_unique
+##     17519</code></pre>
 </div>
 </div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">8</span> Runtime</h1>
-<p>Analysis completed in 2.71 seconds ( 0.05 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 45.99 seconds ( 0.77 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">9</span> R environment</h1>
