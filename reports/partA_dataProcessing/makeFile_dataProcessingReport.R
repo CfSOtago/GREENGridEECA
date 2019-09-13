@@ -73,35 +73,50 @@ title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Processing (Part A) Report v", version)
 authors <- "Ben Anderson"
 
-# --- Code ---
+# --- Code ----
 
-# this is where we would use drake
-
-# > get the single imputed load file ----
-# this will include files created using different versions of circuitToSum
-impfilesDT <- GREENGridEECA::getFileList(impdPath, pattern = ".csv.gz")
-
-# imputed total load (1 minute) data
+# > imputed total load (1 minute) data ----
 # this is in the same place as the per-household files so
+# this will include files created using different versions of circuitToSum
 # need to extract it from the list
+impfilesDT <- GREENGridEECA::getFileList(impdPath, pattern = ".csv.gz")
 imputedLoadF <- impfilesDT[!(all.files %like% "rf_") & # not a household file
                              all.files %like% "v1.1", # latest version of circuitToSum
                            fullPath]
 
-impDataDT <- data.table::fread(imputedLoadF)
-
-
-# > get the halfhourly files ----
+# > half hourly pre=-aggregated data ----
 halfHourlyFilesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 
-# aggegated half hourly data
-origHalfHourlyPowerDT <- getPowerData(halfHourlyFilesDT)
-# note that the circuit column will tell us which version of circuitToSum was used
-# in the aggregation - it is not included in the filename
-halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
-                                                        tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
+# this is where we use drake if we can
+plan <- drake::drake_plan(
+  impData = data.table::fread(imputedLoadF),
+  origHalfHourlyPower = getPowerData(halfHourlyFilesDT)
+)
 
-# > get household data  ----
+if(require(drake)){
+  # we have drake
+  plan # test the plan
+  make(plan) # run the plan, re-loading data if needed
+  # imputed total load
+  impDataDT <- drake::readd(impData) # retreive from wherever drake put it
+  # half hourly pre-aggregated
+  origHalfHourlyPowerDT <- drake::readd(origHalfHourlyPower) # again
+  halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
+                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTim
+} else {
+  # we don't
+  # imputed total load
+  impDataDT <- data.table::fread(imputedLoadF)
+  # half hourly pre-aggregated
+  origHalfHourlyPowerDT <- getPowerData(halfHourlyFilesDT)
+  # note that the circuit column will tell us which version of circuitToSum was used
+  # in the aggregation - it is not included in the filename
+  halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
+                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTim
+}
+
+# > household data  ----
+# fast - no need to drake
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
