@@ -1,4 +1,6 @@
-# gets wholesale EA elec gen data
+# gets wholesale EA elec GXP data
+# extracts data for 2 regions we want
+# runs a report at the end
 
 # Load some packages
 library(GREENGridEECA)
@@ -19,9 +21,8 @@ message("GXP data: ", repoParams$gxpData, " (exists = ", file.exists(repoParams$
 
 
 # parameters ----
-nDays <- 30
 
-# NZ Electricity Authority generation data
+# NZ Electricity Authority data ----
 
 # > EA GXP data location ----
 rDataLoc <- "https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export/"
@@ -32,20 +33,7 @@ amPeakEnd <- hms::as.hms("09:00:00")
 pmPeakStart <- hms::as.hms("17:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
 pmPeakEnd <- hms::as.hms("21:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
 
-# functions ----
-stackedDemandProfilePlot <- function(dt) {
-  #nHalfHours <- uniqueN(dt$rDate) * 48
-  plotDT <- dt[, .(meanDailyKWh = sum(kWh)/nDays), keyby = .(rTime, Fuel_Code)]
-  
-  p <- ggplot(plotDT, aes(x = rTime, y = meanDailyKWh/1000000, fill = Fuel_Code)) +
-    geom_area(position = "stack") +
-    labs(x = "Time of Day",
-         y = "Mean GWh per half hour",
-         caption = "Source: NZ Electricity Authority generation data for June (winter) 2018")
-  return(p)
-}
-
-
+# Functions ----
 setPeakPeriod <- function(dt){
   # assumes hms exists
   dt[, peakPeriod := NA]
@@ -84,7 +72,7 @@ cleanGXP <- function(df){
                      id.vars=c("POC","NWK_Code", "GENERATION_TYPE", "TRADER","TRADING_DATE",
                                "UNIT_MEASURE", "FLOW_DIRECTION","STATUS" ),
                      variable.name = "Time_Period", # converts TP1-48/49/50 <- beware of these ref DST!
-                     value.name = "kWh" # energy - see https://www.emi.ea.govt.nz/Wholesale/Datasets/Generation/Generation_MD/
+                     value.name = "kWh" # energy 
   )
   reshapedDT <- setEAGenTimePeriod(reshapedDT) # set time periods to something intelligible as rTime
   reshapedDT <- reshapedDT[, rDate := lubridate::dmy(TRADING_DATE)] # fix the dates so R knows what they are. Would be nice if these matched the Gen data
@@ -132,8 +120,9 @@ testGxp <- function(dt){
   
 }
 
-# check for EA GXP files ----
+
 getGXPFileList <- function(dPath){
+  # check for EA GXP files
   message("Checking for data files")
   all.files <- list.files(path = dPath, pattern = ".csv")
   dt <- as.data.table(all.files)
@@ -142,12 +131,12 @@ getGXPFileList <- function(dPath){
   return(dt)
 }
 
-# load the EA GXP data ----
+
 loadGXPData <- function(files){
+  # load the EA GXP data
   # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
   # this is where we need drake
   # and probably more memory
-  # if this breaks you need to run R/getWholesaleGenData.R
   message("Loading ", nrow(files), " GXP files")
   l <- lapply(files$fullPath, data.table::fread)
   dt <- rbindlist(l)
@@ -313,14 +302,14 @@ if(nrow(gxpFiles) == 0){
   gxpDataDT <- loadGXPData(gxpFiles)
 }
 
-# > do stuff ----
+# > data stuff ----
 testData()
 extractData()
 
 head(taranakiDT)
 head(hawkesBayDT)
 
-# > run report ----
+# > Make report ----
 # >> yaml ----
 version <- "0.5"
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
