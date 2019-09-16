@@ -254,6 +254,7 @@ resAllSeasonsDT <- dcast(dataBucketDT,
 
 # Now just calculate the % using the identified circuits?
 
+
 resAllSeasonsDT <- resAllSeasonsDT[, contribution_HW := `Hot water`/Total]
 resAllSeasonsDT <- resAllSeasonsDT[, contribution_HP := `Heat Pump or Heating`/Total]
 resAllSeasonsDT <- resAllSeasonsDT[, contribution_LI := `Lighting`/Total]
@@ -265,6 +266,122 @@ kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 3,
   kable_styling()
 
 ```
+
+```{r reducedSizeCodeforP1}
+
+summaryP1DT <- copy(resAllSeasonsDT) #This is the summary table to present to EECA for the first definition of peak demand
+
+summaryP1DT<-summaryP1DT[, c("Heat Pump or Heating", "Hot water", "Lighting", "Oven", "Total", "XX_Other") := NULL]
+
+#summaryP1DT<-summaryP1DT[, averageContriHW := ]
+summaryP1DT <- setnames(summaryP1DT, old=c("contribution_HW","contribution_HP", "contribution_LI", "contribution_OV", "contribution_XX"),
+                        new=c("Hot Water", "Heat Pump", "Lighting", "Oven", "Others"))
+
+#summaryP1DT <- data.table::as.data.table(gather(summaryP1DT, eecaCircuit, meanPowerW, `Heat Pump or Heating`:`XX_Other`, factor_key = TRUE))
+summaryP1DT <- data.table::as.data.table(gather(summaryP1DT, eecaLabelContri, contribution, `Hot Water`:`Others`, factor_key = TRUE))#This brings our data into a nice form for the plot
+
+summaryP1DT <- summaryP1DT[, .(averageContri = mean(contribution, na.rm = TRUE), 
+                              nobs=.N, sd=sd(contribution, na.rm = TRUE)), keyby=.(eecaLabelContri, season, year)]
+
+summaryP1DT <- summaryP1DT[, averageContri := averageContri*100 ]#Conversion to % for plot
+
+summaryP1DT$season <- factor(summaryP1DT$season, levels = c("Spring","Summer",
+                                                    "Autumn", "Winter"))#This puts the seasons in the right order in the plot
+
+```
+
+```{r winter2015contributionPlot}
+
+myPlot <- ggplot2::ggplot(summaryP1DT[season == "Winter" & year == 2015], aes(x= eecaLabelContri, fill = eecaLabelContri)) +
+  geom_bar(aes(y = averageContri), stat = "identity")+
+  theme(text = element_text(family = "Cambria"), legend.position = "none",
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  
+  #facet_grid(season ~ .) +
+  scale_y_continuous(breaks = c(5, 10, 15, 20, 25, 30, 35)) +
+  ggtitle("Contribution to peak demand (17:00-21:00) for winter in 2015") +
+  labs(x='Circuit', y='Contribution in %') 
+myPlot
+
+
+
+
+
+```
+
+```{r 2015contributionPlot}
+
+
+#The stacks do not add up to 100 as we have averaged the contributions over all households. XXMention in the textXX
+
+myPlot <- ggplot2::ggplot(summaryP1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
+  geom_bar(aes(y = averageContri), stat = "identity")+
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(colour = "black"),
+        axis.ticks.y = element_blank())+
+  
+    geom_text(aes(y = averageContri,
+              label = sprintf("%0.2f",averageContri)),
+           position = position_stack(vjust = .5))+
+  
+  #facet_grid(season ~ .) +
+  #scale_y_continuous(breaks = c()) +
+  ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
+  guides(fill=guide_legend(title="Circuit"))+
+  labs(x='Season', y='Contribution in %') 
+myPlot
+#Now do the same for wattage contribution...
+
+
+```
+```{r wattageContributionPeak1}
+
+#This section aims to calculate the wattage contribution. We recycle previous results...
+
+ContriW1DT <- dcast(dataBucketDT,#This tis the contribution DT for wattage and the first definition of peak demand
+           linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "meanPowerW")
+ContriW1DT<-ContriW1DT[, c( "Total") := NULL]#We do not need this column
+
+ContriW1DT <- setnames(ContriW1DT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "XX_Other"),
+                        new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Others"))
+ContriW1DT <- data.table::as.data.table(gather(ContriW1DT, eecaLabelContri, contribution, `Heat Pump`:`Others`, factor_key = TRUE))#This brings our data into a nice form for the plot
+
+ContriW1DT <- ContriW1DT[, .(averageContri = mean(contribution, na.rm = TRUE), 
+                              nobs=.N, sd=sd(contribution, na.rm = TRUE)), keyby=.(eecaLabelContri, season, year)]
+
+ContriW1DT$season <- factor(ContriW1DT$season, levels = c("Spring","Summer",
+                                                    "Autumn", "Winter"))#This puts the seasons in the right order in the plot
+ContriW1DT$eecaLabelContri <- factor(ContriW1DT$eecaLabelContri, levels = c("Hot Water","Heat Pump",
+                                                    "Lighting", "Oven", "Others"))#This puts the seasons in the right order in the plot
+```
+
+```{r wattageContributionPeak1Plot}
+
+myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
+  geom_bar(aes(y = averageContri), stat = "identity")+
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(colour = "black"),
+        axis.ticks.y = element_blank())+
+  
+    geom_text(aes(y = averageContri,
+              label = sprintf("%0.2f",averageContri)),
+           position = position_stack(vjust = .5))+
+  
+  #facet_grid(season ~ .) +
+  #scale_y_continuous(breaks = c()) +
+  ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
+  guides(fill=guide_legend(title="Circuit"))+
+  labs(x='Season', y='Power in W') 
+myPlot
+
+
+```
+
 
 Figure \@ref(fig:winterPeakplot1) shows... for winter 2015 for the selected maximum load half-hours.
 
