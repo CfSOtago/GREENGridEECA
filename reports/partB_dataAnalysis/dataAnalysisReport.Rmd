@@ -178,41 +178,11 @@ kableExtra::kable(head(dataBucketDT), caption = "Extracted peak load half-hour c
 # - oven
 # - lighting
 
-# dataBucketDT$eecaCircuit <- NULL
-
-# split the circuit label to leave just the string and rthe id (we need the string)
-dataBucketDT <- dataBucketDT[, c("circuitLabel","circuitID") := tstrsplit(circuit,"$", fixed = TRUE)]
-
-# these match exactly to circuit label strings by matching to the string that came before the $ 
-dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel == "Heat Pump" |
-                                                       circuitLabel == "Theatre Heat Pump" |
-                                                       circuitLabel == "Upstairs Heat Pumps" |
-                                                       circuitLabel == "Heating",
-                                                    "Heat Pump or Heating", 
-                                                    "XX_Other") # default
-                             ]
-
-# these match if the string is in the circuit label (i.e. circuit label could contain other words)
-# Be careful with these
-dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse( circuitLabel == "Oven" |
-                                                        circuitLabel == "Range" |
-                                                        circuitLabel == "Wall Oven" |
-                                                        circuitLabel %like% "Oven &" |
-                                                        circuitLabel %like% "Oven,", # if the circuit = Oven only
-                                                    "Oven", eecaCircuit)]
-dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot water", 
-                                                    "Hot water", eecaCircuit)]
-dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "Hot Water", 
-                                                    "Hot water", eecaCircuit)]
-dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "Lighting" |
-                                                       circuitLabel %like% "Lights", 
-                                                    "Lighting", eecaCircuit)]
-dataBucketDT <- dataBucketDT[, eecaCircuit := ifelse(circuitLabel %like% "imputedTotalDemand_circuitsToSum_v1.1", 
-                                                    "Total", eecaCircuit)]
+dataBucketDT <- GREENGridEECA::labelEECACircuits(dataBucketDT, loadVar = "")
 # test
 t <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
 
-kableExtra::kable(t, caption = "Categoriesed circuits - XX check carefully! XX")  %>% # test result
+kableExtra::kable(t, caption = "Categorised circuits - XX check carefully! XX")  %>% # test result
   kable_styling()
 
 t <- dcast(dataBucketDT[season == "Winter"], 
