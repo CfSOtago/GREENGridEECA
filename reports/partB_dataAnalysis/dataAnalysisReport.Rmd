@@ -361,7 +361,7 @@ To be done
 
 ## Sample coincident peak
 
-The sample coincie´dent peak utilises the GREENGrid sample to define peak demand. 
+The sample coincident peak utilises the GREENGrid sample to define peak demand. This is in contrast to the previous section where peak demand was predefined as the time between 17:00 and 21:00 in winter. 
                 
 ```{r sampleCoincidentPeak}
 
@@ -378,9 +378,14 @@ sampleShortDT <- sampleShortDT[, averagePowerW := summeanPowerW/nobs]#We have to
 
 sample2015DT <- sampleShortDT[year == 2015] # Getting rid of years that are not necessary for this analysis
 
-sample2015DT <- sort(sample2015DT$averagePowerW, decreasing = TRUE) #Now identufy these top20 times in the original data table and conduct analysis again. We only use this data table to identify the peak half hours. Now we go back to original data files
+sample2015DT <- sort(sample2015DT$averagePowerW, decreasing = TRUE)
+#Now identufy these top20 times in the original data table and conduct analysis again. We only use this data table to identify the peak half hours. Now we go back to original data files
 
 ####Filtering the top20 peak half-hours based on our sample. XXThis is hard-coded - is there a better way to do it??XX
+
+```
+The following half hours were identified as the top 20 sample peak half hours in 2015:
+```{r topPeak, echo=TRUE}
 
 filteredDT <- powerDT %>% filter(date == "2015-06-28" & obsHalfHour == hms::as.hms("18:00:00") |
                                    date == "2015-08-21" & obsHalfHour == hms::as.hms("07:00:00") |
@@ -402,12 +407,17 @@ filteredDT <- powerDT %>% filter(date == "2015-06-28" & obsHalfHour == hms::as.h
                                    date == "2015-07-09" & obsHalfHour == hms::as.hms("07:30:00") |
                                    date == "2015-06-23" & obsHalfHour == hms::as.hms("19:30:00") |
                                    date == "2015-05-27" & obsHalfHour == hms::as.hms("07:00:00"))
-
-
-filteredDT <- as.data.table(filteredDT)
-filteredDT <- labelEECACircuits(filteredDT)
 ```
 
+```{r filter}
+filteredDT <- as.data.table(filteredDT)
+filteredDT <- labelEECACircuits(filteredDT)
+
+```
+ 
+Table \@ref(tab:winterPeaktestTableSample) shows extracted data for the identified top 20 peak half hours for each dwelling and circuit. Furthermore, Table \@ref(tab:winterPeaktestTableSample) presnets the relative contribution to peak demand by dwelling and circuit.
+ 
+ 
 ```{r winterPeaktestTableSample}
 contriSampleDT <- dcast(filteredDT,
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
@@ -423,11 +433,12 @@ contriSampleDT <- contriSampleDT[, contribution_LI := `Lighting`/Total]
 contriSampleDT <- contriSampleDT[, contribution_OV := `Oven`/Total]
 contriSampleDT <- contriSampleDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
 
-kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 3,
+kableExtra::kable(head(resAllSeasonsDT[year == "2015"], 10), digits = 3,
                   caption = "Example data: Extracted top 20 half-hours (NaN indicates no such circuit)")  %>% # test result
-  #kable_styling()
+kable_styling()
 
 ```
+
 ```{r reducedSizeCodeforSample}
 
 summaryPSDT <- copy(contriSampleDT) #This is the summary table to present to EECA for the first definition of peak demand
@@ -448,6 +459,8 @@ summaryPSDT <- summaryPSDT[, averageContri := averageContri*100 ]#Conversion to 
 summaryPSDT$season <- factor(summaryPSDT$season, levels = c("Spring","Summer",
                                                     "Autumn", "Winter"))#This puts the seasons in the right order in the plot
 ```
+
+Figure \@ref(fig:2015contributionPlotSample) shows one of the identified top 20 peak half hours in 2015. The data was averaged over the households and is presented as a percentual contribution. Since the chosen half-hour of peak demand is on the 2015-06-28 at 18:00:00 (winter) heat pump and lighting demand are clearly contributing to peak demand. Furthermore, how water is the curcuit contributing the most.
 
 ```{r 2015contributionPlotSample, fig.cap="Percentual contribution to peak demand on the 2015-06-28 at 18:00:00 (one of the top 20) "}
 
@@ -476,8 +489,57 @@ myPlot
 
 
 ```
+```{r wattageContributionSample}
 
 
+
+#This section aims to calculate the wattage contribution. We recycle previous results...
+
+ContriWSDT <- dcast(filteredDT,#This tis the contribution DT for wattage and the first definition of peak demand
+           linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "meanPowerW")
+ContriWSDT<-ContriWSDT[, c( "Total") := NULL]#We do not need this column
+
+ContriWSDT <- setnames(ContriWSDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "XX_Other"),
+                        new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Others"))
+ContriWSDT <- data.table::as.data.table(gather(ContriWSDT, eecaLabelContri, contribution, `Heat Pump`:`Others`, factor_key = TRUE))#This brings our data into a nice form for the plot
+
+ContriWSDT <- ContriWSDT[, .(averageContri = mean(contribution, na.rm = TRUE), 
+                              nobs=.N, sd=sd(contribution, na.rm = TRUE)), keyby=.(eecaLabelContri, season, year, r_dateTime_nz)]
+
+ContriWSDT$season <- factor(ContriWSDT$season, levels = c("Spring","Summer",
+                                                    "Autumn", "Winter"))#This puts the seasons in the right order in the plot
+ContriWSDT$eecaLabelContri <- factor(ContriWSDT$eecaLabelContri, levels = c("Hot Water","Heat Pump",
+                                                    "Lighting", "Oven", "Others"))#This puts the seasons in the right order in the plot
+
+```
+
+Figure \@ref(fig:wattageContributionPeakSamplePlot) presents the wattage contribution on the 2015-06-28 at 18:00:00 as an average over the households for one of the identified top peak half hours. The results show that hot water contributes the most, followed by heat pumps and lighting. The plot also visualises that much power was drawn from circuits other than the identified ones (summarised in "Others").
+
+```{r wattageContributionPeakSamplePlot, fig.cap="Wattage contribution to peak demand on the 2015-06-28 at 18:00:00 (one of the top 20)  "}
+
+myPlot <- ggplot2::ggplot(ContriWSDT[r_dateTime_nz == "2015-06-28 18:00:00"], aes(x= eecaLabelContri, fill = eecaLabelContri)) +
+  geom_bar(aes(y = averageContri), stat = "identity")+
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(colour = "black"),
+        legend.position = "none",
+        axis.ticks.y = element_blank())+
+  
+    geom_text(aes(y = averageContri,
+             label = sprintf("%0.2f",averageContri)),
+            position = position_stack(vjust = .5))+
+  
+  #facet_grid(season ~ .) +
+  #scale_y_continuous(breaks = c()) +
+  #ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
+  guides(fill=guide_legend(title="Circuit"))+
+  labs(x='Circuit', y='Power in W') 
+myPlot
+
+
+```
 
 
 
