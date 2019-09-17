@@ -2,6 +2,7 @@
 
 export(addNZSeason)
 export(gzipIt)
+export(labelEECACircuits)
 export(loadLibraries)
 export(setup)
 import(here)
