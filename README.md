@@ -25,3 +25,6 @@ Note that to run the code you will need to [register with the UK Data Service](h
 
  * Run `setup()` at the start of a .R or .Rmd script as it sources `./repoParams.R` which sets a range of parameters, including data file paths. 
  * Generally use a makefile.R to run `setup()`, set other parameters and load or pre-process data. Then call `render()` to generate your output from a .Rmd file that uses the pre-loaded data. This means you only need to re-run the report not the whole data loading process each time you change the .Rmd. You will find various examples of this approach in the [reports](/reports/) code. If you are feeling adventerous we recommend using [drake](https://ropenscilabs.github.io/drake-manual/) to further streamline your analysis.
+ * `GREENGridEEECA` package functions should be called using the `GREENGridEEECA::function()` form so future users can identify when a function from this package is being used. Code for these functions is in /R.
+ * Functions from other packages should be called in the same way for the same reason e.g. `lubridate::date()`.
+ * Functions that are only defined in the .R or .Rmd file they are used in should just be called as `functionName()`. They should also be listed at the top of the file so they are easy to find!
