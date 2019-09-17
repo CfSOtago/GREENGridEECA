@@ -39,7 +39,7 @@ getPowerData <- function(filesDT){
 makeHtmlReport <- function(f){
   # default = html
   if(file.exists(f)){
-    rmarkdown::render(input = rmdFile,
+    rmarkdown::render(input = f,
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
@@ -140,5 +140,5 @@ hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseho
 # > run report ----
 f <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
 makeHtmlReport(f)
-makeOdtReport(f)
+#makeOdtReport(f)
 #makeWordReport(rmdFile) # can't seem to handle kableExtra tables
