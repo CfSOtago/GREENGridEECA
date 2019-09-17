@@ -15,7 +15,6 @@ output:
     toc: yes
     toc_depth: 2
     toc_float: TRUE
-    fig_width: 5
   bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
@@ -24,7 +23,11 @@ output:
     number_sections: yes
     toc: yes
     toc_depth: 2
-    fig_width: 5
+  bookdown::odt_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
 always_allow_html: yes
 bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
 ---
@@ -258,7 +261,8 @@ but not:
 Note that the process may therefore match a number of circuits and in some cases circuits may contain other appliances. Analysis should therefore proceed with caution since some circuits may have been missed that were required and some extracted which were not. For the avoidance of doubt, the [code](https://github.com/CfSOtago/GREENGridEECA/blob/master/reports/partA_dataProcessing/dataProcessingReport.Rmd) used to extract these circuits should be checked against Table \@ref(tab:getCircuitLabels) in Section \@ref(circuitLabels) of the Data Annex.
 
 ```{r fixCircuitLabels}
-halfHourlyPowerDT[, c("circuitLabel", "circuitID") := tstrsplit(circuit, "$", fixed = TRUE)]
+halfHourlyPowerDT <- GREENGridEECA::labelEECACircuits(halfHourlyPowerDT)
+# head(halfHourlyPowerDT)
 ```
 
 In each section we extract and save the relevant half-hourly observations and provide two plots:
@@ -313,14 +317,17 @@ makeTilePlot <- function(dt){
                    nObs = .N), keyby = .(r_dateTimeHalfHour, circuitLabel)]
   p <- ggplot2::ggplot(plotDT, aes(x = r_dateTimeHalfHour, 
                                    y = circuitLabel, 
-                                   fill = meanW,
+                                   fill = meanW/1000,
                                    alpha = nObs)) +
     geom_tile() +
     theme_bw() +
     scale_alpha_continuous(name = "N dwellings per half-hour") +
-    scale_fill_continuous(name = "Mean power (W)", low = "green", high = "red") +
+    scale_fill_continuous(name = "Mean power (kW)", low = "green", high = "red") +
     labs(x = "Half hour", y = "Circuit label", caption = "N dwellings (transparency) indicates\n the number of dwellings with a given circuit label") +
-    theme(legend.position="bottom") # otherwise gets squidged in word version
+    theme(legend.position="bottom") + # otherwise gets squidged in word version
+    # https://ggplot2.tidyverse.org/reference/guide_legend.html
+    guides(fill = guide_legend(title.position = "top")) + # stacks the circuit labels and puts title on top
+    guides(alpha = guide_legend(title.position = "top"))  # puts title on top
   return(p)
 }
 
@@ -332,7 +339,7 @@ makeProfilePlot <- function(dt){
   plotDT <- dt[, .(meanW = mean(meanPowerW),
                    nObs = uniqueN(linkID)), keyby = .(halfHour, circuitLabel, season)]
   p <- ggplot2::ggplot(plotDT, aes(x = halfHour, 
-                                   y = meanW, 
+                                   y = meanW/1000, 
                                    colour = circuitLabel,
                                    alpha = nObs)) +
     geom_line()  +
@@ -341,9 +348,12 @@ makeProfilePlot <- function(dt){
     scale_alpha_continuous(name = "N dwellings per half hour per label") +
     facet_grid(season ~ .) +
     theme(legend.position="bottom") + # otherwise gets squidged in word version
-    labs(x = "Half hour", y = "Mean power (W)", caption = "N dwellings (shown using transparency) indicates\nthe number of dwellings with a given circuit label")
+    guides(colour = guide_legend(ncol = 2, title.position = "top")) + # stacks the circuit labels and puts title on top
+    guides(alpha = guide_legend(title.position = "top")) + # puts title on top
+    labs(x = "Half hour", y = "Mean power (kW)", caption = "N dwellings (shown using transparency) indicates\nthe number of dwellings with a given circuit label")
   return(p)
 }
+
 makeTilePlot(dt)
 makeProfilePlot(dt)
 ```
