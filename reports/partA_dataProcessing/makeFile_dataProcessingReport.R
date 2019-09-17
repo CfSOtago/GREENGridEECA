@@ -36,20 +36,24 @@ getPowerData <- function(filesDT){
 }
 
 
-makeReport <- function(f){
+makeHtmlReport <- function(f){
   # default = html
-  rmarkdown::render(input = rmdFile,
+  if(file.exists(f)){
+    rmarkdown::render(input = rmdFile,
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
                     output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".html")
   )
+  } else {
+    message("No such file: ", f)
+  }
 }
 
 makeWordReport <- function(f){
   # reuse last .md for speed will fail is no .md
-  if(file.exists(rmdFile)){
-    rmarkdown::render(input = rmdFile,
+  if(file.exists(f)){
+    rmarkdown::render(input = f,
                     output_format = "word_document2",
                     params = list(title = title,
                                   subtitle = subtitle,
@@ -57,10 +61,24 @@ makeWordReport <- function(f){
                     output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".docx")
                     )
   } else {
-    message("No such file: ", rmdFile)
+    message("No such file: ", f)
   }
 }
 
+makeOdtReport <- function(f){
+  # reuse last .md for speed will fail is no .md
+  if(file.exists(f)){
+    rmarkdown::render(input = f,
+                      output_format = "odt_document2",
+                      params = list(title = title,
+                                    subtitle = subtitle,
+                                    authors = authors),
+                      output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".odt")
+    )
+  } else {
+    message("No such file: ", f)
+  }
+}
 # Local parameters ----
 version <- "1.0"
 
@@ -120,6 +138,7 @@ if(require(drake)){
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
-makeReport(rmdFile)
+f <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
+makeHtmlReport(f)
+makeOdtReport(f)
 #makeWordReport(rmdFile) # can't seem to handle kableExtra tables

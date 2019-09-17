@@ -25,6 +25,12 @@ output:
     toc: yes
     toc_depth: 2
     fig_width: 5
+  bookdown::odt_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    fig_width: 5
 always_allow_html: yes
 bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
 ---
@@ -258,7 +264,8 @@ but not:
 Note that the process may therefore match a number of circuits and in some cases circuits may contain other appliances. Analysis should therefore proceed with caution since some circuits may have been missed that were required and some extracted which were not. For the avoidance of doubt, the [code](https://github.com/CfSOtago/GREENGridEECA/blob/master/reports/partA_dataProcessing/dataProcessingReport.Rmd) used to extract these circuits should be checked against Table \@ref(tab:getCircuitLabels) in Section \@ref(circuitLabels) of the Data Annex.
 
 ```{r fixCircuitLabels}
-halfHourlyPowerDT[, c("circuitLabel", "circuitID") := tstrsplit(circuit, "$", fixed = TRUE)]
+halfHourlyPowerDT <- GREENGridEECA::labelEECACircuits(halfHourlyPowerDT)
+# head(halfHourlyPowerDT)
 ```
 
 In each section we extract and save the relevant half-hourly observations and provide two plots:
