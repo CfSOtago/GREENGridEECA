@@ -1,4 +1,4 @@
-# Makes the data processing report
+# Makes the data analysis report
 # Saves result to /docs for github pages
 
 # Load package ----
@@ -60,7 +60,7 @@ dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-h
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part B) Report v", version)
-authors <- "Anderson, B., Dortans, C. and Jack, M."
+authors <- "Dortans, C., Anderson, B. and Jack, M."
 
 # --- Code ----
 
@@ -72,4 +72,4 @@ filesDT <- getFileList(dPath)
 origPowerDT <- getData(filesDT)
 
 # > run report ----
-doReport()
+#doReport() # uncomment to run automatically

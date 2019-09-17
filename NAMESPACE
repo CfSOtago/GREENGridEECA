@@ -3,6 +3,7 @@
 export(addNZSeason)
 export(getFileList)
 export(gzipIt)
+export(labelEECACircuits)
 export(loadLibraries)
 export(setup)
 import(data.table)
