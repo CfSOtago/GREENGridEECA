@@ -29,6 +29,7 @@ knitr::opts_chunk$set(echo = FALSE) # by default turn off code echo
 ```{r codeSetup, include=FALSE}
 # Set start time ----
 startTime <- proc.time()
+
 # Local parameters ----
 b2Kb <- 1024 #http://whatsabyte.com/P1/byteconverter.htm
 b2Mb <- 1048576
@@ -45,40 +46,7 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 # Local functions ----
 
-labelEECACircuits <- function(dt){
-  # takes a data.table, splits `circuit` and categorises the label
-  # split the circuit label to leave just the string and rthe id (we need the string)
-  dt <- dt[, c("circuitLabel","circuitID") := tstrsplit(circuit,"$", fixed = TRUE)]
-  
-  # these match exactly to circuit label strings by matching to the string that came before the $
-  dt <- dt[, eecaCircuit := ifelse(circuitLabel == "Heat Pump" |
-                                                 circuitLabel == "Theatre Heat Pump" |
-                                                 circuitLabel == "Upstairs Heat Pumps" |
-                                                 circuitLabel == "Heating",
-                                               "Heat Pump or Heating",
-                                               "XX_Other") # default
-                       ]
-  
-  # these match if the string is in the circuit label (i.e. circuit label could contain other words)
-  # Be careful with these
-  # xx if this is the same code as before then we should write a function so it is always correct!
-  dt <- dt[, eecaCircuit := ifelse( circuitLabel == "Oven" |
-                                                  circuitLabel == "Range" |
-                                                  circuitLabel == "Wall Oven" |
-                                                  circuitLabel %like% "Oven &" |
-                                                  circuitLabel %like% "Oven,", # if the circuit = Oven only
-                                                "Oven", eecaCircuit)]
-  dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% "Hot water",
-                                               "Hot water", eecaCircuit)]
-  dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% "Hot Water",
-                                               "Hot water", eecaCircuit)]
-  dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% "Lighting" |
-                                                 circuitLabel %like% "Lights",
-                                               "Lighting", eecaCircuit)]
-  dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% "imputedTotalDemand_circuitsToSum_v1.1",
-                                               "Total", eecaCircuit)]
-  return(dt)
-}
+
 
 ```
 
@@ -234,7 +202,7 @@ for(n in 1:nrow(selectDT)){
 # - oven
 # - lighting
 
-dataBucketDT <- labelEECACircuits(dataBucketDT) # use the function
+dataBucketDT <- GREENGridEECA::labelEECACircuits(dataBucketDT) # use the function to split the circuit string for easier string matching
 
 kableExtra::kable(head(dataBucketDT, 10), caption = "Extracted peak load half-hour circuits - first 10 rows showing circuit demand at the peak total demand half-hour")  %>% # test result
   kable_styling()
