@@ -202,7 +202,13 @@ for(n in 1:nrow(selectDT)){
 # - oven
 # - lighting
 
+
 dataBucketDT <- GREENGridEECA::labelEECACircuits(dataBucketDT) # use the function to split the circuit string for easier string matching
+
+# test
+t <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
+
+kableExtra::kable(t, caption = "Categorised circuits - XX check carefully! XX")  %>% # test result
 
 kableExtra::kable(head(dataBucketDT, 10), caption = "Extracted peak load half-hour circuits - first 10 rows showing circuit demand at the peak total demand half-hour")  %>% # test result
   kable_styling()
