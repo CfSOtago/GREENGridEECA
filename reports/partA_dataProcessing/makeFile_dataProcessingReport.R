@@ -102,7 +102,7 @@ if(require(drake)){
   # half hourly pre-aggregated
   origHalfHourlyPowerDT <- drake::readd(origHalfHourlyPower) # again
   halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
-                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTim
+                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
 } else {
   # we don't
   # imputed total load
@@ -112,7 +112,7 @@ if(require(drake)){
   # note that the circuit column will tell us which version of circuitToSum was used
   # in the aggregation - it is not included in the filename
   halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
-                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTim
+                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
 }
 
 # > household data  ----
@@ -122,4 +122,4 @@ hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseho
 # > run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
 makeReport(rmdFile)
-makeWordReport(rmdFile)
+#makeWordReport(rmdFile) # can't seem to handle kableExtra tables

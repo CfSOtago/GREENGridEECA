@@ -31,6 +31,7 @@ bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
 
 ```{r knitrSetup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE) # by default turn off code echo
+#knitr::opts_chunk$set(results = "asis") # fixes html table for Word
 ```
 
 
@@ -192,13 +193,8 @@ We have therefore created a new dataset for each dwelling which comprises the es
  * an additional set of observations added to the end of each clean data file with circuit label set to `imputedTotalDemand_circuitsToSum_v1.1` indicating that the [aggregation code](https://github.com/CfSOtago/GREENGridData/blob/master/dataProcessing/gridSpy/imputeTotalPower.R) used the [circuitsToSum definition v1.1](https://github.com/CfSOtago/GREENGridData/blob/master/data/circuitsToSum_v1.1.csv);
  * a single file containing _only_ the estimated total load per minute per dwelling.
 
-Note that we have _not_ applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table \@ref(tab:listLoadFiles). Whilst we can make these data files available, potential users should note that they are _larger_ than the original data files. The single file containing _only_ the estimated total load per minute per dwelling is especially large. 
-
-```{r listLoadFiles}
-kableExtra::kable(impfilesDT[all.files %like% "v1.1", .(file = all.files, "Mb (gzipped)" = fSizeMb)], caption = "Size of clean data files with estimated load", digits = 2) %>%
-  kable_styling()
-
-```
+Note that we have _not_ applied the exclusion rules described above. In order to ensure all data is available if required, these rules should only be applied just prior to analysis. The files are listed in Table \@ref(tab:listLoadFiles) in the Data Annex Section 
+\@ref(totalLoadFiles). Whilst we can make these data files available, potential users should note that they are _larger_ than the original data files. The single file containing _only_ the estimated total load per minute per dwelling is especially large.
 
 Table \@ref(tab:allLoadDesc) shows basic statistics for the estimated 1 minute level load for each dwelling and illustrates some of the issues described above.
 
@@ -247,13 +243,7 @@ kableExtra::kable(head(origHalfHourlyPowerDT), caption = "Half hourly data forma
 
 ```
 
-The resulting files are listed in Table \@ref(tab:listhhFiles).
-
-```{r listhhFiles}
-kableExtra::kable(halfHourlyFilesDT[, .(file = all.files, "Mb (gzipped)" = fSizeMb)], caption = "Size of clean half hourly data files", digits = 2) %>%
-  kable_styling()
-
-```
+The resulting files are listed in Table \@ref(tab:listhhFiles) in the Data Annex Section \@ref(hhFiles).
 
 Further, these per-dwelling files have been used to attempt to create single data files containing all observations for the circuits or (partial) circuit labels set out in the following sections. Table \@ref(tab:getCircuitLabels) in Section \@ref(circuitLabels) of the Data Annex shows the unique circuit labels available as a guide to what can be meaningfully extracted. The process of extraction uses partial string matching so, for example, the string `Lighting` would match to circuits with the following labels:
 
@@ -273,7 +263,7 @@ halfHourlyPowerDT[, c("circuitLabel", "circuitID") := tstrsplit(circuit, "$", fi
 
 In each section we extract and save the relevant half-hourly observations and provide two plots:
 
- * a tile plot showing the data avilability and mean power for the extracted circuits over the entire data collection;
+ * a tile plot showing the data availability and mean power for the extracted circuits over the entire data collection;
  * a mean power demand profile plot by time of day and season as a sense-check on the patterns of demand for the extracted circuits.
 
 ## Lighting
@@ -326,10 +316,11 @@ makeTilePlot <- function(dt){
                                    fill = meanW,
                                    alpha = nObs)) +
     geom_tile() +
+    theme_bw() +
     scale_alpha_continuous(name = "N dwellings per half-hour") +
     scale_fill_continuous(name = "Mean power (W)", low = "green", high = "red") +
     labs(x = "Half hour", y = "Circuit label", caption = "N dwellings (transparency) indicates\n the number of dwellings with a given circuit label") +
-    theme_bw()
+    theme(legend.position="bottom") # otherwise gets squidged in word version
   return(p)
 }
 
@@ -345,11 +336,12 @@ makeProfilePlot <- function(dt){
                                    colour = circuitLabel,
                                    alpha = nObs)) +
     geom_line()  +
+    theme_bw() +
     scale_colour_discrete(name = "Matching circuit labels") +
     scale_alpha_continuous(name = "N dwellings per half hour per label") +
     facet_grid(season ~ .) +
-    labs(x = "Half hour", y = "Mean power (W)", caption = "N dwellings (shown using transparency) indicates\nthe number of dwellings with a given circuit label") +
-    theme_bw()
+    theme(legend.position="bottom") + # otherwise gets squidged in word version
+    labs(x = "Half hour", y = "Mean power (W)", caption = "N dwellings (shown using transparency) indicates\nthe number of dwellings with a given circuit label")
   return(p)
 }
 makeTilePlot(dt)
@@ -715,6 +707,25 @@ The half-hourly mean power demand data together with the circuit level extracts 
 
 # Data Annex
 
+## 1 minute estimated total load files {#totalLoadFiles}
+
+
+```{r listLoadFiles}
+kableExtra::kable(impfilesDT[all.files %like% "v1.1", .(file = all.files, "Mb (gzipped)" = fSizeMb)], caption = "Size of clean 1 minute data files with estimated total load", digits = 2) %>%
+  kable_styling()
+
+```
+
+
+## Half hour aggregate files {#hhFiles}
+
+```{r listhhFiles}
+kableExtra::kable(halfHourlyFilesDT[, .(file = all.files, "Mb (gzipped)" = fSizeMb)], caption = "Size of clean half hourly data files", digits = 2) %>%
+  kable_styling()
+
+```
+
+
 ## Circuit labels (all){#circuitLabels}
 
 ```{r getCircuitLabels}
@@ -731,7 +742,6 @@ kableExtra::kable(t,
 # save as a data file for ease of use
 of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
 data.table::fwrite(t, file = of)
-
 ```
 
 ## Half hourly total load summary 
