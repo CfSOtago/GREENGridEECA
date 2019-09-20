@@ -25,10 +25,10 @@ GREENGridEECA::setup() # set data paths etc
 # GREEN Grid household survey data
 
 # > defn of peak ----
-amPeakStart <- hms::as.hms("07:00:00")
-amPeakEnd <- hms::as.hms("09:00:00")
-pmPeakStart <- hms::as.hms("17:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
-pmPeakEnd <- hms::as.hms("21:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
+amPeakStart <- hms::as_hms("07:00:00")
+amPeakEnd <- hms::as_hms("09:00:00")
+pmPeakStart <- hms::as_hms("17:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
+pmPeakEnd <- hms::as_hms("21:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
 
 # Functions ----
 setPeakPeriod <- function(dt){

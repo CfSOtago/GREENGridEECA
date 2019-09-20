@@ -87,8 +87,23 @@ Previous work conducted as part of this project has calculated the % contributio
 
 EECA have expressed an interest in understanding how these results and/or this sample of dwellings can be scaled up to provide estimates of the same values for the overall New Zealand residential dwelling stock/household population.
 
+As is described in the [archived data package](https://cfsotago.github.io/GREENGridData/overviewReport_v1.0.html#4_study_recruitment), the New Zealand GREEN Grid household electricity demand study sample dwellings are unlikely to be representative of neither the two regions from which they were drawn nor New Zealand as a whole. In addition they form an extremely small sample. In combination, these two issues make it unlikely that upscaling the sample to represent the regions from which they were drawn and/or the national household population would produce very robust estimates unless we assume that the household population of interest will behave in more or less the same way. Whilst this assumption may be plausible in the case of, say, lighting, it is likely to be implausible in the case of space or hot water heating due to the spatial distribution of reticulated gas and the use of coal/wood as main energy sources. Neither of the latter are represented in the GREEN Grid dwelling sample _at all_.
 
-As we have noted the sample of approximately 40 households used to do this is not likely to be representative of the 
+Nevertheless it is still useful to review potential upscaling methods should we wish to make assumptions of this kind or for a future time when a larger and representative sample of New Zealand household's energy consumption data is available. It is possible, for example, that BRANZ's planned new Household Energy End-Use Project ([HEEP](https://www.branz.co.nz/heep)) version 2 could provide just such a data source.
+
+The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple proportionate upscaling method used to analyse the potential impact of wide-scale Heat Pump uptake in New Zealand [@dortans_estimating_2019]. The second is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005;@anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
+
+# Simple Proportional Upscaling
+
+> refer Carsten's MSc for method
+
+# Complex re-weighting
+
+> describe approach and build ipf-based model of total load for
+ * Taranaki
+ * Hawke's Bay
+ * NZ
+ using aggregated are unit Census data & half-hour total load data -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
 
 # Summary
 
@@ -114,22 +129,22 @@ The archived and most recent version of the report is available from:
 ## Census data summary 
 Descriptive statistics for census data:
 
-```{r skimData}
-skimr::skim(censusDT)
+```{r skimCensusData}
+#skimr::skim(censusDT)
 ```
 
 ## GREEN Grid half-hourly total load summary 
 Descriptive statistics for dwelling power data:
 
-```{r skimData}
-skimr::skim(powerDT)
+```{r skimPowerData}
+#skimr::skim(powerDT)
 ```
 
-## Census data summary 
+## GREEN Grid household data summary 
 Descriptive statistics for household data:
 
-```{r skimData}
-skimr::skim(householdDT)
+```{r skimHouseholdData}
+#skimr::skim(householdDT)
 ```
 
 # Runtime
