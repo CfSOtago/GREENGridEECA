@@ -588,24 +588,86 @@ analysisShortDT <- analysisShortDT[, contribution_HP := `Heat Pump or Heating`/T
 analysisShortDT <- analysisShortDT[, contribution_LI := `Lighting`/Total]
 analysisShortDT <- analysisShortDT[, contribution_OV := `Oven`/Total]
 analysisShortDT <- analysisShortDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
-# Tere are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
+# There are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
+
+analysisShortDT <- setnames(analysisShortDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "XX_Other"),
+                        new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Others"))
 
 
 #Summarising the variation in demand
 #We need to dcast it back into the original form
-dt <- data.table::as.data.table(gather(analysisShortDT, eecaCircuit, totalEnergyWh, `Heat Pump or Heating`:`XX_Other`, factor_key = TRUE))
+dt <- data.table::as.data.table(gather(analysisShortDT, eecaCircuit, totalEnergyWh, `Heat Pump`:`Others`, factor_key = TRUE))
+
+dt$season <- factor(dt$season, levels = c("Spring","Summer",
+                                                    "Autumn", "Winter"))#This puts the seasons in the right order in the plot
 ```
 
-Figure \@ref(fig:annualConsplot1) shows...
 
-```{r annualConsplot1, fig.cap="Total kWh for each dwelling (?) be season in 2015"}
-myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Hot water"], aes(x=totalEnergyWh/1000, colour=season)) +
+Figure \@ref(fig:annualConsplot1) shows the variation in annual energy consumption for Hot Water in 2015 by season and considers all dwellings. Please note that Figure \@ref(fig:annualConsplot1) shows energy in kWh and not power demand in Watts. Results show that most energy consumption of Hot Water is in winter, followed by spring and autumn.
+
+
+```{r annualConsplot1, fig.cap="Annual kWh for Hot Water considering each dwelling by season in 2015", warning=FALSE}
+
+myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Total energy (kWh)") +
   #scale_x_continuous( limits = c(0,2000))+
      geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
+  
+  theme(text = element_text(family = "Cambria")) 
+myPlot
+
+```
+In contrast, Figure \@ref(fig:annualConsplot2) presents the annual energy consumption for Heat Pumps and considers each dwelling for each season. As expected, most energy consumption is in winter. In summer, total energy consumption is mostly 0 (appliance is turned off). Only a few observatons registered energy consumption in summer (cooling?). 
+
+```{r annualConsplot2, fig.cap="Annual kWh for Heat Pumps considering each dwelling by season in 2015", warning=FALSE}
+
+myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Heat Pump"], aes(x=totalEnergyWh/1000, colour=season)) +
+  geom_density() +
+  labs(x = "Total energy (kWh)") +
+  scale_x_continuous( limits = c(0,500))+
+     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+            color="blue", linetype="dashed", size=0.5)+
+  #facet_grid( season ~ year)+
+  
+  theme(text = element_text(family = "Cambria")) 
+myPlot
+
+```
+Energy consumption of Lighting is particularly apparent spring, autumn, and winter as presneted in Figure \@ref(fig:annualConsplot3). Less energy consumption is identified in summer.
+
+
+```{r annualConsplot3, fig.cap="Annual kWh for Lighting considering each dwelling by season in 2015", warning=FALSE}
+
+myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Lighting"], aes(x=totalEnergyWh/1000, colour=season)) +
+  geom_density() +
+  labs(x = "Total energy (kWh)") +
+  scale_x_continuous( limits = c(0,500))+
+     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+            color="blue", linetype="dashed", size=0.5)+
+  #facet_grid( season ~ year)+
+  
+  theme(text = element_text(family = "Cambria")) 
+myPlot
+
+```
+
+
+
+For ovens, there is less seasonal variation in total energy consumption as shown in Figure \@ref(fig:annualConsplot3). Furthermore, total energy consumption in summer is less than in the other seasons.
+
+```{r annualConsplot4, fig.cap="Annual kWh for Ovens considering each dwelling by season in 2015", warning=FALSE}
+
+myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Oven"], aes(x=totalEnergyWh/1000, colour=season)) +
+  geom_density() +
+  labs(x = "Total energy (kWh)") +
+  scale_x_continuous( limits = c(0,500))+
+     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+            color="blue", linetype="dashed", size=0.5)+
+  #facet_grid( season ~ year)+
+  
   theme(text = element_text(family = "Cambria")) 
 myPlot
 
@@ -613,6 +675,99 @@ myPlot
 
 
 # Conservation Load Factor
+
+
+```{r partBconsLoadFactor}
+
+#Part A
+
+#The following calculates average power at 'peak' for each circuit as an average over all households  _XXKeep in mind that 11m data points are reduced to 6XX_
+consloadDT <- copy(powerDT)#Utilise adjusted raw data
+
+consloadDT <- consloadDT[season  == "Winter" &
+             year == "2015" &
+             obsHalfHour >= hms::as.hms("17:00:00") &
+             obsHalfHour <= hms::as.hms("21:00:00")] #This is our definition of peak demand for this analysis regarding the conservation load factor
+
+consloadDT <- consloadDT[, averageSeasonW := mean(meanPowerW, na.rm = TRUE), keyby =.(season, eecaCircuit, year, linkID)]#This gives us the average power at peak for each household and season and circuit
+
+consloadDT <- consloadDT[, meanAverageSeasonW := mean(averageSeasonW, na.rm = TRUE), keyby =.(season, eecaCircuit, year)]#Average W over the households
+consloadDT <- consloadDT[, .(meanAverageSeasonW =meanAverageSeasonW), keyby =.(season, eecaCircuit, year)]#Long to short dt
+consloadDT<-  unique(consloadDT)# Removing duplicates XX_BE VERY CAREFUL WITH THIS_XX
+
+
+#----------
+
+#Part B
+
+
+#The following calculates average energy consumption per year for each circuit as an average over all households _XXKeep in mind that 11m data points are reduced to 6XX_
+EnergyConsDT <- copy(powerDT)#Utilise adjusted raw data to calculate average total energy consumption
+EnergyConsDT <- EnergyConsDT[year == "2015"]#Only need to do this for 2015
+EnergyConsDT <- EnergyConsDT[, EnergyWh := meanPowerW/2]#Creating energy column
+EnergyConsDT <- EnergyConsDT[, totalEnergyWh := sum(EnergyWh, na.rm = TRUE), keyby =.(eecaCircuit, year, linkID)]#This gives us the total energy consumption for each circuit and household over all seasons
+EnergyConsDT <- EnergyConsDT[, meantotalEnergyWh := mean(totalEnergyWh, na.rm = TRUE), keyby =.(eecaCircuit, year)]#Average Wh over the households
+EnergyConsDT <- EnergyConsDT[, .(meantotalEnergyWh =meantotalEnergyWh), keyby =.(eecaCircuit, year)]#Long to short dt
+EnergyConsDT<-  unique(EnergyConsDT)# Removing duplicates XX_BE VERY CAREFUL WITH THIS_XX
+
+#----------
+
+#Part C
+
+#The following calculates the CLF based on the calculations above
+
+consloadDT <- consloadDT[, meantotalEnergyWh := EnergyConsDT$meantotalEnergyWh]#Copy result in original conservation load table
+consloadDT <- consloadDT[, consLoadFac := meanAverageSeasonW / (meantotalEnergyWh/1000)]#As defined by EECA
+
+
+
+
+
+
+
+consloadCastDT <- dcast(consloadDT,
+           season + year  ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "consLoadFac")
+consloadCastDT<-consloadCastDT[, c( "Total") := NULL]#We do not need this column
+
+consloadCastDT <- setnames(consloadCastDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "XX_Other"),
+                        new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Others"))
+
+consloadCastDT <- data.table::as.data.table(gather(consloadCastDT, eecaLabelContri, consLoadFac, `Heat Pump`:`Others`, factor_key = TRUE))#This brings our data into a nice form for the plot
+
+```
+
+Figure \@ref(fig:consLoadPlot) shows the Conservation Load Factor (CLF) for winter in 2015. The period of peak demand was set to 17:00-21:00 in winter. Based on this definition power was calculated as an average over all households. Results show that the CLF for Heat Pumps (0.56) is the highest followed by Lighting (0.45) and Oven (0.41). Please note that these numbers are averages over all households, dates, and times for 2015.
+
+
+
+
+
+```{r consLoadPlot, fig.cap="Conservation Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
+
+
+myPlot <- ggplot2::ggplot(consloadCastDT, aes(x= eecaLabelContri, fill = eecaLabelContri)) +
+  geom_bar(aes(y = consLoadFac), stat = "identity")+
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(colour = "black"),
+        legend.position = "none",
+        axis.ticks.y = element_blank())+
+  
+    geom_text(aes(y = consLoadFac,
+             label = sprintf("%0.2f",consLoadFac)),
+            position = position_stack(vjust = .5))+
+  
+  #facet_grid(season ~ .) +
+  #scale_y_continuous(breaks = c()) +
+  #ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
+  guides(fill=guide_legend(title="Circuit"))+
+  labs(x='Circuit', y='Conservation Load Factor') 
+myPlot
+
+
+```
 
 # Summary
 
