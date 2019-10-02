@@ -1,0 +1,260 @@
+---
+params:
+  subtitle: ""
+  title: ""
+  authors: ""
+title: '`r params$title`'
+subtitle: '`r params$subtitle`'
+author: '`r params$authors`'
+date: 'Last run at: `r getRunDateTime()`'
+output:
+  bookdown::html_document2:
+    fig_caption: yes
+    code_folding: hide
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    toc_float: TRUE
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
+---
+
+```{r knitrSetup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE) # by default turn off code echo
+```
+
+
+```{r codeSetup, include=FALSE}
+# Set start time ----
+startTime <- proc.time()
+
+# Local parameters ----
+b2Kb <- 1024 #http://whatsabyte.com/P1/byteconverter.htm
+b2Mb <- 1048576
+plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots (if any)
+
+# Packages used in the report ----
+rmdLibs <- c("ggplot2", # plots
+          "kableExtra", # fancy tables
+          "hms", # times
+          "skimr", # for skim
+          "tidyr" # for gather
+          )
+GREENGridEECA::loadLibraries(rmdLibs)
+
+# Local functions ----
+
+
+
+```
+
+\newpage
+
+# About
+
+## Citation
+
+```{r citation, child=repoParams$citation}
+```
+
+## Report circulation:
+
+ * Public – this report is intended for publication following EECA approval.
+ 
+## License
+
+```{r ccby license, child=repoParams$licenseCCBY}
+```
+ 
+## History
+
+```{r history, child=repoParams$history}
+```
+ * this [report's edit history](https://github.com/CfSOtago/GREENGridEECA/commits/master/reports/partB_dataAnalysis)
+ 
+## Support
+
+```{r generic support, child=repoParams$support}
+```
+ 
+\newpage
+
+# Introduction
+
+This report uses the GREEN Grid project [@stephenson_smart_2017] research data to analyse a variety of residential household appliances and their contribution to peak demand under several scenarios.
+
+# Data
+
+```{r generic sample, child=repoParams$data}
+```
+
+```{r partBdataProcessing}
+# put all this here before you report on it
+# this code _could_ go in the makeFile if you want...
+
+#New DT
+powerDT <- copy(origPowerDT) # need to copy as data.table works by reference https://www.rdocumentation.org/packages/data.table/versions/1.12.2/topics/copy
+
+#DT modifications
+
+#Excluding households based on Part A report: https://cfsotago.github.io/GREENGridEECA/#part-a--data-processing
+exclude <- c("rf_14", "rf_25", "rf_26", "rf_43", "rf_46")
+powerDT <- powerDT[!(linkID %in% exclude)]
+
+# setting negative values to NA
+powerDT <- powerDT[, meanPowerW := ifelse(meanPowerW <0, NA, meanPowerW)]
+powerDT <- powerDT[, sdPowerW := ifelse(sdPowerW <0, NA, sdPowerW)]
+powerDT <- powerDT[, minPowerW := ifelse(minPowerW <0, NA, minPowerW)]
+powerDT <- powerDT[, maxPowerW := ifelse(maxPowerW <0, NA, maxPowerW)]
+
+
+# set to NZ time from UTC
+powerDT <- powerDT[, r_dateTime_nz := lubridate::as_datetime(r_dateTimeHalfHour, 
+                                               tz = "Pacific/Auckland")] # this will be UTC unless you set this
+
+#Define Winter/else
+powerDT <- powerDT[, date := lubridate::date(r_dateTime_nz)]
+powerDT <- powerDT[, obsHalfHour := hms::as.hms(r_dateTime_nz)]
+#powerDT[, obsHalfHour := format(ymd_hms(r_dateTimeHalfHour), "%H:%M:%S")]
+powerDT <- powerDT[, month := lubridate::month(r_dateTime_nz)]
+powerDT <- powerDT[, peak := 0]
+powerDT[, year := lubridate::year(r_dateTime_nz)] # so we can do per-year analysis
+
+powerDT <- powerDT[month == 12 | month == 1 | month == 2, season := "Summer"]
+powerDT <- powerDT[month == 3 | month == 4 | month == 5, season := "Autumn"]
+powerDT <- powerDT[month == 6 | month == 7 | month == 8, season := "Winter"]
+powerDT <- powerDT[month == 9 | month == 10 | month == 11, season := "Spring"]
+
+#Setting times of peak demand 
+OP1S <- hms::as.hms("00:00:00")
+OP1E <- hms::as.hms("16:30:00")
+
+PS <- hms::as.hms("17:00:00")
+PE <- hms::as.hms("21:00:00")
+
+OP2S <- hms::as.hms("21:30:00")
+OP2E <- hms::as.hms("23:30:00")
+
+powerDT <- powerDT[, peak := ifelse(obsHalfHour >= OP1S & obsHalfHour <= OP1E,
+                                    "Off Peak 1",
+                                    NA)]
+powerDT <- powerDT[, peak := ifelse(obsHalfHour >= OP2S & obsHalfHour <= OP2E,
+                                    "Off Peak 2",
+                                    peak)]
+powerDT <- powerDT[, peak := ifelse(obsHalfHour >= PS & obsHalfHour <= PE,
+                                    "Peak",
+                                    peak)]
+# this stops the RHS coercion errors
+```
+
+```{r Solarcity}
+
+#Creating daily avergaes 
+
+dailyAvgDT <- copy(powerDT)
+
+dailyAvgDT <- GREENGridEECA::labelEECACircuits(dailyAvgDT)
+
+dailyAvgDT <- dailyAvgDT[, davgW := mean(meanPowerW, na.rm = TRUE), keyby =.(obsHalfHour, eecaCircuit, year, season)]
+
+dailyAvgDT <- dailyAvgDT[, .(davgW=davgW), keyby=.(obsHalfHour, eecaCircuit, year, season)]
+dailyAvgDT <- unique(dailyAvgDT)# Removing duplicates
+dailyAvgDT$season <- factor(dailyAvgDT$season, levels = c("Spring","Summer",
+                                                    "Autumn", "Winter"))#This puts the seasons in the right order in the plot
+write.csv(dailyAvgDT, file = "GG_daily_average_power_multiple_years.csv")
+```
+
+```{r LighringPlot}
+
+myPlot <- ggplot2::ggplot(dailyAvgDT[eecaCircuit =="Lighting" &year =="2015"], aes(x=obsHalfHour, colour=season)) +
+  geom_line(aes(y=davgW))+
+  facet_grid(season ~ .) +
+  labs(x='Time of Day', y='Power in W') +
+  scale_x_time(breaks = c(hms::as.hms("00:00:00"), 
+                          hms::as.hms("04:00:00"), 
+                          hms::as.hms("08:00:00"),       
+                          hms::as.hms("12:00:00"), 
+                          hms::as.hms("16:00:00"), 
+                          hms::as.hms("20:00:00"),
+                          hms::as.hms("24:00:00")))+
+  
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"))+
+  ggtitle("GG sample daily average lighting demand by season for 2015 in Watts")
+myPlot
+
+#ggsave("GG sample daily average lighting demand by season for 2015 in Watts.jpeg", dpi = 900)
+
+```
+```{r HotWaterPlot}
+
+myPlot <- ggplot2::ggplot(dailyAvgDT[eecaCircuit =="Hot water" &year =="2015"], aes(x=obsHalfHour, colour=season)) +
+  geom_line(aes(y=davgW))+
+  facet_grid(season ~ .) +
+  labs(x='Time of Day', y='Power in W') +
+  scale_x_time(breaks = c(hms::as.hms("00:00:00"), 
+                          hms::as.hms("04:00:00"), 
+                          hms::as.hms("08:00:00"),       
+                          hms::as.hms("12:00:00"), 
+                          hms::as.hms("16:00:00"), 
+                          hms::as.hms("20:00:00"),
+                          hms::as.hms("24:00:00")))+
+  
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"))+
+  ggtitle("GG sample daily average hot water demand by season for 2015 in Watts")
+myPlot
+
+#ggsave("GG sample daily average hot water demand by season for 2015 in Watts.jpeg", dpi = 900)
+
+```
+```{r OvenPlot}
+
+myPlot <- ggplot2::ggplot(dailyAvgDT[eecaCircuit =="Oven" &year =="2015"], aes(x=obsHalfHour, colour=season)) +
+  geom_line(aes(y=davgW))+
+  facet_grid(season ~ .) +
+  labs(x='Time of Day', y='Power in W') +
+  scale_x_time(breaks = c(hms::as.hms("00:00:00"), 
+                          hms::as.hms("04:00:00"), 
+                          hms::as.hms("08:00:00"),       
+                          hms::as.hms("12:00:00"), 
+                          hms::as.hms("16:00:00"), 
+                          hms::as.hms("20:00:00"),
+                          hms::as.hms("24:00:00")))+
+  
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"))+
+  ggtitle("GG sample daily average oven demand by season for 2015 in Watts")
+myPlot
+
+#ggsave("GG sample daily average oven demand by season for 2015 in Watts.jpeg", dpi = 900)
+
+```
+```{r heatpumpPlot}
+
+myPlot <- ggplot2::ggplot(dailyAvgDT[eecaCircuit =="Heat Pump or Heating" &year =="2015"], aes(x=obsHalfHour, colour=season)) +
+  geom_line(aes(y=davgW))+
+  facet_grid(season ~ .) +
+  labs(x='Time of Day', y='Power in W') +
+  scale_x_time(breaks = c(hms::as.hms("00:00:00"), 
+                          hms::as.hms("04:00:00"), 
+                          hms::as.hms("08:00:00"),       
+                          hms::as.hms("12:00:00"), 
+                          hms::as.hms("16:00:00"), 
+                          hms::as.hms("20:00:00"),
+                          hms::as.hms("24:00:00")))+
+  
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"))+
+  ggtitle("GG sample daily average heat pump demand by season for 2015 in Watts")
+myPlot
+
+#ggsave("GG sample daily average heat pump demand by season for 2015 in Watts.jpeg", dpi = 900)
+
+```
