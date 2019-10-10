@@ -47,7 +47,7 @@ doReport <- function(){
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
-                    output_file = paste0(repoParams$repoLoc,"/docs/partB_v1_v", version, ".html")
+                    output_file = paste0(repoParams$repoLoc,"/docs/partB_dataAnalysisReport_v", version, ".html")
   )
 }
 
