@@ -203,7 +203,7 @@ This approach illustrates the difficulty of producing robust national level usin
  * NZ
  using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
 
-## Total power demand
+## Total electricity consumption
 
 
 
