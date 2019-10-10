@@ -17,12 +17,14 @@ GREENGridEECA::setup() # set data paths etc
 
 # parameters ----
 
-# Census data ----
+# Data ----
+
+#> Census data ----
 
 
-# GREEN Grid half hourly total dwelling power data
+#> GREEN Grid half hourly total dwelling power data ----
 
-# GREEN Grid household survey data
+#> GREEN Grid household survey data ----
 
 # > defn of peak ----
 amPeakStart <- hms::as_hms("07:00:00")
