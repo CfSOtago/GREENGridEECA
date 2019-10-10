@@ -1,3 +1,5 @@
 You may not be reading the most recent version of this report. Please check:
 
-  * the github [repository](https://cfsotago.github.io/GREENGridEECA/) and specifically;
+  * the github [R code repository](https://cfsotago.github.io/GREENGridEECA/);
+  * our [issues list](https://github.com/CfSOtago/GREENGridEECA/issues) for any unfixed problems; 
+  * our [project documentation site](https://cfsotago.github.io/GREENGridEECA/) and specifically;

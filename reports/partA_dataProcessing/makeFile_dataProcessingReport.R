@@ -7,7 +7,9 @@ print(paste0("#-> Load GREENGridEECA package"))
 library(GREENGridEECA) # local utilities
 print(paste0("#-> Done "))
 
-GREENGridEECA::setup() # run setup to set repo level parameters
+# run setup to set repo level parameters including data paths
+# does this by sourcing repoParams.R
+GREENGridEECA::setup() 
 
 # Load libraries needed across all .Rmd files ----
 rLibs <- c("rmarkdown",
@@ -22,14 +24,6 @@ GREENGridEECA::loadLibraries(rLibs)
 
 # Local functions (if any) ----
 
-getFileList <- function(dPath){
-  all.files <- list.files(path = dPath, pattern = ".csv.gz")
-  dt <- as.data.table(all.files)
-  dt[, fullPath := paste0(dPath, all.files)]
-  dt[, fSizeMb := repoParams$bytesToMb * file.size(fullPath)]
-  return(dt)
-}
-
 getPowerData <- function(filesDT){
   # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
   # this is where we need drake
@@ -41,18 +35,52 @@ getPowerData <- function(filesDT){
   return(dt)
 }
 
-doReport <- function(){
-  rmdFile <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
-  rmarkdown::render(input = rmdFile,
+
+makeHtmlReport <- function(f){
+  # default = html
+  if(file.exists(f)){
+    rmarkdown::render(input = f,
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
                     output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".html")
   )
+  } else {
+    message("No such file: ", f)
+  }
 }
 
+makeWordReport <- function(f){
+  # reuse last .md for speed will fail is no .md
+  if(file.exists(f)){
+    rmarkdown::render(input = f,
+                    output_format = "word_document2",
+                    params = list(title = title,
+                                  subtitle = subtitle,
+                                  authors = authors),
+                    output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".docx")
+                    )
+  } else {
+    message("No such file: ", f)
+  }
+}
+
+makeOdtReport <- function(f){
+  # reuse last .md for speed will fail is no .md
+  if(file.exists(f)){
+    rmarkdown::render(input = f,
+                      output_format = "odt_document2",
+                      params = list(title = title,
+                                    subtitle = subtitle,
+                                    authors = authors),
+                      output_file = paste0(repoParams$repoLoc,"/docs/partA_dataProcessingReport_v", version, ".odt")
+    )
+  } else {
+    message("No such file: ", f)
+  }
+}
 # Local parameters ----
-version <- "0.1"
+version <- "1.0"
 
 # data ----
 impdPath <- paste0(repoParams$GreenGridData, "gridSpy/1min/data/imputed/") # imputed total load
@@ -61,32 +89,56 @@ hhdPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Processing (Part A) Report v", version)
-authors <- "Anderson, B."
+authors <- "Ben Anderson"
 
-# --- Code ---
+# --- Code ----
 
-# this is where we would use drake
-impfilesDT <- getFileList(impdPath)
-
-# > get the imputed load file list ----
-hhfilesDT <- getFileList(hhdPath)
-
-# > get the halfhourly file list ----
-filesDT <- getFileList(hhdPath)
-
-# > get power data  ----
-origHHDataDT <- getPowerData(hhfilesDT)
-hhPowerDataDT <- origHHDataDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
-                                                        tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
-
+# > imputed total load (1 minute) data ----
+# this is in the same place as the per-household files so
+# this will include files created using different versions of circuitToSum
+# need to extract it from the list
+impfilesDT <- GREENGridEECA::getFileList(impdPath, pattern = ".csv.gz")
 imputedLoadF <- impfilesDT[!(all.files %like% "rf_") & # not a household file
-                             all.files %like% "v1.1", # latest version
+                             all.files %like% "v1.1", # latest version of circuitToSum
                            fullPath]
 
-impDataDT <- data.table::fread(imputedLoadF)
+# > half hourly pre=-aggregated data ----
+halfHourlyFilesDT <- GREENGridEECA::getFileList(hhdPath, pattern = ".csv.gz")
 
-# > get household data  ----
+# this is where we use drake if we can
+plan <- drake::drake_plan(
+  impData = data.table::fread(imputedLoadF),
+  origHalfHourlyPower = getPowerData(halfHourlyFilesDT)
+)
+
+if(require(drake)){
+  # we have drake
+  plan # test the plan
+  make(plan) # run the plan, re-loading data if needed
+  # imputed total load
+  impDataDT <- drake::readd(impData) # retreive from wherever drake put it
+  # half hourly pre-aggregated
+  origHalfHourlyPowerDT <- drake::readd(origHalfHourlyPower) # again
+  halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
+                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
+} else {
+  # we don't
+  # imputed total load
+  impDataDT <- data.table::fread(imputedLoadF)
+  # half hourly pre-aggregated
+  origHalfHourlyPowerDT <- getPowerData(halfHourlyFilesDT)
+  # note that the circuit column will tell us which version of circuitToSum was used
+  # in the aggregation - it is not included in the filename
+  halfHourlyPowerDT <- origHalfHourlyPowerDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, # stored as UTC
+                                                                                            tz = "Pacific/Auckland")] # so we can extract within NZ dateTime
+}
+
+# > household data  ----
+# fast - no need to drake
 hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 # > run report ----
-doReport()
+f <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
+makeHtmlReport(f)
+#makeOdtReport(f)
+#makeWordReport(rmdFile) # can't seem to handle kableExtra tables

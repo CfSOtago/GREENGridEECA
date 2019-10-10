@@ -1,0 +1,370 @@
+---
+params:
+  subtitle: ""
+  title: ""
+  authors: ""
+title: '`r params$title`'
+subtitle: '`r params$subtitle`'
+author: '`r params$authors`'
+date: 'Last run at: `r getRunDateTime()`'
+output:
+  bookdown::html_document2:
+    fig_caption: yes
+    code_folding: hide
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    toc_float: TRUE
+    fig_width: 5
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+  bookdown::word_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    fig_width: 5
+always_allow_html: yes
+bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
+---
+
+```{r knitrSetup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE) # by default turn off code echo
+```
+
+
+```{r codeSetup, include=FALSE}
+# Set start time ----
+startTime <- proc.time()
+# Local parameters ----
+b2Kb <- 1024 #http://whatsabyte.com/P1/byteconverter.htm
+b2Mb <- 1048576
+plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots
+
+# Packages used in the report ----
+rmdLibs <- c("ggplot2", # plots
+          "kableExtra" # fancy tables
+          )
+GREENGridEECA::loadLibraries(rmdLibs)
+# Local functions ----
+```
+
+\newpage
+
+# About
+
+## Citation
+
+```{r citation, child=repoParams$citation}
+```
+
+## Report circulation
+
+ * Public – this report is intended for publication following EECA approval.
+ 
+## License {#license}
+
+```{r ccby license, child=repoParams$licenseCCBY}
+```
+ 
+## History
+
+```{r history, child=repoParams$history}
+```
+ * this [report's edit history](https://github.com/CfSOtago/GREENGridEECA/commits/master/reports/partA_dataProcessing)
+ 
+## Support
+
+```{r generic support, child=repoParams$support}
+```
+ 
+\newpage
+
+# Introduction
+
+This report uses the Electricity Authority EMI [grid export database](https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export) for 2015 to:
+
+ * identify system peak half-hours for the regions of Taranaki and Hawke's Bay for use in the Part B data analysis
+
+This report describes the results of this work and directs the reader to relevant R code where necessary.
+
+All code used to create this report is available from:
+
+ * https://github.com/CfSOtago/GREENGridEECA
+ 
+The archived and most recent version of the report is available from:
+ 
+ * https://cfsotago.github.io/GREENGridEECA/
+ 
+# Data
+
+"Grid exit point (GXP)
+
+A grid exit point (GXP) is defined in Part 1 of the Code and means any point of connection on the grid at which electricity predominantly flows out of the grid or is determined as being such by the Authority following an application in accordance with clause 13.28. Any such point of connection may, at any given time, be a GXP or a GIP, but may not be both at the same time."
+
+For (very little) further information see the [EMI glossary](https://www.emi.ea.govt.nz/Glossary#G).
+
+We use the GXP data to identify local (regional) system peak load half-hours for Hawke's Bay and Taranaki as this matches the [GREEN Grid household sample location](https://cfsotago.github.io/GREENGridData/overviewReport_v1.0.html).
+
+Start date: `r min(gxpSelectWinter2015DT$date)`
+
+End date: `r max(gxpSelectWinter2015DT$date)`
+
+Selected GXPs for the regions we are interested in:
+
+```{r testRegions}
+t <- gxpSelectWinter2015DT[, .(nHalfHours = .N,
+                               meanMWh = mean(kWh)/1000),
+                           keyby = .(regionName, node, NWK_Code)]
+
+kableExtra::kable(t, digits = 2,
+                  caption = "Summary of MWh per half hour by region, GXP nodes selected and network codes") %>%
+  kable_styling()
+```
+
+Note that NPL0331 in Taranaki has two network codes - presumably it feeds two networks? In what follows we simply sum the kWh for all half-hours for all nodes for each region.
+
+# EMI GXP data
+
+Figure \@ref(fig:profiles) shows the mean total network electricity export by season for all regions combined as a data sense-check.
+
+```{r profiles, fig.cap="Mean total kWh per half hour by season"}
+myCaption <- paste0("Source: EA EMI Grid Exist Point (GXP) data",
+                    ", ", min(gxpDataDT$date, na.rm = TRUE)
+                    , " - ", max(gxpDataDT$date, na.rm = TRUE))
+gxpDataDT[, hms := hms::as.hms(rDateTime)]
+gxpDataDT <- GREENGridEECA::addNZSeason(gxpDataDT)
+
+plotDT <- gxpDataDT[, .(meankWh = mean(kWh)), 
+                    keyby = .(hms, season)]
+
+ggplot2::ggplot(plotDT, aes(x = hms, y = meankWh/1000, colour = season)) +
+  geom_point() +
+  labs(x = "Date", y = "Mean MWh per half-hour per GXP", 
+       caption = paste0(myCaption, "\nN GXPs: ", uniqueN(gxpDataDT$POC))) +
+  scale_color_discrete(name = "Season:") +
+  theme(legend.position="bottom")
+```
+
+Figure \@ref(fig:regionProfiles) shows the same results but only for the regions of interest: Taranaki and Hawke's Bay.
+
+```{r regionProfiles, fig.cap="Mean total kWh per half hour by season and region"}
+gxpDataDT[,regionName := `region name`]
+plotDT <- gxpDataDT[region == "t" | region == "h", .(meankWh = mean(kWh)), 
+                    keyby = .(hms, season, region, regionName)]
+
+ggplot2::ggplot(plotDT, aes(x = hms, y = meankWh/1000, colour = season)) +
+  geom_point() +
+  facet_grid(. ~ regionName)
+  labs(x = "Date", y = "Mean MWh per half-hour per GXP", 
+       caption = paste0(myCaption, "\nN GXPs: ", uniqueN(gxpDataDT$POC))) +
+  scale_color_discrete(name = "Season:") +
+  theme(legend.position="bottom")
+```
+
+# Top 100 'peaks'
+
+Extract just date for winter (Jun - August) 2015 as per original EECA file.
+
+```{r extractData}
+gxpWinter2015DT <- gxpDT[gxpDataDT[lubridate::year(rDate) == 2015 & 
+                                 rDate >= "2015-06-01" & # Vince's extract seems to start 1st June
+                                   rDate <= "2015-08-31"]] # and end 31st August 
+  
+  summary(gxpWinter2015DT)
+  
+  gxpWinter2015DT[,regionName := `region name`]
+  
+  # test what we've got
+  
+  testGxp(gxpWinter2015DT)
+
+  # the NA in TP = 49 is expected, this is the DST break placeholder
+  t <- gxpWinter2015DT[is.na(kWh), .(node, Time_Period, rDateTime, kWh)]
+  head(t, 10)
+  # check
+  summary(t)
+  # yep, all NA
+  # so let's just kick it out
+  gxpWinter2015DT <- gxpWinter2015DT[!is.na(kWh)]
+  testGxp(gxpWinter2015DT)
+  
+  # grab the GXPs we want
+  gxpSelectWinter2015DT <- gxpWinter2015DT[!is.na(regionName)]
+  
+  testGxp(gxpSelectWinter2015DT)
+  
+  table(gxpSelectWinter2015DT$node, gxpSelectWinter2015DT$regionName, useNA = "always")
+  # one of them seems to have double the observations. Why?
+  table(gxpSelectWinter2015DT$node, gxpSelectWinter2015DT$NWK_Code, useNA = "always")
+  # it has 2 network codes. Why?
+
+  
+  # so it seems to be small but we should include it as the GXP must be feeding 2 networks?
+  # checks before aggreating
+  
+  skimr::skim(gxpSelectWinter2015DT)
+  # to confirm
+  table(gxpSelectWinter2015DT$NWK_Code)
+  table(gxpSelectWinter2015DT$FLOW_DIRECTION)
+  table(gxpSelectWinter2015DT$GENERATION_TYPE)
+  # OK, what does that mean?
+  table(gxpSelectWinter2015DT$TRADER)
+  
+  # check for NA
+  summary(gxpSelectWinter2015DT)
+  head(gxpSelectWinter2015DT[is.na(kWh)], 10)
+  # collapse them by region
+  regionSumGxpDT <- gxpSelectWinter2015DT[, .(sumkWh = sum(kWh),
+                                              nObs = .N,
+                                              nRegions = uniqueN(regionName),
+                                              nPOCs = uniqueN(node),
+                                              nNetworks = uniqueN(NWK_Code),
+                                              nGenTypes = uniqueN(GENERATION_TYPE)), # number of half-hourly records contributing
+                                    keyby = .(region, regionName, Time_Period, hours, rDateTime, weekdays, peakPeriod)]
+  
+  regionSumGxpDT[, month := lubridate::month(rDateTime, label = TRUE)]
+  
+  summary(regionSumGxpDT)
+  
+  # find the top 10 for each region
+  taranakiDT <- head(regionSumGxpDT[region == "t"][order(-sumkWh)], 100)
+  table(taranakiDT$peakPeriod, taranakiDT$month)
+  # save it: NB saves rDateTime as UTC
+  data.table::fwrite(taranakiDT, paste0(here::here(), "/data/taranakiGxpTop100DT.csv"))
+  taranakiDT[, .(nPeaks = .N), keyby = .(regionName, hours, Time_Period)]
+  # almost completely matches Vince's extract but the kWh values here are _exactly_ 1/2 of Vince's. Why?
+  
+  hawkesBayDT <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
+  table(hawkesBayDT$peakPeriod, hawkesBayDT$month)
+  # save it: NB saves rDateTime as UTC
+  hawkesBayDT[, .(nPeaks = .N), keyby = .(regionName, hours, Time_Period)]
+  # almost completely matches Vince's extract but the kWh values here are _exactly_ 1/2 of Vince's. Why?
+  
+  data.table::fwrite(hawkesBayDT, paste0(here::here(), "/data/hawkesBayGxpTop100DT.csv"))
+```
+## Hawke's Bay
+
+Figure \@ref(fig:hbTile) shows the  total network electricity export in this region as a data sense-check.
+
+```{r hbTile, fig.cap="Hawke's Bay: Total MWh per half hour"}
+ggplot2::ggplot(regionSumGxpDT[region == "h"], aes(x = lubridate::date(rDateTime), y = hms, fill = sumkWh/1000)) +
+  geom_tile() +
+  facet_grid(regionName ~ .,scales = "free_y") +
+  scale_fill_continuous(low = "green", high = "red", name = "Total MWh per half-hour") +
+  labs(x = "Date", y = "Half-hour", caption = paste0(myCaption)) +
+   theme(legend.position="bottom")
+```
+
+Table \@ref(tab:hbTable) shows the top 10 peak demand periods.
+
+```{r hbTable}
+t <- regionSumGxpDT[region == "h", .(regionName, Time_Period, hms, rDateTime, weekdays, peakPeriod, sumkWh)]
+kableExtra::kable(head(t[order(-sumkWh)], 10), caption = "Top 10 of top 100 Hawke's Bay peak demand half-hours") %>%
+  kable_styling()
+```
+
+Table \@ref(tab:hbTableTP) shows when the top 100 peak demand periods occured.
+
+```{r hbTableTP}
+dt <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
+#nrow(dt)
+t <- dt[, .(nHalfHours = .N), keyby = .(Time_Period, hms, weekdays, peakPeriod)]
+kableExtra::kable(t[order(-nHalfHours)], caption = "Hawke's Bay peak demand half-hours") %>%
+  kable_styling()
+```
+
+## Taranaki
+
+Figure \@ref(fig:tTile) shows the  total network electricity export in this region as a data sense-check.
+
+```{r tTile, fig.cap="Taranaki: Total MWh per half hour"}
+ggplot2::ggplot(regionSumGxpDT[region == "t"], aes(x = lubridate::date(rDateTime), y = hms, fill = sumkWh/1000)) +
+  geom_tile() +
+  facet_grid(regionName ~ .,scales = "free_y") +
+  scale_fill_continuous(low = "green", high = "red", name = "Total MWh per half-hour") +
+  labs(x = "Date", y = "Half-hour", caption = paste0(myCaption)) +
+   theme(legend.position="bottom")
+```
+
+Table \@ref(tab:tTable) shows the top 10 peak demand periods.
+
+```{r tTable}
+t <- regionSumGxpDT[region == "t", .(regionName, Time_Period, hms, rDateTime, weekdays, peakPeriod, sumkWh)]
+kableExtra::kable(head(t[order(-sumkWh)], 10), caption = "Top 10 of top 100 Taranaki peak demand half-hours") %>%
+  kable_styling()
+```
+
+Table \@ref(tab:tTableTP) shows when the 100 peak demand periods occured.
+
+```{r tTableTP}
+dt <- head(regionSumGxpDT[region == "t"][order(-sumkWh)], 100)
+#nrow(dt)
+t <- dt[, .(nHalfHours = .N), keyby = .(Time_Period, hms, weekdays, peakPeriod)]
+kableExtra::kable(t[order(-nHalfHours)], caption = "Taranaki peak demand half-hours") %>%
+  kable_styling()
+```
+
+# Summary
+
+This report used the EA EMI GXP data to:
+
+ * identify the 'peak' demand half hours in the two regions under study.
+
+This report described the results of this work and directed the reader to relevant R code where necessary.
+
+All code used to create this report is available from:
+
+ * https://github.com/CfSOtago/GREENGridEECA
+ 
+The archived and most recent version of the report is available from:
+ 
+ * https://cfsotago.github.io/GREENGridEECA/
+
+The selected half-hours can be found in the [github repo](https://cfsotago.github.io/GREENGridEECA/data/).
+
+```{r runToEnd}
+
+```
+
+# Data Annex
+
+## GXP summary 
+Descriptive statistics for original EA GXP data:
+
+```{r skimData}
+skimr::skim(gxpDataDT)
+```
+
+
+# Runtime
+
+
+```{r check runtime, include=FALSE}
+t <- proc.time() - startTime
+elapsed <- t[[3]]
+```
+
+Analysis completed in `r round(elapsed,2)` seconds ( `r round(elapsed/60,2)` minutes) using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com) with `r R.version.string` running on `r R.version$platform`.
+
+# R environment
+
+## R packages used
+
+ * base R [@baseR]
+ * bookdown [@bookdown]
+ * data.table [@data.table]
+ * ggplot2 [@ggplot2]
+ * kableExtra [@kableExtra]
+ * knitr [@knitr]
+ * lubridate [@lubridate]
+ * rmarkdown [@rmarkdown]
+
+## Session info
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
+
+# References
