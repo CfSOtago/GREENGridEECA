@@ -42,17 +42,17 @@ getData <- function(filesDT){
 }
 
 doReport <- function(){
-  rmdFile <- paste0(repoParams$repoLoc, "/reports/partB_dataAnalysis/dataAnalysisReport.Rmd")
+  rmdFile <- paste0(repoParams$repoLoc, "/reports/partB_dataAnalysis/partB_v1.Rmd")
   rmarkdown::render(input = rmdFile,
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
-                    output_file = paste0(repoParams$repoLoc,"/docs/partB_dataAnalysisReport_v", version, ".html")
+                    output_file = paste0(repoParams$repoLoc,"/docs/partB_v1_v", version, ".html")
   )
 }
 
 # Local parameters ----
-version <- "0.1"
+version <- "1.0"
 
 # data paths
 dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
