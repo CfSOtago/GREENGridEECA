@@ -42,6 +42,8 @@ b2Kb <- 1024 #http://whatsabyte.com/P1/byteconverter.htm
 b2Mb <- 1048576
 plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots
 
+nzHhPop2015 <- 1796000
+
 # Packages used in the report ----
 rmdLibs <- c("ggplot2", # plots
           "kableExtra" # fancy tables
@@ -91,25 +93,52 @@ As is described in the [archived data package](https://cfsotago.github.io/GREENG
 
 Nevertheless it is still useful to review potential upscaling methods should we wish to make assumptions of this kind or for a future time when a larger and representative sample of New Zealand household's energy consumption data is available. It is possible, for example, that BRANZ's planned new Household Energy End-Use Project ([HEEP](https://www.branz.co.nz/heep)) version 2 could provide just such a data source.
 
-The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple proportionate upscaling method used to analyse the potential impact of wide-scale Heat Pump uptake in New Zealand [@dortans_estimating_2019]. The second is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005;@anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
+The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple proportionate upscaling method used to estimate energy demand for hot water heating and lighting in New Zealand [@dortans_estimating_2019]. The second is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005;@anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
 
 # Simple Proportional Upscaling
 
-> refer Carsten's MSc for method
+> refer Carsten's MSc for methods
+
+At it's simplest this method simply multiplies a per-household mean value calculated from a sample by the relevant population size. Thus, if we calculated that the mean half-hourly electricity consumption at 18:00 in winter 2015 in New Zealand was 0.5 kWh from the GREEN Grid sample then by simple multiplication we would expect total household electricity consumption to be 0.5 * the number of New Zealand households (`r nzHhPop2015`).
+
+> XX check using gxp data - is this reasonable?
+
+## Hot water
+
+## Heat pumps
+
+## Lighting
 
 # Complex re-weighting
 
-> describe approach and build ipf-based model of total load for
+> describe approach and build ipf-based models for
  * Taranaki
  * Hawke's Bay
  * NZ
- using aggregated are unit Census data & half-hour total load data -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
+ using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
+
+## Hot water
+
+## Heat pumps
+
+## Lighting
+
+## Total power demand
 
 # Summary
 
-This report XXXX
+This report has outlined a number of methods that could be used to upscale the GREEN Grid (or similar) household energy demand datasets to develop national or regional level residential demand or consumption estimates. However we have noted that in all cases the GREEN grid data is insufficient for this purpose due to:
 
-This report described the results of this work and directed the reader to relevant R code where necessary.
+ * its small size - meaning very small numbers of households would be 'representing' very large numbers in the true population;
+ * its recruitment bias - meaning that some household types and some crucial energy source types (e.g. coal, wood-only, reticulated gas) are not represented at all and so cannot be 're-weighted'.
+ 
+We have demonstrated this through a number of worked examples and suggest that future work could apply these methods to more suitable data sources such as:
+
+ * the BRANZ [Housing Conditions Survey](https://www.branz.co.nz/hcs) datasets - although detailed energy monitoring was not included;
+ * the recent NZ Stats/MBIE [Housing Quality Indicator survey](https://www.stats.govt.nz/methods/framework-for-housing-quality) - although detailed energy monitoring was not included;
+ * the potential future BRANZ Household Energy End-Use (HEEP2) study;
+ * representative smart meter datasets linked to household attributes;
+ * imputed load profiles generated using New Zealand Time Use data (see [mckenna_high-resolution_2016;@mckenna_simulating_2017] for a UK exmple)
 
 All code used to create this report is available from:
 
