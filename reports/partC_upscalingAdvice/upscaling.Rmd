@@ -1,0 +1,208 @@
+---
+params:
+  subtitle: ""
+  title: ""
+  authors: ""
+title: '`r params$title`'
+subtitle: '`r params$subtitle`'
+author: '`r params$authors`'
+date: 'Last run at: `r getRunDateTime()`'
+output:
+  bookdown::html_document2:
+    fig_caption: yes
+    code_folding: hide
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    toc_float: TRUE
+    fig_width: 5
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+  bookdown::word_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    fig_width: 5
+always_allow_html: yes
+bibliography: '`r paste0(here::here(), "/bibliography.bib")`'
+---
+
+```{r knitrSetup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE) # by default turn off code echo
+```
+
+
+```{r codeSetup, include=FALSE}
+# Set start time ----
+startTime <- proc.time()
+# Local parameters ----
+b2Kb <- 1024 #http://whatsabyte.com/P1/byteconverter.htm
+b2Mb <- 1048576
+plotLoc <- paste0(repoParams$repoLoc, "/docs/plots/") # where to put the plots
+
+nzHhPop2015 <- 1796000
+
+# Packages used in the report ----
+rmdLibs <- c("ggplot2", # plots
+          "kableExtra" # fancy tables
+          )
+GREENGridEECA::loadLibraries(rmdLibs)
+# Local functions ----
+```
+
+\newpage
+
+# About
+
+## Citation
+
+```{r citation, child=repoParams$citation}
+```
+
+## Report circulation
+
+ * Public – this report is intended for publication following EECA approval.
+ 
+## License {#license}
+
+```{r ccby license, child=repoParams$licenseCCBY}
+```
+ 
+## History
+
+```{r history, child=repoParams$history}
+```
+ * this [report's edit history](https://github.com/CfSOtago/GREENGridEECA/commits/master/reports/partA_dataProcessing)
+ 
+## Support
+
+```{r generic support, child=repoParams$support}
+```
+ 
+\newpage
+
+# Introduction
+
+Previous work conducted as part of this project has calculated the % contribution to peak power load (kW) and to overall annual consumption (kWh) for the ~ 40 New Zealand GREEN Grid household electricity demand study dwellings [@stephenson_smart_2017].
+
+EECA have expressed an interest in understanding how these results and/or this sample of dwellings can be scaled up to provide estimates of the same values for the overall New Zealand residential dwelling stock/household population.
+
+As is described in the [archived data package](https://cfsotago.github.io/GREENGridData/overviewReport_v1.0.html#4_study_recruitment), the New Zealand GREEN Grid household electricity demand study sample dwellings are unlikely to be representative of neither the two regions from which they were drawn nor New Zealand as a whole. In addition they form an extremely small sample. In combination, these two issues make it unlikely that upscaling the sample to represent the regions from which they were drawn and/or the national household population would produce very robust estimates unless we assume that the household population of interest will behave in more or less the same way. Whilst this assumption may be plausible in the case of, say, lighting, it is likely to be implausible in the case of space or hot water heating due to the spatial distribution of reticulated gas and the use of coal/wood as main energy sources. Neither of the latter are represented in the GREEN Grid dwelling sample _at all_.
+
+Nevertheless it is still useful to review potential upscaling methods should we wish to make assumptions of this kind or for a future time when a larger and representative sample of New Zealand household's energy consumption data is available. It is possible, for example, that BRANZ's planned new Household Energy End-Use Project ([HEEP](https://www.branz.co.nz/heep)) version 2 could provide just such a data source.
+
+The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple proportionate upscaling method used to estimate energy demand for hot water heating and lighting in New Zealand [@dortans_estimating_2019]. The second is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005;@anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
+
+# Simple Proportional Upscaling
+
+> refer Carsten's MSc for methods
+
+At it's simplest this method simply multiplies a per-household mean value calculated from a sample by the relevant population size. Thus, if we calculated that the mean half-hourly electricity consumption at 18:00 in winter 2015 in New Zealand was 0.5 kWh from the GREEN Grid sample then by simple multiplication we would expect total household electricity consumption to be 0.5 * the number of New Zealand households (`r nzHhPop2015`).
+
+> XX check using gxp data - is this reasonable?
+
+## Hot water
+
+## Heat pumps
+
+## Lighting
+
+# Complex re-weighting
+
+> describe approach and build ipf-based models for
+ * Taranaki
+ * Hawke's Bay
+ * NZ
+ using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
+
+## Hot water
+
+## Heat pumps
+
+## Lighting
+
+## Total power demand
+
+# Summary
+
+This report has outlined a number of methods that could be used to upscale the GREEN Grid (or similar) household energy demand datasets to develop national or regional level residential demand or consumption estimates. However we have noted that in all cases the GREEN grid data is insufficient for this purpose due to:
+
+ * its small size - meaning very small numbers of households would be 'representing' very large numbers in the true population;
+ * its recruitment bias - meaning that some household types and some crucial energy source types (e.g. coal, wood-only, reticulated gas) are not represented at all and so cannot be 're-weighted'.
+ 
+We have demonstrated this through a number of worked examples and suggest that future work could apply these methods to more suitable data sources such as:
+
+ * the BRANZ [Housing Conditions Survey](https://www.branz.co.nz/hcs) datasets - although detailed energy monitoring was not included;
+ * the recent NZ Stats/MBIE [Housing Quality Indicator survey](https://www.stats.govt.nz/methods/framework-for-housing-quality) - although detailed energy monitoring was not included;
+ * the potential future BRANZ Household Energy End-Use (HEEP2) study;
+ * representative smart meter datasets linked to household attributes;
+ * imputed load profiles generated using New Zealand Time Use data (see [mckenna_high-resolution_2016;@mckenna_simulating_2017] for a UK exmple)
+
+All code used to create this report is available from:
+
+ * https://github.com/CfSOtago/GREENGridEECA
+ 
+The archived and most recent version of the report is available from:
+ 
+ * https://cfsotago.github.io/GREENGridEECA/
+
+
+```{r runToEnd}
+
+```
+
+# Data Annex
+
+## Census data summary 
+Descriptive statistics for census data:
+
+```{r skimCensusData}
+#skimr::skim(censusDT)
+```
+
+## GREEN Grid half-hourly total load summary 
+Descriptive statistics for dwelling power data:
+
+```{r skimPowerData}
+#skimr::skim(powerDT)
+```
+
+## GREEN Grid household data summary 
+Descriptive statistics for household data:
+
+```{r skimHouseholdData}
+#skimr::skim(householdDT)
+```
+
+# Runtime
+
+
+```{r check runtime, include=FALSE}
+t <- proc.time() - startTime
+elapsed <- t[[3]]
+```
+
+Analysis completed in `r round(elapsed,2)` seconds ( `r round(elapsed/60,2)` minutes) using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com) with `r R.version.string` running on `r R.version$platform`.
+
+# R environment
+
+## R packages used
+
+ * base R [@baseR]
+ * bookdown [@bookdown]
+ * data.table [@data.table]
+ * ggplot2 [@ggplot2]
+ * kableExtra [@kableExtra]
+ * knitr [@knitr]
+ * lubridate [@lubridate]
+ * rmarkdown [@rmarkdown]
+
+## Session info
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
+
+# References
