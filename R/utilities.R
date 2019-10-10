@@ -60,7 +60,8 @@ gzipIt <- function(file) {
 #'
 #' @param dt the data table
 #' @param date the column in the dt which is a date that lubridate::month() will work on
-#'
+#' @import lubridate
+#' @import data.table
 #' @author Ben Anderson, \email{b.anderson@@soton.ac.uk}
 #' @export
 #'
@@ -73,5 +74,27 @@ addNZSeason <- function(dt, date = date){
   # re-order to make sense
   dt <- dt[, season := factor(season, levels = c("Spring", "Summer", "Autumn", "Winter"))]
   dt$tmpM <- NULL
+  return(dt)
+}
+
+
+#' Gets a list of files by path and pattern
+#'
+#' \code{getFileList} returns the list of files in a given path which match 
+#' a given pattern. Returns a data.table with 3 columns - the file name, it's 
+#' full path and it's file size in Mb
+#'
+#' @param dPath the file path
+#' @param pattern the pattern to match
+#' @import data.table
+#' @author Ben Anderson, \email{b.anderson@@soton.ac.uk}
+#' @export
+#'
+#'
+getFileList <- function(dPath, pattern){
+  all.files <- list.files(path = dPath, pattern = pattern)
+  dt <- data.table::as.data.table(all.files)
+  dt[, fullPath := paste0(dPath, all.files)]
+  dt[, fSizeMb := repoParams$bytesToMb * file.size(fullPath)]
   return(dt)
 }

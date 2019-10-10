@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 *.Rproj
-*.csv # in case of accidents
+.DS_Store
+.drake
