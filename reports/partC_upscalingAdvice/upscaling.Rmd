@@ -46,7 +46,8 @@ nzHhPop2015 <- 1796000
 
 # Packages used in the report ----
 rmdLibs <- c("ggplot2", # plots
-          "kableExtra" # fancy tables
+          "kableExtra", # fancy tables
+          "lubridate"
           )
 GREENGridEECA::loadLibraries(rmdLibs)
 # Local functions ----
@@ -105,25 +106,51 @@ At it's simplest this method simply multiplies a per-household mean value calcul
 
 ## Hot water
 
+Summarise CD report
+
 ## Heat pumps
+
+Summarise CD report
 
 ## Lighting
 
+Summarise CD report
+
 # Complex re-weighting
 
-> describe approach and build ipf-based models for
+> describe approach and build ipf-based model of overall load for
  * Taranaki
  * Hawke's Bay
  * NZ
  using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
 
-## Hot water
-
-## Heat pumps
-
-## Lighting
-
 ## Total power demand
+
+To produce regional or national estimates we first prepare the household level consumption data to provide mean energy consumption (kWh) per half-hour for each season in 2015. We use kWh to enable comparison with the GXP data used in Part B.
+
+```{r prepHHProfiles, fig.cap = "Mean kWh per half-hour by season"}
+hhTotalLoadDT[, meankWh := (meanPowerW/1000)/2] # convert to kW & divide by 2 as half-hours
+hhTotalLoadDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, tz = "Pacific/Auckland")]
+hhTotalLoadDT[, date := lubridate::date(r_dateTimeHalfHour)]
+hhTotalLoadDT[, hms := hms::as_hms(r_dateTimeHalfHour)]
+hhTotalLoadDT <- GREENGridEECA::addNZSeason(hhTotalLoadDT, date = date)
+profileDT <- hhTotalLoadDT[, .(meankWh = mean(meankWh)), keyby = .(hms,season)]
+
+# test
+#profileDT[, .(mean = mean(meankWh)), keyby = .(season)]
+
+ggplot(profileDT, aes(x = hms, y = meankWh, colour = season)) +
+  geom_line() +
+  labs(y = "Mean kWh per half-hour",
+       x = "Time of Day",
+       caption = paste0("N households: ", uniqueN(hhTotalLoadDT$linkID)))
+
+winterMax <- max(profileDT[season == "Winter"]$meankWh)
+```
+
+Figure \@ref(fig:prepHHProfiles) shows the mean kWh per half hour for each season that we will use as the basis for the re-weighting process. As we can see we estimate the maximum mean kWh per half-hour in winter to be ~ `r winterMax` kWh giving a rough estimate of maximum mean residential kWh in winter as `r round((winterMax * nzHhPop2015)/1000000,2)` GWh.
+
+
 
 # Summary
 

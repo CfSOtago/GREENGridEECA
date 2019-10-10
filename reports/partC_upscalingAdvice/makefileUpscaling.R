@@ -1,6 +1,4 @@
-# gets wholesale EA elec GXP data
-# extracts data for 2 regions we want
-# runs a report at the end
+# loads data & runs a report
 
 # Load some packages
 library(GREENGridEECA)
@@ -23,9 +21,13 @@ GREENGridEECA::setup() # set data paths etc
 
 
 #> GREEN Grid half hourly total dwelling power data ----
+hhTotalLoadF <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv.gz")
+hhTotalLoadDT <- data.table::fread(hhTotalLoadF)
 
 #> GREEN Grid household survey data ----
-
+hhAtttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
+hhAtttributesDT <- data.table::fread(hhAtttributesF)
+  
 # > defn of peak ----
 amPeakStart <- hms::as_hms("07:00:00")
 amPeakEnd <- hms::as_hms("09:00:00")
