@@ -46,7 +46,8 @@ nzHhPop2015 <- 1796000
 
 # Packages used in the report ----
 rmdLibs <- c("ggplot2", # plots
-          "kableExtra" # fancy tables
+          "kableExtra", # fancy tables
+          "lubridate"
           )
 GREENGridEECA::loadLibraries(rmdLibs)
 # Local functions ----
@@ -105,25 +106,108 @@ At it's simplest this method simply multiplies a per-household mean value calcul
 
 ## Hot water
 
+Summarise CD report
+
 ## Heat pumps
+
+Summarise CD report
 
 ## Lighting
 
+Summarise CD report
+
+## Total electricity consumption
+
+In this case we use the half-hourly total kW load data set produced in [Part A](https://cfsotago.github.io/GREENGridEECA/partA_dataProcessingReport_v1.0.html#610_total_load). To produce national estimates we first prepare the household level consumption data to provide mean energy consumption (kWh) per half-hour for each season in 2015. We use kWh to enable comparison with the GXP data used in [Part B](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak).
+
+```{r prepHHProfiles, fig.cap = "Mean kWh per half-hour by season"}
+hhTotalLoadDT[, meankWh := (meanPowerW/1000)/2] # convert to kW & divide by 2 as half-hours
+hhTotalLoadDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, tz = "Pacific/Auckland")]
+hhTotalLoadDT[, date := lubridate::date(r_dateTimeHalfHour)]
+hhTotalLoadDT[, hms := hms::as_hms(r_dateTimeHalfHour)]
+hhTotalLoadDT <- GREENGridEECA::addNZSeason(hhTotalLoadDT, date = date)
+profileDT <- hhTotalLoadDT[, .(meankWh = mean(meankWh)), keyby = .(hms,season)]
+
+# test
+#profileDT[, .(mean = mean(meankWh)), keyby = .(season)]
+
+ggplot(profileDT, aes(x = hms, y = meankWh, colour = season)) +
+  geom_line() +
+  labs(y = "Mean kWh per half-hour",
+       x = "Time of Day",
+       caption = paste0("N households: ", uniqueN(hhTotalLoadDT$linkID)))
+
+winterMax <- round(max(profileDT[season == "Winter"]$meankWh),2)
+```
+
+Figure \@ref(fig:prepHHProfiles) shows the mean kWh per half hour for each season that we will use as the basis for the re-weighting process. We can therefore estimate that the maximum mean kWh per half-hour in winter is ~ `r winterMax` kWh giving a rough estimate of maximum mean residential kWh in winter as `r round((winterMax * nzHhPop2015)/1000000,2)` GWh.
+
+Figure \@ref(fig:nationalProfiles) shows the simple upscaling of Figure \@ref(fig:nationalProfiles) to the New Zealand household population by multiplying by the total number of households. 
+
+```{r nationalProfiles, fig.cap = "Total residential electricity consumption per half-hour by season"}
+profileDT <- hhTotalLoadDT[, .(meankWh = mean(meankWh)), keyby = .(hms,season)]
+profileDT <- profileDT[, totalResMWh := (meankWh * nzHhPop2015)/1000]
+  
+# test
+#profileDT[, .(mean = mean(meankWh)), keyby = .(season)]
+
+ggplot(profileDT, aes(x = hms, y = totalResMWh, colour = season)) +
+  geom_line() +
+  labs(y = "Total MWh per half-hour",
+       x = "Time of Day",
+       caption = paste0("N observed households: ", uniqueN(hhTotalLoadDT$linkID),
+                        "\nN New Zealand households: ", GREENGridData::tidyNum(nzHhPop2015)
+                        )
+       )
+```
+
+If we compare these results with the total derived from the GXP data for 2015 used in [Part B](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak) then we can see XXX
+
+
+Figure \@ref(fig:profiles) shows these values as a % of the total network electricity export by season for all regions combined as a data sense-check. As we can see the naive multiplication method produces broadly plausible results in summer where we estimate ~30%-40% of total electricity consumption in peak periods is due to households. However the method appears to substantially (and implausibly) over-estimate the contribution of households in winter peaks where the value approaches 70%. The is almost certainly due to the bias inherent in the GREEN Grid sample which had a higher proportion of families, households with higher incomes and no households using gas or solid fuels as a primary space heating energy source.
+
+```{r profiles, fig.cap="Mean total kWh per half hour by season"}
+myCaption <- paste0("Source: EA EMI Grid Exit Point (GXP) data",
+                    ", ", min(gxpDataDT$date, na.rm = TRUE)
+                    , " - ", max(gxpDataDT$date, na.rm = TRUE))
+gxpDataDT[, hms := hms::as.hms(rDateTime)]
+gxpDataDT <- GREENGridEECA::addNZSeason(gxpDataDT)
+
+gxpDT <- gxpDataDT[, .(sumkWh = sum(kWh), meankWh = mean(kWh), 
+                        nGXPs = uniqueN(node), nDays = uniqueN(date)), 
+                    keyby = .(hms, season)]
+gxpDT[,totDailyMWh := (sumkWh/(nDays))/1000]
+setkey(gxpDT, hms, season)
+setkey(profileDT, hms, season)
+
+plotDT <- profileDT[gxpDT]
+plotDT[, pc := 100 * (totalResMWh/totDailyMWh)]
+
+ggplot(plotDT, aes(x = hms, y = pc, colour = season)) +
+  geom_line() +
+  labs(y = "% Total daily GXP MWh per half-hour",
+       x = "Time of Day",
+       caption = paste0("N observed households: ", uniqueN(hhTotalLoadDT$linkID),
+                        "\nN New Zealand households: ", GREENGridData::tidyNum(nzHhPop2015)
+                        )
+       )
+```
+
+This approach illustrates the difficulty of producing robust national level using simple multiplication of a small and biased sample.
+
 # Complex re-weighting
 
-> describe approach and build ipf-based models for
+> describe approach and build ipf-based model of overall load for
  * Taranaki
  * Hawke's Bay
  * NZ
  using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
 
-## Hot water
-
-## Heat pumps
-
-## Lighting
-
 ## Total power demand
+
+
+
+
 
 # Summary
 

@@ -1,6 +1,4 @@
-# gets wholesale EA elec GXP data
-# extracts data for 2 regions we want
-# runs a report at the end
+# loads data & runs a report
 
 # Load some packages
 library(GREENGridEECA)
@@ -23,8 +21,90 @@ GREENGridEECA::setup() # set data paths etc
 
 
 #> GREEN Grid half hourly total dwelling power data ----
+hhTotalLoadF <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv.gz")
+hhTotalLoadDT <- data.table::fread(hhTotalLoadF)
 
 #> GREEN Grid household survey data ----
+hhAtttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
+hhAtttributesDT <- data.table::fread(hhAtttributesF)
+
+#> GXP data ----
+getGXPFileList <- function(dPath){
+  # check for EA GXP files
+  message("Checking for data files")
+  all.files <- list.files(path = dPath, pattern = ".csv")
+  dt <- as.data.table(all.files)
+  dt[, fullPath := paste0(dPath, all.files)]
+  message("Found ", nrow(dt))
+  return(dt)
+} # should be in package functions
+
+
+loadGXPData <- function(files){
+  # load the EA GXP data
+  # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
+  # this is where we need drake
+  # and probably more memory
+  message("Loading ", nrow(files), " GXP files")
+  l <- lapply(files$fullPath, data.table::fread)
+  dt <- rbindlist(l)
+  setkey(dt, rDateTime)
+  try(file.remove("temp.csv")) # side effect
+  # fix dates & times ----
+  dt <- dt[!is.na(rTime)] # drop the TP49 & TP50
+  dt[, rDateTime := lubridate::as_datetime(rDateTime)]
+  dt[, rDateTime := lubridate::force_tz(rDateTime, tzone = "Pacific/Auckland")]
+  dt[, date := lubridate::date(rDateTime)]
+  dt[, month := lubridate::month(rDateTime)]
+  dt[, day_of_week := lubridate::wday(rDateTime, label = TRUE)]
+  dt[, hms := hms::as.hms(rDateTime)] # set to middle of half-hour
+  dt[, halfHour := hms::trunc_hms(hms, 30*60)] # truncate to previous half-hour
+  
+  # Create factor for weekdays/weekends ----
+  dt[, weekdays := "Weekdays"]
+  dt[, weekdays := ifelse(day_of_week == "Sat" |
+                            day_of_week == "Sun", "Weekends", weekdays)]
+  # locate in peak/not peak ----
+  dt <- setPeakPeriod(dt)
+  
+  # load the POC lookup table Vince sent
+  f <- paste0(here::here(), "/data/gxp-lookup.csv")
+  gxpLutDT <- data.table::fread(f)
+  
+  setkey(gxpLutDT, node)
+  setkey(dt, POC)
+  
+  dt <- gxpLutDT[dt] # merge them - this keeps all the gxpData
+  
+  # load the Transpower GIS table
+  f <- paste0(here::here(), "/data/gxpGeolookup.csv")
+  gxpGeoDT <- data.table::fread(f)
+  # note there are differences
+  # in the Transpower data MXLOCATION == node but without the trailing 0331 - whatever this means
+  dt[, MXLOCATION := substr(node, start = 1, stop = 3)] # note this produces non-unique locations
+  # so presumably some gxps share a location where they feed different networks
+  uniqueN(dt$node)
+  uniqueN(dt$MXLOCATION)
+  dt[, .(nNodes = uniqueN(node)), keyby = .(MXLOCATION)]
+  setkey(dt, MXLOCATION)
+  setkey(gxpGeoDT, MXLOCATION)
+  gxpDataDT <- gxpGeoDT[dt]
+  return(dt)
+} # should be in package functions
+
+years <- c("2015")
+
+gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
+
+if(nrow(gxpFiles) == 0){
+  message("No data!")
+} else {
+  message("Yep, we've got (some) data")
+  gxpDataDT <- loadGXPData(gxpFiles)
+}
+
+# remove the date NAs here (DST breaks)
+gxpDataDT <- gxpDataDT[!is.na(date)]
 
 # > defn of peak ----
 amPeakStart <- hms::as_hms("07:00:00")
