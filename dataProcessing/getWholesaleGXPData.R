@@ -8,7 +8,6 @@ library(GREENGridEECA)
 libs <- c("curl", # pulling data off t'interweb
           "data.table", # data munching
           "forcats", # for cats, obviously
-          "ggplot2", # for plots
           "here", # here. not there
           "skimr") # skimming data for fast descriptives
 
@@ -159,43 +158,29 @@ loadGXPData <- function(files){
   # locate in peak/not peak ----
   dt <- setPeakPeriod(dt)
   
-  return(dt)
-}
-
-testData <- function(){
-  
-  table(gxpDataDT$POC) # which one(s) do we need? Vince (EECA) knows...
-  
-  # find the overall GXP peaks
-  top100DT <- head(gxpDataDT[order(-gxpDataDT$kWh)], 100)
-  
-  plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
-  
-  ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + geom_tile()
-  # OK, so that's all Tiwai
-  
-  top100DT <- head(gxpDataDT[POC != "TWI2201"][order(-gxpDataDT$kWh)], 100)
-  
-  plotDT <- top100DT[, .(nDates = .N), keyby = .(rDate, POC)]
-  
-  ggplot2::ggplot(plotDT, aes(x = rDate, y = POC, fill = nDates)) + 
-    geom_tile() +
-    theme(axis.text.x = element_text(angle = 90))
-  
-  # Let's draw a map
-  # when we've added lat/long
-}
-
-extractData <- function(){
   # load the POC lookup table Vince sent
   f <- paste0(here::here(), "/data/gxp-lookup.csv")
-  gxpDT <- data.table::fread(f)
+  gxpLutDT <- data.table::fread(f)
   
-  head(gxpDT)
-  head(gxpDataDT)
+  setkey(gxpLutDT, node)
+  setkey(dt, POC)
   
-  setkey(gxpDT, node)
-  setkey(gxpDataDT, POC)
+  dt <- gxpLutDT[dt] # merge them - this keeps all the gxpData
+  
+  # load the Transpower GIS table
+  f <- paste0(here::here(), "/data/gxpGeolookup.csv")
+  gxpGeoDT <- data.table::fread(f)
+  # note there are differences
+  # in the Transpower data MXLOCATION == node but without the trailing 0331 - whatever this means
+  gxpDataDT[, MXLOCATION := substr(node, start = 1, stop = 3)] # note this produces non-unique locations
+  # so presumably some gxps share a location where they feed different networks
+  uniqueN(gxpDataDT$node)
+  uniqueN(gxpDataDT$MXLOCATION)
+  gxpDataDT[, .(nNodes = uniqueN(node)), keyby = .(MXLOCATION)]
+  setkey(gxpDataDT, MXLOCATION)
+  setkey(gxpGeoDT, MXLOCATION)
+  gxpDataDT <- gxpGeoDT[gxpDataDT]
+  return(dt)
 }
 
 makeReport <- function(f){
@@ -227,11 +212,6 @@ if(nrow(gxpFiles) == 0){
 }
 
 # > data stuff ----
-testData()
-extractData()
-
-head(taranakiDT)
-head(hawkesBayDT)
 
 # > Make report ----
 # >> yaml ----
@@ -243,6 +223,6 @@ authors <- "Ben Anderson"
 
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/dataProcessing/gxpReport.Rmd")
-makeReport(rmdFile)
+#makeReport(rmdFile)
 
 
