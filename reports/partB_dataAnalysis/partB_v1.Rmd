@@ -209,9 +209,12 @@ for(n in 1:nrow(selectDT)){
 # - oven
 # - lighting
 
+
 dataBucketDT <- GREENGridEECA::labelEECACircuits(dataBucketDT) # use the function to split the circuit string for easier string matching
 
+
 kableExtra::kable(head(dataBucketDT, 10), caption = "Example date peak load half-hour circuits - first 10 rows showing circuit demand at the peak total demand half-hour")  %>% # test result
+
   kable_styling()
 
 # Full EECA category label check table is in Data Annex
@@ -567,39 +570,39 @@ Data on regional demand for the Hawke's Bay and Taranaki Grid Exit Point (GXP) w
 #They look at the GXP rDateTime and then find this time in the region DT and extract the whole row into a new DT
 
 #Hawke's Bay
-extractHawkesDT <- NULL
-dateTimelistHawkes <- hawkesDT[["r_dateTime_nz"]]
-dateTimelist <- GXPHawkesDT[["r_dateTime_nz"]]
-i<-0
-for (time in c(dateTimelist)){
-  for (newtime in c(dateTimelistHawkes)){
-    i<-i+1
-    if (toString(time) == toString(newtime)){
-      #test = do.call("rbind",(hawkesDT[i,]))
-     extractHawkesDT = rbind(extractHawkesDT, data.table(hawkesDT[i,]))
-     # print(c(hawkesDT[i,]))
-    }
-  }
-  i <- 0
-}
+#extractHawkesDT <- NULL
+#dateTimelistHawkes <- hawkesDT[["r_dateTime_nz"]]
+#dateTimelist <- GXPHawkesDT[["r_dateTime_nz"]]
+#i<-0
+#for (time in c(dateTimelist)){
+#  for (newtime in c(dateTimelistHawkes)){
+#    i<-i+1
+#    if (toString(time) == toString(newtime)){
+#      #test = do.call("rbind",(hawkesDT[i,]))
+#    extractHawkesDT = rbind(extractHawkesDT, data.table(hawkesDT[i,]))
+#     # print(c(hawkesDT[i,]))
+#    }
+#  }
+#  i <- 0
+#}
 
 #Taranaki
 
-extractTaranakiDT <- NULL
-dateTimelistTaranaki <- taranakiDT[["r_dateTime_nz"]]
-dateTimelist <- GXPtaranakiDT[["r_dateTime_nz"]]
-i<-0
-for (time in c(dateTimelist)){
-  for (newtime in c(dateTimelistTaranaki)){
-    i<-i+1
-    if (toString(time) == toString(newtime)){
-      #test = do.call("rbind",(hawkesDT[i,]))
-      extractTaranakiDT = rbind(extractTaranakiDT, data.table(taranakiDT[i,]))
-     # print(c(hawkesDT[i,]))
-    }
-  }
-  i <- 0
-}
+#extractTaranakiDT <- NULL
+#dateTimelistTaranaki <- taranakiDT[["r_dateTime_nz"]]
+#dateTimelist <- GXPtaranakiDT[["r_dateTime_nz"]]
+#i<-0
+#for (time in c(dateTimelist)){
+#  for (newtime in c(dateTimelistTaranaki)){
+#    i<-i+1
+#    if (toString(time) == toString(newtime)){
+#      #test = do.call("rbind",(hawkesDT[i,]))
+#      extractTaranakiDT = rbind(extractTaranakiDT, data.table(taranakiDT[i,]))
+#     # print(c(hawkesDT[i,]))
+#    }
+#  }
+#  i <- 0
+#}
 
 #Maybe it is a good idea to export these two tables as a csv in case we want to re-run analysis without waiting for ages.
 
