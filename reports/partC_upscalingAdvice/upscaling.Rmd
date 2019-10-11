@@ -106,7 +106,7 @@ Explain data sources
 
 This sample comprises 44 households who were recruited via the local power lines companies in two areas: Taranaki starting in May 2014 and Hawkes Bay starting in November 2014 [@GREENGridData].
 
-Recruitment was via a non-random sampling method and a number of households were intentionally selected for their ‘complex’ electricity consumption (and embedded generation) patterns and appliances (Giraldo Ocampo 2015, @stephenson_smart_2017; @jack_minimal_2018; @suomalainen_comparative_2017).
+Recruitment was via a non-random sampling method and a number of households were intentionally selected for their ‘complex’ electricity consumption (and embedded generation) patterns and appliances [@dianaThesis2015, @stephenson_smart_2017; @jack_minimal_2018; @suomalainen_detailed_2019].
 
 The lines companies invited their own employees and those of other local companies to participate in the research and ~80 interested potential participants completed short or long forms of the Energy Cultures 2 household survey [@ec2Survey2015]. Households were then selected from this pool by the project team based on selection criteria relevant to the GREEN Grid project. These included:
 
