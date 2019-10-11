@@ -153,6 +153,6 @@ authors <- "Ben Anderson"
 
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/reports/partC_upscalingAdvice/upscaling.Rmd")
-makeReport(rmdFile)
+#makeReport(rmdFile)
 
 
