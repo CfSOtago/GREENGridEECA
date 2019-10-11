@@ -57,6 +57,9 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 # About
 
+ * List
+   * sublist
+   
 ## Citation
 
 ```{r citation, child=repoParams$citation}
@@ -94,29 +97,13 @@ As is described in the [archived data package](https://cfsotago.github.io/GREENG
 
 Nevertheless it is still useful to review potential upscaling methods should we wish to make assumptions of this kind or for a future time when a larger and representative sample of New Zealand household's energy consumption data is available. It is possible, for example, that BRANZ's planned new Household Energy End-Use Project ([HEEP](https://www.branz.co.nz/heep)) version 2 could provide just such a data source.
 
-The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple proportionate upscaling method used to estimate energy demand for hot water heating and lighting in New Zealand [@dortans_estimating_2019]. The second is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005;@anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
+The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple proportionate upscaling method used to estimate energy demand for hot water heating and lighting in New Zealand [@dortans_estimating_2019]. The second is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005; @anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
 
 # Simple Proportional Upscaling
 
-> refer Carsten's MSc for methods
+At it's simplest this method simply multiplies a per-household mean value calculated from a sample by the relevant population size. Thus, if we calculated that the mean half-hourly electricity consumption at 18:00 in winter 2015 in New Zealand was 0.5 kWh from the GREEN Grid sample then by simple multiplication we would expect total household electricity consumption to be 0.5 * the number of New Zealand households (`r nzHhPop2015`). We use this basic method in Section \@ref(totLoadBasic) below to estimate total residential demand profiles. We then 
 
-At it's simplest this method simply multiplies a per-household mean value calculated from a sample by the relevant population size. Thus, if we calculated that the mean half-hourly electricity consumption at 18:00 in winter 2015 in New Zealand was 0.5 kWh from the GREEN Grid sample then by simple multiplication we would expect total household electricity consumption to be 0.5 * the number of New Zealand households (`r nzHhPop2015`).
-
-> XX check using gxp data - is this reasonable?
-
-## Hot water
-
-Summarise CD report
-
-## Heat pumps
-
-Summarise CD report
-
-## Lighting
-
-Summarise CD report
-
-## Total electricity consumption
+## Total electricity consumption {#totLoadBasic}
 
 In this case we use the half-hourly total kW load data set produced in [Part A](https://cfsotago.github.io/GREENGridEECA/partA_dataProcessingReport_v1.0.html#610_total_load). To produce national estimates we first prepare the household level consumption data to provide mean energy consumption (kWh) per half-hour for each season in 2015. We use kWh to enable comparison with the GXP data used in [Part B](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak).
 
@@ -194,6 +181,18 @@ ggplot(plotDT, aes(x = hms, y = pc, colour = season)) +
 ```
 
 This approach illustrates the difficulty of producing robust national level using simple multiplication of a small and biased sample.
+
+## Hot water
+
+Summarise CD report
+
+## Heat pumps
+
+Summarise CD report
+
+## Lighting
+
+Summarise CD report
 
 # Complex re-weighting
 
