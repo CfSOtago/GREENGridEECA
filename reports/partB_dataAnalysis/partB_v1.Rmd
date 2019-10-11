@@ -92,7 +92,7 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 ```{r generic sample, child=repoParams$data}
 ```
 
-```{r partBdataProcessing}
+```{r partBdataProcessing, warning=FALSE}
 # put all this here before you report on it
 # this code _could_ go in the makeFile if you want...
 
@@ -154,28 +154,23 @@ powerDT <- powerDT[, peak := ifelse(obsHalfHour >= PS & obsHalfHour <= PE,
 
 # Peak Contribution
 
-For each dwelling using data averaged over 30 minute intervals to: 
 
- * calculate total mean demand (kW) over the period
- * find the maximum total demand load (kW) during this period
- * calculate mean percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in the maximum total load half-hour
- 
-We consider three different definition of peak:
- 
- * Winter evenings 17:00 - 21:00 
- * Regional/network peak
- * Sample co-incident peak - - select the 'peak' half-hour across all dwellings
- 
-Then for each dwelling:
- 1. calculate the mean demand over the peak period (if relevant)
- 2. find the maximum demand (kW) for the defined peak period
- 3. calculate percentage contribution
-
-To do this we classify the circuit labels according to the load types mentioned above (see Table \@ref(tab:categoriseCircuitsTable) in the Data Annex).
+In this section we use the GREEN Grid residential sample to estimate the contribution of each appliance to peak demand. For this analysis we use demand data averaged over 30 minute intervals. We consider three different definitions of peak demand:
+* Sample winter evenings 17:00 - 21:00. In this case we: 
+   * find the maximum half-hour demand for each household during the defined peak period
+   * calculate the percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in that half hour.
+*	Regional/network peak. In this case we:
+  * find the 100 maximum regional network (GXP) peak half hours
+  * calculate the mean contribution of each identifiable load to mean total load across all households in that region across these 100 half-hours
+* Sample co-incident peak. In this case we:
+  * find the half-hour across the sample which has the highest total combined demand
+  * calculate mean contribution of each identifiable load to mean total load across all households in this half-hour
+  
+To do this last part we classify the circuit labels according to the load types mentioned above (see Table \@ref(tab:findMaxHalfHours) in the Data Annex).
 
 ## Winter (June - August)  evenings 17:00 – 21:00
 
-In this section we select the peak-period half hours for all households for the winter evening period and then locate the half-hour which had the maximum total load for that dwelling. Table \@ref(tab:findMaxHalfHours) shows an example data extract.
+In this section we select the peak-period half hours for all households for the winter evening period and then locate the half-hour which had the maximum total load for that dwelling.
 
 ```{r findMaxHalfHours}
 powerDT[, year := lubridate::year(r_dateTime_nz)] # so we can do per-year analysis
@@ -213,16 +208,16 @@ for(n in 1:nrow(selectDT)){
 dataBucketDT <- GREENGridEECA::labelEECACircuits(dataBucketDT) # use the function to split the circuit string for easier string matching
 
 
-kableExtra::kable(head(dataBucketDT, 10), caption = "Example date peak load half-hour circuits - first 10 rows showing circuit demand at the peak total demand half-hour")  %>% # test result
+#kableExtra::kable(head(dataBucketDT, 10), caption = "Example date peak load half-hour circuits - first 10 rows showing circuit demand at the peak total demand half-hour")  %>% # test result
 
-  kable_styling()
+ # kable_styling()
 
 # Full EECA category label check table is in Data Annex
 categoriseCircuitsTable <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
 
 ```
 
-Table \@ref(tab:winterPeaktestTable) shows the winter peak load half-hours for each dwelling and year in winter. In this data extract, NaN indicates that no circuit data was obtained for this dwelling in this specific time period. We furthermore identify the contribution of each circuit label to the total demand. The complete data table is saved as "Extracted winter peak load half-hour circuits.csv" and is supplied with the report.
+Table \@ref(tab:winterPeaktestTable) shows the winter maximum load half-hours for each dwelling and year in winter during the peak periods defined above. In this data extract, NaN indicates that no circuit data was obtained for this dwelling in this specific time period. We also calculate the proportionate contribution of each identifiable load to the total load. The complete data table across all houses is saved as “Extracted winter peak load half-hour circuits.csv” and is supplied with the report.
 
 ```{r winterPeaktestTable}
 resAllSeasonsDT <- dcast(dataBucketDT,
@@ -355,19 +350,20 @@ ContriW1DT$season <- factor(ContriW1DT$season, levels = c("Spring","Summer",
                                                     "Autumn", "Winter"))#This puts the seasons in the right order in the plot
 ContriW1DT$eecaLabelContri <- factor(ContriW1DT$eecaLabelContri, levels = c("Hot Water","Heat Pump",
                                                     "Lighting", "Oven", "Others"))#This puts the seasons in the right order in the plot
+
+ConsLoadFactorSupplyDT <- copy(ContriW1DT)
 ```
 
-Figure \@ref(fig:wattageContributionPeak1Plot) and \@ref(fig:wattageContributionPeak1PlotPercent) show the contribution to peak demand of various appliances averaged over households. The contribution of hot water slightly increases in summer whereas contribution of heat pumps decreases over summer. Hot water is identified as the appliance that is relatively contributing the most to peak demand in 2015.
+We have then used this data to calculate the mean contribution of each identifiable load to peak demand (time period 17:00-21:00) in the sample and this is shown in Figure \@ref(fig:wattageContributionPeak1Plot) and Figure \@ref(fig:wattageContributionPeak1PlotPercent) (as percentage contribution). Figure \@ref(fig:wattageContributionPeak1Plot) shows the seasonal variation in actual power demand especially for heat pumps and lighting but also shows the relative constancy of hot water. ‘Others’ almost certainly contains some forms of heating as it is much lower in summer. It should be noted that these mean values will mask considerable day to day and inter/intra-household variation On the other hand, and as a consequence the percentage contribution of hot water slightly increases in summer whereas the contribution of heat pumps decreases over summer. Hot water is identified as the appliance that is contributing the most to peak demand in this case.
 
 
-```{r wattageContributionPeak1Plot, fig.cap="Wattage contribution to peak demand (17:00-21:00) in 2015 "}
+```{r wattageContributionPeak1Plot, fig.cap="Average contribution to daily peak demand (17:00-21:00) per season in 2015"}
 
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
   theme(text = element_text(family = "Cambria"),
-        axis.text.y = element_blank(),
         axis.text.x = element_text(colour = "black"),
-        axis.ticks.y = element_blank())+
+        axis.text.y = element_text(colour ="black"))+
   
     geom_text(aes(y = averageContri,
               label = sprintf("%0.2f",averageContri)),
@@ -382,7 +378,7 @@ myPlot
 
 
 ```
-```{r wattageContributionPeak1PlotPercent, fig.cap="Percentage contribution to peak demand (17:00-21:00) in 2015 " }
+```{r wattageContributionPeak1PlotPercent, fig.cap="Average percentage contribution to peak demand (17:00-21:00) for each season in 2015" }
 
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= "", y= percentage, fill = eecaLabelContri)) +
   geom_bar(stat = "identity", width = 1, color ="white")+
@@ -404,7 +400,13 @@ myPlot
 
 ## Region/network coincident peak
 
-In this section we focus on two particular regions to analyse the contribution to peak deamand. These two regions are Hawke's Bay and Taranaki. Most of the household in our data set were monitored in these regions. In a first step, we link the region to the dwelling ID. We extract the power data for both regions seperately and exclude households that do not match with the defined regions. 
+In this section we focus on the contribution of these identifiable loads to regional peak demand.  Most of the households in our data set were in the Hawke’s Bay and Taranaki region, so we focus on these regions by separating the sample into the Hawke’s Bay and Taranaki sub-samples.
+
+22 houses are based in Taranaki and 20 houses in Hawke's Bay. Within the house sample in Taranaki, 31% of the houses have heat pumps installed, 45% hot water cylinders, and 27% other heat sources. In contrast, the Hawke's Bay sub-sample comprises of 90% heat pumps, 90% hot water cylinder, and 36% other heat sources.
+
+e.g. see https://cfsotago.github.io/GREENGridData/householdAttributeProcessingReport_v1.0.html#51_main_heat_source 
+
+To determine the timing of the matching regional peaks, data on regional demand for the Hawke’s Bay and Taranaki Grid Exit Point (GXP) was obtained from the Electricity Authority and for each GXP, the timestamps of the 100 half hours with the highest demand were identified. We then extracted the power demand of each dwelling in each of the two regions during these 100 half hours for analysis.
 
 ```{r regionalpeak}
 
@@ -561,7 +563,7 @@ GXPHawkesDT <- GXPHawkesDT[month == 9 | month == 10 | month == 11, season := "Sp
 
 ```
 
-Data on regional demand for the Hawke's Bay and Taranaki Grid Exit Point (GXP) was obtained from the Electriicty Authority and the top 100 demand half hours (i.e. the date time of the top 100 half hours) were extracted from this data. The demand of each house in the two regions was then extracted for the top 100 half-hours.
+
 
 ```{r ExtractingRows, eval=FALSE}
 
@@ -658,7 +660,7 @@ extractTaranakiDT <- data.table::as.data.table(
 
 ###Hawke's Bay
 
-Table \@ref(tab:RegionalAnalysisHawkesContribution) presents example data of the successfully extracted peak load half-hours by circuit for 2015. Peak in the following is defined as the period of time where the to 100 GXP date times occur. The complete data table is saved as "Extracted peak load half-hour circuits for Hawke's Bay.csv" and is supplied with the report.
+Table \@ref(tab:RegionalAnalysisHawkesContribution) presents example data of the extracted peak half-hours by circuit for 2015 for the Hawke’s Bay dwellings. In this example data they are matching to a number of regional peak half hours in June 2015. The complete data table is saved as “Extracted peak load half-hour circuits for Hawke’s Bay.csv” and is supplied with the report.
 
 ```{r RegionalAnalysisHawkesContribution}
 
@@ -679,11 +681,22 @@ resAllSeasonsDT <- resAllSeasonsDT[, contribution_OV := `Oven`/Total]
 #resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
 resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := `XX_Other`/Total]
 
-kableExtra::kable(head(resAllSeasonsDT[year == "2015"], 10), digits = 3,
+copiedtable <- copy(resAllSeasonsDT)
+copiedtable <- copiedtable[, c( "contribution_HW") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_HP") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_LI") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_OV") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_XX") := NULL]#We do not need this column
+
+
+
+
+
+kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
                   caption = "Example data: Extracted peak load half-hour circuits for Hawke's Bay (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
-write_csv(resAllSeasonsDT, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted peak load half-hour circuits for Hawke's Bay.csv")
+write_csv(copiedtable, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted peak load half-hour circuits for Hawke's Bay.csv")
 
 ```
 
@@ -723,7 +736,7 @@ myPlot <- ggplot2::ggplot(summaryP1DT[year == 2015], aes(x= season, fill = eecaL
   geom_bar(aes(y = averageContri), stat = "identity")+
   theme(text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
-        axis.text.x = element_text(colour = "black"),
+        axis.text.x = element_blank(),
         axis.ticks.y = element_blank())+
   
     geom_text(aes(y = averageContri,
@@ -779,17 +792,17 @@ ContriW1DT$eecaLabelContri <- factor(ContriW1DT$eecaLabelContri, levels = c("Hot
                                                     "Lighting", "Oven", "Others"))#This puts the seasons in the right order in the plot
 ```
 
-In terms of average wattage contribution of the top 100 GXP date times in Hawke's Bay (Figure \@ref(fig:wattageContributionHawkesPlot) ), Hot Water and Heat Pumps contribute 682 Watts and 672 Watts respectively. Heat Pumps and Hot Water contributed almost equally to peak demand in Hawke's Bay (27% and 28%), followed by Lighitng (10%) and Oven (3%). Other demand that was not further specified contributed 32%. This is presented in Figure \@ref(fig:wattageContributionHawkesPlotPercentage).
+The average contribution of each identifiable load to the Hawke’s Bay regional peak demand  (100 half hours with the highest demand at Hawke’s Bay GXP) for the sample is shown in Figure \@ref(fig:wattageContributionHawkesPlot). Hot Water and Heat Pumps contribute a mean of 682 Watts and 672 Watts respectively but ‘Others’ (which probably includes heating) contributes 792. Heat Pumps and Hot Water contributed almost equally to regional network peak demand in Hawke’s Bay (27% and 28%), followed by Lighting (10%) and Oven (3%). However, ‘Other’ demand that was not further specified contributed 32%. This is presented in Figure \@ref(fig:wattageContributionHawkesPlotPercentage). it should be noted that the inherent bias in the sample, and the very small sample size in each region means that these % results are almost certainly not robust.
 
-
-```{r wattageContributionHawkesPlot, fig.cap="Average appliance contribution to peak demand for the top 100 GXP half hours in Hawkes Bay for 2015"}
+```{r wattageContributionHawkesPlot, fig.cap="Average contribution of each identifiable load in the sample to the Hawke’s bay regional peak (100 half hours with the highest demand at Hawkes Bay GXP) for 2015"}
 
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
   theme(text = element_text(family = "Cambria"),
-        axis.text.y = element_blank(),
-        axis.text.x = element_text(colour = "black"),
-        axis.ticks.y = element_blank())+
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_text(colour ="black"))+
+  
   
     geom_text(aes(y = averageContri,
               label = sprintf("%0.2f",averageContri)),
@@ -799,7 +812,7 @@ myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLa
   #scale_y_continuous(breaks = c()) +
   #ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
   guides(fill=guide_legend(title="Circuit"))+
-  labs(x='Season', y='Power in W/house') 
+  labs(x='', y='Power in W/house') 
 myPlot
 
 
@@ -810,11 +823,12 @@ myPlot
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= "", y= percentage, fill = eecaLabelContri)) +
   geom_bar(stat = "identity", width = 1, color ="white")+
   #labs(x='', y='percentage')+
-   facet_grid(facets=. ~season) +
+   #facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
  theme(text = element_text(family = "Cambria"),
-       legend.position = 'bottom')+
+       legend.position = 'bottom',
+        axis.text.y = element_blank())+
   guides(fill=guide_legend(title="Circuit"))+
   geom_text(aes(y = percentage,
               label = sprintf("%0.0f%%",percentage)),
@@ -829,7 +843,7 @@ myPlot
 
 ###Taranaki
 
-Table \@ref(tab:RegionalAnalysisTaranakiContribution) presents example data of extracted peak load half-hours by circuit for 2015 in Taranaki. The complete data table is saved as "Extracted peak load half-hour circuits for Taranaki.csv" and is supplied with the report.
+Table \@ref(tab:RegionalAnalysisTaranakiContribution) presents example data of the extracted peak half-hours by circuit for 2015 for the Taranaki houses. The complete data table is saved as “Extracted peak load half-hour circuits for Taranaki.csv” and is supplied with the report.
 
 ```{r RegionalAnalysisTaranakiContribution}
 
@@ -850,12 +864,20 @@ resAllSeasonsDT <- resAllSeasonsDT[, contribution_OV := `Oven`/Total]
 #resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
 resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := `XX_Other`/Total]
 
-kableExtra::kable(head(resAllSeasonsDT[year == "2015"], 10), digits = 3,
+
+copiedtable <- copy(resAllSeasonsDT)
+copiedtable <- copiedtable[, c( "contribution_HW") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_HP") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_LI") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_OV") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "contribution_XX") := NULL]#We do not need this column
+
+kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
                   caption = "Example data: Extracted peak load half-hour circuits (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
 
-write_csv(resAllSeasonsDT, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted peak load half-hour circuits for Taranaki.csv")
+write_csv(copiedtable, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted peak load half-hour circuits for Taranaki.csv")
 
 
 
@@ -966,14 +988,14 @@ ContriW1DT$eecaLabelContri <- factor(ContriW1DT$eecaLabelContri, levels = c("Hot
 
 The averaged wattage contribution by circuit is presented in Figure \@ref(fig:wattageContributionTaranakiPlot).Figure \@ref(fig:wattageContributionTaranakiPlotPercentage) shows the percentage contribution to peak demand as an average over the date times in the GXP data by circuits. Lighting contributes the most to peak demand with 25%, followed by Heat Pumps (23%), Hot Water (14%), and Oven (8%). Not further specified loads contribute 30% to peak demand in Taranaki.
 
-```{r wattageContributionTaranakiPlot, fig.cap="Average appliance contribution to peak demand for top 100 GXP half hours in Taranaki for 2015 "}
+```{r wattageContributionTaranakiPlot, fig.cap="Average contribution of each identifiable load to peak demand in Taranaki in 2015"}
 
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
-        axis.text.y = element_blank(),
-        axis.text.x = element_text(colour = "black"),
-        axis.ticks.y = element_blank())+
+    theme(text = element_text(family = "Cambria"),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_text(colour ="black"))+
   
     geom_text(aes(y = averageContri,
               label = sprintf("%0.2f",averageContri)),
@@ -983,7 +1005,7 @@ myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLa
   #scale_y_continuous(breaks = c()) +
   #ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
   guides(fill=guide_legend(title="Circuit"))+
-  labs(x='Season', y='Power in W/house') 
+  labs(x='', y='Power in W/house') 
 myPlot
 
 
@@ -994,7 +1016,7 @@ myPlot
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= "", y= percentage, fill = eecaLabelContri)) +
   geom_bar(stat = "identity", width = 1, color ="white")+
   #labs(x='', y='percentage')+
-   facet_grid(facets=. ~season) +
+   #facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
  theme(text = element_text(family = "Cambria"),
@@ -1010,23 +1032,21 @@ myPlot
 
 ## Sample coincident peak
 
-The sample coincident peak utilizes the GREENGrid sample to define peak demand. This is in contrast to section 4.1 where peak demand was predefined as the time between 17:00 and 21:00 in winter and section 4.2 wehere peak demand was predefined as the top 100 half hours based on regional GXP data.
+In this section the sum of half-hourly demand over all dwellings in the the GREENGrid sample is used to define peak demand. We define the peak as the 20 half hours with the highest total half-hourly demand summed across all dwellings, which we refer to as the sample coincident peak. This is in contrast to section 4.1 where peak demand was predefined as the time between 17:00 and 21:00 in winter and section 4.2 where peak demand was predefined as the 100 half hours with the largest demand based on regional GXP data.
 
-Table \@ref(tab:sampleCoincidentPeak) identifies the half hours of peak demand in 2015 for the total sample load. Results are presented in a descending order. Please note that the aim of this data table is to identify the date and time of overall sample peak demand. The complete data table is saved as "Extracted winter peak load half-hours in descending order for 2015" and is supplied with the report.
-
-To do that, we have to consider the number of observations for each half hour (otherwise a high number of observations would have a higher impact on overall demand). The displayed average power in Watts is, therefore, not the total for the half-hour but a division of the sum of wattage per half-hour and the number of observations. We would like to calculate the relative demand that considers a varying number of observations (nobs).
+Table \@ref(tab:sampleCoincidentPeak) identifies the half hours of highest overall demand in 2015 using the sum of the half-hourly mean power values (summeanPowerW). As we can see the number of dwellings contributing to this grand sum is between 31 and 33 and the table is sorted in descending order of the mean total power across all contributing dwellings. Clearly we would expect summed values with more contributing dwellings to be higher and so we control for ‘missing dwellings’ by sorting by and using the mean total power (last column) as our indicator. The complete data table is saved as "Extracted winter peak load half-hours in descending order for 2015" and is supplied with the report.
                 
 ```{r sampleCoincidentPeak}
 
 sampleDT <- labelEECACircuits(powerDT)
 
-sampleDT <- sampleDT[, summeanPowerW := NA]
+sampleDT <- sampleDT[, sumOfmeanPowerW := NA]
 
-sampleShortDT <- sampleDT[, .(summeanPowerW = sum(meanPowerW, na.rm = TRUE), 
-                              nobs=.N), keyby=.(eecaCircuit, date, season, year, obsHalfHour)]#This is the aggregated Wattage for each circuit month etc. see keyby in order to conduct sample coincident peak analysis 
+sampleShortDT <- sampleDT[, .(sumOfmeanPowerW = sum(meanPowerW, na.rm = TRUE), 
+                              nDwellings=.N), keyby=.(eecaCircuit, date, season, year, obsHalfHour)]#This is the aggregated Wattage for each circuit month etc. see keyby in order to conduct sample coincident peak analysis 
 
 
-sampleShortDT <- sampleShortDT[, averagePowerW := summeanPowerW/nobs]#We have to consider that some of the obs have only one obs, some have up to 200. We need to take the average to identify the top 20 entries (their time of occurance)
+sampleShortDT <- sampleShortDT[, averagePowerW := sumOfmeanPowerW/nDwellings]#We have to consider that some of the obs have only one obs, some have up to 200. We need to take the average to identify the top 20 entries (their time of occurance)
 
 
 sample2015DT <- sampleShortDT[year == 2015] # Getting rid of years that are not necessary for this analysis
@@ -1048,28 +1068,7 @@ write_csv(resAllSeasonsDT, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/c
 ####Filtering the top20 peak half-hours based on our sample. XXThis is hard-coded - is there a better way to do it??XX
 
 ```
-In summary, the following half hours were identified as the top 20 sample peak half hours in 2015:
 
-01. date == "2015-06-28" & obsHalfHour == hms::as.hms("18:00:00") 
-02. date == "2015-08-21" & obsHalfHour == hms::as.hms("07:00:00") 
-03. date == "2015-06-23" & obsHalfHour == hms::as.hms("18:00:00")
-04. date == "2015-06-24" & obsHalfHour == hms::as.hms("07:00:00") 
-05. date == "2015-05-29" & obsHalfHour == hms::as.hms("07:00:00") 
-06. date == "2015-06-17" & obsHalfHour == hms::as.hms("07:00:00") 
-07. date == "2015-08-12" & obsHalfHour == hms::as.hms("07:00:00") 
-08. date == "2015-06-23" & obsHalfHour == hms::as.hms("17:30:00") 
-09. date == "2015-06-26" & obsHalfHour == hms::as.hms("07:00:00") 
-10. date == "2015-06-25" & obsHalfHour == hms::as.hms("07:30:00") 
-11. date == "2015-06-23" & obsHalfHour == hms::as.hms("18:30:00") 
-12. date == "2015-05-25" & obsHalfHour == hms::as.hms("19:00:00") 
-13. date == "2015-06-23" & obsHalfHour == hms::as.hms("07:00:00") 
-14. date == "2015-08-10" & obsHalfHour == hms::as.hms("20:00:00") 
-15. date == "2015-06-26" & obsHalfHour == hms::as.hms("07:30:00") 
-16. date == "2015-07-10" & obsHalfHour == hms::as.hms("07:30:00") 
-17. date == "2015-08-28" & obsHalfHour == hms::as.hms("07:00:00") 
-18. date == "2015-07-09" & obsHalfHour == hms::as.hms("07:30:00") 
-19. date == "2015-06-23" & obsHalfHour == hms::as.hms("19:30:00") 
-20. date == "2015-05-27" & obsHalfHour == hms::as.hms("07:00:00")
 ```{r topPeak}
 
 filteredDT <- powerDT %>% filter(date == "2015-06-28" & obsHalfHour == hms::as.hms("18:00:00") |
@@ -1140,8 +1139,9 @@ summaryPSDT <- summaryPSDT[, averageContri := averageContri*100 ]#Conversion to 
 summaryPSDT$season <- factor(summaryPSDT$season, levels = c("Spring","Summer",
                                                     "Autumn", "Winter"))#This puts the seasons in the right order in the plot
 ```
+Figure \@ref(fig:wattageContributionPeakSamplePlot) shows the mean contribution of each identifiable load for the sample for one of the identified peak half hours ( 2015-06-28 at 18:00:00). The results show that Hot Water contributes the most, followed by Heat Pumps and Lighting. The plot also shows that much power was drawn from circuits other than the identified ones (summarized in “Others”). Figure \@ref(fig:wattageContributionPeakSamplePlotPercentage) shows the associated percentage contribution. Since the chosen half-hour is on the 2015-06-28 at 18:00:00 (winter) Heat Pump and Lighting demand are clearly contributing to peak demand, however, Hot Water is the circuit contributing the most.
 
-Figure \@ref(fig:wattageContributionPeakSamplePlot) presents the wattage contribution on the 2015-06-28 at 18:00:00 as an average over the households for one of the identified top peak half hours. The results show that Hot Water contributes the most, followed by Heat Pumps and Lighting. The plot also visualizes that much power was drawn from circuits other than the identified ones (summarized in "Others"). Figure \@ref(fig:wattageContributionPeakSamplePlotPercentage) shows the associated percentage contribution. Since the chosen half-hour of peak demand is on the 2015-06-28 at 18:00:00 (winter) Heat Pump and Lighting demand are clearly contributing to peak demand. Furthermore, How Water is the circuit contributing the most.
+Again, these results should be viewed with some caution due to the non-representative nature of the GREEN Grid sample. While they represent the sample co-incident peak contributions, we cannot assume that this is representative of all New Zealand dwellings.
 
 
 ```{r wattageContributionSample}
@@ -1185,17 +1185,16 @@ ContriWSDT$eecaLabelContri <- factor(ContriWSDT$eecaLabelContri, levels = c("Hot
 ```
 
 
-```{r wattageContributionPeakSamplePlot, fig.cap="Average appliance contribution to peak demand on the 2015-06-28 at 18:00:00 (one of the top 20)  "}
+```{r wattageContributionPeakSamplePlot, fig.cap="Average appliance contribution to peak demand on the 2015-06-28 at 18:00:00 (one of the top 20 half hours in the sample)"}
 
 
 
 myPlot <- ggplot2::ggplot(ContriWSDT[r_dateTime_nz == "2015-06-28 18:00:00"], aes(x= r_dateTime_nz, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
   theme(text = element_text(family = "Cambria"),
-        axis.text.y = element_blank(),
         axis.text.x = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.ticks.x = element_blank())+
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_text(colour ="black"))+
     geom_text(aes(y = averageContri,
              label = sprintf("%0.2f",averageContri)),
             position = position_stack(vjust = .5))+
@@ -1215,7 +1214,7 @@ myPlot
 myPlot <- ggplot2::ggplot(ContriWSDT[r_dateTime_nz == "2015-06-28 18:00:00"], aes(x= "", y= percentage, fill = eecaLabelContri)) +
   geom_bar(stat = "identity", width = 1, color ="white")+
   #labs(x='', y='percentage')+
-   facet_grid(facets=. ~season) +
+   #facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
  theme(text = element_text(family = "Cambria"),
@@ -1266,14 +1265,7 @@ myPlot
 
 # Annual Contribution
 
-This section presents annual and seasonal energy consumption for a variety of circuits and the variability between dwellings. This analysis considers the year 2015.
-
-
-
-Figure \@ref(fig:annualplot) shows the distribution of annual energy consumption (kWh) between houses for various circuits. Hot Water draws the most energy per year with a pronounced variation between houses. Lighting, Heat Pump, and Oven follow. Not further specified circuits are summarised in "Others".
-
-
-
+This section presents annual and seasonal energy consumption (in kWh) for each identifiable load. This analysis considers the year 2015. Figure \@ref(fig:annualplot) shows the annual total energy consumption (in kWh) for the identifiable loads in a box and whisker plot to show the central distribution and also outliers. Hot Water consumes the most energy per year with a pronounced variation between houses. Lighting, Heat Pump, and Oven follow. Not further specified circuits are summarised in “Others” but this group clearly drives large inter-household variation.
 
 ```{r annualanalysis}
 
@@ -1326,7 +1318,7 @@ dt <- dt[, totalEnergykWh := totalEnergyWh/1000]
 
 ```
 
-```{r annualplot, fig.cap="Distribution of annual energy consumption between houses for 2015", warning=FALSE}
+```{r annualplot, fig.cap="Box and whisker plot of annual energy consumption (per house) of each identifiable load for 2015", warning=FALSE}
 
 
 myPlot <- ggplot2::ggplot(dt[year == 2015], aes((y=totalEnergykWh), x=eecaCircuit)) +
@@ -1393,10 +1385,7 @@ dt <- data.table::as.data.table(gather(analysisShortDT, eecaCircuit, totalEnergy
 dt$season <- factor(dt$season, levels = c("Spring","Summer",
                                                     "Autumn", "Winter"))#This puts the seasons in the right order in the plot
 ```
-
-
-Figure \@ref(fig:annualConsplot1) shows the distribution in seasonal energy consumption across all houses for Hot Water in 2015.  Please note that Figure \@ref(fig:annualConsplot1) shows energy in kWh and not power demand in Watts. Results show that most energy consumption of Hot Water is in winter, followed by spring and autumn.
-
+Figure \@ref(fig:annualConsplot1) conceals the significant variation in demand by the various appliances. In particular it conceals the differences between seasons. Figure \@ref(fig:annualConsplot1) shows the distribution in seasonal energy consumption in kWh across all houses for Hot Water in 2015 using a density plot. Results show that most energy consumption of Hot Water is in winter, followed by spring and autumn. Energy consumption for hot water in summer is substantially lower with a distinctively different pattern to both the spring/autumn seasons and winter.
 
 ```{r annualConsplot1, fig.cap="Distribution of easonal energy consumption for Hot Water for all houses for 2015", warning=FALSE}
 
@@ -1436,7 +1425,7 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Heat Pump"], aes(x=totalEnergyWh/100
 myPlot
 
 ```
-Energy consumption of Lighting is particularly apparent in spring, autumn, and winter as presneted in Figure \@ref(fig:annualConsplot3). Less energy consumption is identified in summer.
+Energy consumption of Lighting is particularly apparent in spring, autumn, and winter as presented in Figure \@ref(fig:annualConsplot3). Less energy consumption is identified in summer.
 
 
 ```{r annualConsplot3, fig.cap="Distribition of seasonal energy consumption for Lighting for all houses for 2015", warning=FALSE}
@@ -1482,7 +1471,32 @@ myPlot
 ```
 
 
-# Conservation Load Factor
+For "Others", there is a lot of seasonal variation in seasonal energy consumption as shown in Figure \@ref(fig:annualConsplot5). As this circuit contains appliances not further specified it is difficult to identify the appliance causing this energy consumption, particularly in summer. Therefore, further research is necessary.
+
+
+```{r annualConsplot5, fig.cap="Distribution of seasonal energy consumption for Others for all houses for 2015", warning=FALSE}
+
+myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Others"], aes(x=totalEnergyWh/1000, colour=season)) +
+  geom_density() +
+  labs(x = "Seasonal energy (kWh)") +
+  scale_x_continuous( limits = c(0,500))+
+     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+            color="blue", linetype="dashed", size=0.5)+
+  #facet_grid( season ~ year)+
+  
+  theme(text = element_text(family = "Cambria"),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"),
+        axis.ticks.y = element_line(colour = "black"),
+        axis.ticks.x = element_line(colour = "black"))
+myPlot
+
+```
+
+
+
+
+# Load Factor
 
 
 ```{r partBconsLoadFactor}
@@ -1504,19 +1518,58 @@ consloadDT <- consloadDT[, .(meanAverageSeasonW =meanAverageSeasonW), keyby =.(s
 consloadDT<-  unique(consloadDT)# Removing duplicates XX_BE VERY CAREFUL WITH THIS_XX
 
 
+#----------------------------------
+#PartA2 to supply EECA data table
+
+consloadEECADT <- copy(powerDT)#Utilise adjusted raw data
+
+consloadEECADT <- consloadEECADT[season  == "Winter" &
+             year == "2015" &
+             obsHalfHour >= hms::as.hms("17:00:00") &
+             obsHalfHour <= hms::as.hms("21:00:00")] #This is our definition of peak demand for this analysis regarding the conservation load factor
+
+consloadEECADT <- consloadEECADT[, averageSeasonW := mean(meanPowerW, na.rm = TRUE), keyby =.(season, eecaCircuit, year, linkID)]#This gives us the average power at peak for each household and season and circuit
+
+
+consloadEECADT <- consloadEECADT[, .(averageSeasonW =averageSeasonW), keyby =.(season, eecaCircuit, year, linkID)]#Long to short dt
+consloadEECADT<-  unique(consloadEECADT)# Removing duplicates XX_BE VERY CAREFUL WITH THIS_XX
+
+consloadEECADT <- subset(consloadEECADT, eecaCircuit == "Heat Pump or Heating"| 
+                       eecaCircuit == "Hot water"|
+                       eecaCircuit == "Lighting"|
+                       eecaCircuit == "Oven"|
+                       eecaCircuit == "XX_Other")
+
+consloadEECADT <- consloadEECADT[, averagecontri := ConsLoadFactorSupplyDT$averageContri]
+consloadEECADT <- consloadEECADT[, consLoadFac := averageSeasonW / averagecontri ]#Now do the caclculation based on the Jacoby report. A completely different picture now!
+
+consloadEECADT <- dcast(consloadEECADT,
+           season + year + linkID  ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "consLoadFac")
+
+
+consloadEECADT <- setnames(consloadEECADT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "XX_Other"),
+                        new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Others"))
+
+consloadEECADT <- data.table::as.data.table(gather(consloadEECADT, eecaLabelContri, consLoadFac, `Heat Pump`:`Others`, factor_key = TRUE))#This brings our data into a nice form for the plot
+
+write_csv(consloadEECADT, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted load factors for all houses for 2015 in winter between 17_21_00.csv")
+
+
 #----------
 
 #Part B
 
 
 #The following calculates average energy consumption per year for each circuit as an average over all households _XXKeep in mind that 11m data points are reduced to 6XX_
-EnergyConsDT <- copy(powerDT)#Utilise adjusted raw data to calculate average total energy consumption
-EnergyConsDT <- EnergyConsDT[year == "2015"]#Only need to do this for 2015
-EnergyConsDT <- EnergyConsDT[, EnergyWh := meanPowerW/2]#Creating energy column
-EnergyConsDT <- EnergyConsDT[, totalEnergyWh := sum(EnergyWh, na.rm = TRUE), keyby =.(eecaCircuit, year, linkID)]#This gives us the total energy consumption for each circuit and household over all seasons
-EnergyConsDT <- EnergyConsDT[, meantotalEnergyWh := mean(totalEnergyWh, na.rm = TRUE), keyby =.(eecaCircuit, year)]#Average Wh over the households
-EnergyConsDT <- EnergyConsDT[, .(meantotalEnergyWh =meantotalEnergyWh), keyby =.(eecaCircuit, year)]#Long to short dt
-EnergyConsDT<-  unique(EnergyConsDT)# Removing duplicates XX_BE VERY CAREFUL WITH THIS_XX
+#EnergyConsDT <- copy(powerDT)#Utilise adjusted raw data to calculate average total energy consumption
+#EnergyConsDT <- EnergyConsDT[year == "2015"]#Only need to do this for 2015
+#EnergyConsDT <- EnergyConsDT[, EnergyWh := meanPowerW/2]#Creating energy column
+#EnergyConsDT <- EnergyConsDT[, totalEnergyWh := sum(EnergyWh, na.rm = TRUE), keyby =.(eecaCircuit, year, #linkID)]#This gives us the total energy consumption for each circuit and household over all seasons
+#EnergyConsDT <- EnergyConsDT[, meantotalEnergyWh := mean(totalEnergyWh, na.rm = TRUE), keyby =.(eecaCircuit, #year)]#Average Wh over the households
+#EnergyConsDT <- EnergyConsDT[, .(meantotalEnergyWh =meantotalEnergyWh), keyby =.(eecaCircuit, year)]#Long to #short dt
+#EnergyConsDT<-  unique(EnergyConsDT)# Removing duplicates XX_BE VERY CAREFUL WITH THIS_XX
 
 #----------
 
@@ -1524,11 +1577,25 @@ EnergyConsDT<-  unique(EnergyConsDT)# Removing duplicates XX_BE VERY CAREFUL WIT
 
 #The following calculates the CLF based on the calculations above
 
-consloadDT <- consloadDT[, meantotalEnergyWh := EnergyConsDT$meantotalEnergyWh]#Copy result in original conservation load table
-consloadDT <- consloadDT[, consLoadFac := meanAverageSeasonW / (meantotalEnergyWh/1000)]#As defined by EECA
+#consloadDT <- consloadDT[, meantotalEnergyWh := EnergyConsDT$meantotalEnergyWh]#Copy result in original conservation load table
+#consloadDT <- consloadDT[, consLoadFac := meanAverageSeasonW / (meantotalEnergyWh/1000)]#As defined by EECA
+
+
+#_XX It turns out the provided definition to calculate the Cons load factor was wrong. We do not need the meant total energy but the average demand at peak... I copied our results from the first definition of peak demand (this is the average wattage of maximum half hours at peak demand at 17-21:00.)
 
 
 
+
+ConsLoadFactorSupplyDT <- subset(ConsLoadFactorSupplyDT, season=="Winter")#This is our copied result
+
+consloadDT <- subset(consloadDT, eecaCircuit == "Heat Pump or Heating"| 
+                       eecaCircuit == "Hot water"|
+                       eecaCircuit == "Lighting"|
+                       eecaCircuit == "Oven"|
+                       eecaCircuit == "XX_Other")
+
+consloadDT <- consloadDT[, averagecontri := ConsLoadFactorSupplyDT$averageContri]
+consloadDT <- consloadDT[, consLoadFac2 := meanAverageSeasonW / averagecontri ]#Now do the caclculation based on the Jacoby report. A completely different picture now!
 
 
 
@@ -1536,42 +1603,43 @@ consloadDT <- consloadDT[, consLoadFac := meanAverageSeasonW / (meantotalEnergyW
 consloadCastDT <- dcast(consloadDT,
            season + year  ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
-           value.var = "consLoadFac")
-consloadCastDT<-consloadCastDT[, c( "Total") := NULL]#We do not need this column
+           value.var = "consLoadFac2")
+
 
 consloadCastDT <- setnames(consloadCastDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "XX_Other"),
                         new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Others"))
 
-consloadCastDT <- data.table::as.data.table(gather(consloadCastDT, eecaLabelContri, consLoadFac, `Heat Pump`:`Others`, factor_key = TRUE))#This brings our data into a nice form for the plot
+consloadCastDT <- data.table::as.data.table(gather(consloadCastDT, eecaLabelContri, consLoadFac2, `Heat Pump`:`Others`, factor_key = TRUE))#This brings our data into a nice form for the plot
 
 ```
 
-Figure \@ref(fig:consLoadPlot) shows the Conservation Load Factor (CLF) for winter in 2015 as the devision of seasonal demand (W) and  drawn energy (kWh) in this season as an average over all houses. The period of peak demand was set to 17:00-21:00 in winter. Based on this definition power was calculated as an average over all households. Results show that the CLF for Heat Pumps (0.56) is the highest followed by Lighting (0.45) and Oven (0.41). Please note that these numbers are averages over all households, dates, and times for 2015.
+The Load Factor (LF) is defined as the ratio of average demand (W) in any given half-hour? to peak demand (W). The LF varies between 0 and 1 and provides a measure of how much the load contributes to peak. If the LF for a particular load is 1 then the load is flat. If it is less than one it shows that the load disproportionately contributes to the peak. In this section we define peak demand to be the maximum demand between 17:00-21:00 in winter (see first definition of peak demand).
 
+Figure \@ref(fig:consLoadPlot) shows the Load Factor (LF) for each identifiable load averaged over all houses in the sample. Based on this definition power was calculated as an average over all households. This calculation builds the average seasonal demand by circuit, linkID, and season and then averages this over the houses. In a second step, we utilise the identified maximum demand used for the first definition of peak demand to estimate the LF. Results show that the LF for Lighting (0.53) is the highest followed by Heat Pump (0.47) and Hot Water (0.25). Please note that these numbers represent  averages over all households, dates, and times for 2015.
 
-
+The full data table containing LFs (if available) for each house is saved as "Extracted load factors for all houses for 2015 in winter between 17_21_00.csv" and supplied with the report.
 
 
 ```{r consLoadPlot, fig.cap="Conservation Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
 
 
 myPlot <- ggplot2::ggplot(consloadCastDT, aes(x= eecaLabelContri, fill = eecaLabelContri)) +
-  geom_bar(aes(y = consLoadFac), stat = "identity")+
+  geom_bar(aes(y = consLoadFac2), stat = "identity")+
   theme(text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
         axis.text.x = element_text(colour = "black"),
         legend.position = "none",
         axis.ticks.y = element_blank())+
   
-    geom_text(aes(y = consLoadFac,
-             label = sprintf("%0.2f",consLoadFac)),
+    geom_text(aes(y = consLoadFac2,
+             label = sprintf("%0.2f",consLoadFac2)),
             position = position_stack(vjust = .5))+
   
   #facet_grid(season ~ .) +
   #scale_y_continuous(breaks = c()) +
   #ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
   guides(fill=guide_legend(title="Circuit"))+
-  labs(x='Circuit', y='Conservation Load Factor') 
+  labs(x='Circuit', y='Load Factor') 
 myPlot
 
 
