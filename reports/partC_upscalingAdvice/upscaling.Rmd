@@ -57,9 +57,6 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 # About
 
- * List
-   * sublist
-   
 ## Citation
 
 ```{r citation, child=repoParams$citation}
@@ -97,13 +94,102 @@ As is described in the [archived data package](https://cfsotago.github.io/GREENG
 
 Nevertheless it is still useful to review potential upscaling methods should we wish to make assumptions of this kind or for a future time when a larger and representative sample of New Zealand household's energy consumption data is available. It is possible, for example, that BRANZ's planned new Household Energy End-Use Project ([HEEP](https://www.branz.co.nz/heep)) version 2 could provide just such a data source.
 
-The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple proportionate upscaling method used to estimate energy demand for hot water heating and lighting in New Zealand [@dortans_estimating_2019]. The second is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005; @anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
+The remainder of this report therefore introduces two potential upscaling methods both of which have been used with the GREEN Griod household electricity demand data in different ways and for different purposes. The first is a simple multiplication method used to estimate overall residential electricity consumption for comparison to the GXP level data used in [Part B](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak). The second is a simple proportionate upscaling method used to estimate energy demand for heat pumps in New Zealand [@dortans_estimating_2019]. The third is a more complex re-weighting approach that uses iterative proportional fitting [simpson_combining_2005; @anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
 
-# Simple Proportional Upscaling
+# Data
 
-At it's simplest this method simply multiplies a per-household mean value calculated from a sample by the relevant population size. Thus, if we calculated that the mean half-hourly electricity consumption at 18:00 in winter 2015 in New Zealand was 0.5 kWh from the GREEN Grid sample then by simple multiplication we would expect total household electricity consumption to be 0.5 * the number of New Zealand households (`r nzHhPop2015`). We use this basic method in Section \@ref(totLoadBasic) below to estimate total residential demand profiles. We then 
+Explain data sources
 
-## Total electricity consumption {#totLoadBasic}
+## GXP
+
+## GREEN Grid
+
+This sample comprises 44 households who were recruited via the local power lines companies in two areas: Taranaki starting in May 2014 and Hawkes Bay starting in November 2014 [@GREENGridData].
+
+Recruitment was via a non-random sampling method and a number of households were intentionally selected for their ‘complex’ electricity consumption (and embedded generation) patterns and appliances (Giraldo Ocampo 2015, @stephenson_smart_2017; @jack_minimal_2018; @suomalainen_comparative_2017).
+
+The lines companies invited their own employees and those of other local companies to participate in the research and ~80 interested potential participants completed short or long forms of the Energy Cultures 2 household survey [@ec2Survey2015]. Households were then selected from this pool by the project team based on selection criteria relevant to the GREEN Grid project. These included:
+
+ * having the majority of their energy supply from electricity (i.e. not gas heating);
+ * household size;
+ * types of appliances owned.
+
+As a result of this process the sample cannot be assumed to represent the population of customers (or employees) of any of the companies involved, nor the populations in each location [@stephenson_smart_2017].
+
+> some examples of this:
+ 
+```{r heatSource}
+t <- with(hhAttributesDT, table(Q20_coded, useNA = "always"))
+
+pc_t <- 100*prop.table(t)
+
+dt <- setnames(as.data.table(pc_t), "N", "%")
+
+setkey(dt, Q20_coded)
+
+dtf <- as.data.table(t)
+setkey(dtf, Q20_coded)
+
+dt <- dtf[dt]
+
+kableExtra::kable(caption = paste0("Main heat source, n dwellings = ", sum(dt$N)), 
+                  dt, digits = 2) %>%
+  kable_styling()
+```
+
+```{r nBedrooms}
+hhAttributesDT[, nBedrooms := `Q10#1_1_1_TEXT`]
+t <- table(hhAttributesDT$nBedrooms,  useNA = "always")
+
+pc_t <- 100*prop.table(t)
+
+dt <- setnames(as.data.table(pc_t), c("N"), c("%"))
+
+setkey(dt, V1)
+
+dtf <- as.data.table(t)
+setkey(dtf, V1)
+
+dt <- dtf[dt]
+
+setnames(dt, "V1", "N bedrooms")
+kableExtra::kable(caption = paste0("Main heat source, n dwellings = ", sum(dt$N)), 
+                  dt, digits = 2) %>%
+  kable_styling()
+
+```
+
+
+```{r nPeople}
+hhAttributesDT[, nPeople := nAdults + nChildren0_12 + nTeenagers13_18]
+t <- table(hhAttributesDT$nPeople,  useNA = "always")
+
+pc_t <- 100*prop.table(t)
+
+dt <- setnames(as.data.table(pc_t), c("N"), c("%"))
+
+setkey(dt, V1)
+
+dtf <- as.data.table(t)
+setkey(dtf, V1)
+
+dt <- dtf[dt]
+
+setnames(dt, "V1", "N people")
+kableExtra::kable(caption = paste0("Main heat source, n dwellings = ", sum(dt$N)), 
+                  dt, digits = 2) %>%
+  kable_styling()
+
+```
+
+
+compare with (for e.g.) the BRANZ HCS results or Census 2013
+
+## Census 2013
+
+# Simple multiplication
+
+## Example: Total electricity consumption {#totLoadBasic}
 
 In this case we use the half-hourly total kW load data set produced in [Part A](https://cfsotago.github.io/GREENGridEECA/partA_dataProcessingReport_v1.0.html#610_total_load). To produce national estimates we first prepare the household level consumption data to provide mean energy consumption (kWh) per half-hour for each season in 2015. We use kWh to enable comparison with the GXP data used in [Part B](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak).
 
@@ -182,33 +268,39 @@ ggplot(plotDT, aes(x = hms, y = pc, colour = season)) +
 
 This approach illustrates the difficulty of producing robust national level using simple multiplication of a small and biased sample.
 
-## Hot water
+# Simple Proportional Upscaling
 
-Summarise CD report
+Summarise method used in [@dortans_estimating_2019]
 
-## Heat pumps
+## Example: Heat pump electricity consumption
 
-Summarise CD report
+Summarise relevant [@dortans_estimating_2019] section
 
-## Lighting
-
-Summarise CD report
+## Summary
 
 # Complex re-weighting
 
-> describe approach and build ipf-based model of overall load for
+Briefly summarise iterative proportional fitting [simpson_combining_2005; @anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
+
+describe approach and build ipf-based model of overall load for
+
  * Taranaki
  * Hawke's Bay
  * NZ
- using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) [@GREENGridTotalLoad]
+ 
+ using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) 
 
-## Total electricity consumption
+## Example: Total electricity consumption
 
+re-run using method in [@anderson_small_2019]
 
+## Example: Heat pump electricity consumption
 
+re-run using method in [@anderson_small_2019]
 
+## Sumary
 
-# Summary
+# Overall summary and recommendations
 
 This report has outlined a number of methods that could be used to upscale the GREEN Grid (or similar) household energy demand datasets to develop national or regional level residential demand or consumption estimates. However we have noted that in all cases the GREEN grid data is insufficient for this purpose due to:
 
