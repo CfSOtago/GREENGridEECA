@@ -25,8 +25,8 @@ hhTotalLoadF <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/hal
 hhTotalLoadDT <- data.table::fread(hhTotalLoadF)
 
 #> GREEN Grid household survey data ----
-hhAtttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
-hhAtttributesDT <- data.table::fread(hhAtttributesF)
+hhAttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
+hhAttributesDT <- data.table::fread(hhAttributesF)
 
 #> GXP data ----
 getGXPFileList <- function(dPath){
@@ -153,6 +153,6 @@ authors <- "Ben Anderson"
 
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/reports/partC_upscalingAdvice/upscaling.Rmd")
-#makeReport(rmdFile)
+makeReport(rmdFile)
 
 
