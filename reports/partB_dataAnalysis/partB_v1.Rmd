@@ -157,14 +157,14 @@ powerDT <- powerDT[, peak := ifelse(obsHalfHour >= PS & obsHalfHour <= PE,
 
 In this section we use the GREEN Grid residential sample to estimate the contribution of each appliance to peak demand. For this analysis we use demand data averaged over 30 minute intervals. We consider three different definitions of peak demand:
 * Sample winter evenings 17:00 - 21:00. In this case we: 
-   + find the maximum half-hour demand for each household during the defined peak period
-   + calculate the percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in that half hour.
+   * find the maximum half-hour demand for each household during the defined peak period
+   * calculate the percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in that half hour.
 *	Regional/network peak. In this case we:
-  + find the 100 maximum regional network (GXP) peak half hours
-  + calculate the mean contribution of each identifiable load to mean total load across all households in that region across these 100 half-hours
+  * find the 100 maximum regional network (GXP) peak half hours
+  * calculate the mean contribution of each identifiable load to mean total load across all households in that region across these 100 half-hours
 * Sample co-incident peak. In this case we:
-  + find the half-hour across the sample which has the highest total combined demand
-  + calculate mean contribution of each identifiable load to mean total load across all households in this half-hour
+  * find the half-hour across the sample which has the highest total combined demand
+  * calculate mean contribution of each identifiable load to mean total load across all households in this half-hour
   
 To do this last part we classify the circuit labels according to the load types mentioned above (see Table \@ref(tab:findMaxHalfHours) in the Data Annex).
 
