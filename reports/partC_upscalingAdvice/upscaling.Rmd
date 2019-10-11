@@ -106,7 +106,7 @@ Explain data sources
 
 This sample comprises 44 households who were recruited via the local power lines companies in two areas: Taranaki starting in May 2014 and Hawkes Bay starting in November 2014 [@GREENGridData].
 
-Recruitment was via a non-random sampling method and a number of households were intentionally selected for their ‘complex’ electricity consumption (and embedded generation) patterns and appliances [@dianaThesis2015, @stephenson_smart_2017; @jack_minimal_2018; @suomalainen_detailed_2019].
+Recruitment was via a non-random sampling method and a number of households were intentionally selected for their ‘complex’ electricity consumption (and embedded generation) patterns and appliances [@dianaThesis2015; @stephenson_smart_2017; @jack_minimal_2018; @suomalainen_detailed_2019].
 
 The lines companies invited their own employees and those of other local companies to participate in the research and ~80 interested potential participants completed short or long forms of the Energy Cultures 2 household survey [@ec2Survey2015]. Households were then selected from this pool by the project team based on selection criteria relevant to the GREEN Grid project. These included:
 
@@ -213,7 +213,7 @@ ggplot(profileDT, aes(x = hms, y = meankWh, colour = season)) +
 winterMax <- round(max(profileDT[season == "Winter"]$meankWh),2)
 ```
 
-Figure \@ref(fig:prepHHProfiles) shows the mean kWh per half hour for each season that we will use as the basis for the re-weighting process. We can therefore estimate that the maximum mean kWh per half-hour in winter is ~ `r winterMax` kWh giving a rough estimate of maximum mean residential kWh in winter as `r round((winterMax * nzHhPop2015)/1000000,2)` GWh.
+Figure \@ref(fig:prepHHProfiles) shows the mean kWh per half hour for each season that we will use as the basis for the re-weighting process. We can therefore estimate that the maximum mean kWh per half-hour in winter is ~ `r winterMax` kWh. If we multiply this by the number of households in New Zealand as recorded by the 2013 Census (`r tidyNum(nzHhPop2015)`) then we get a rough estimate of maximum mean residential kWh in winter as `r round((winterMax * nzHhPop2015)/1000000,2)` GWh.
 
 Figure \@ref(fig:nationalProfiles) shows the simple upscaling of Figure \@ref(fig:nationalProfiles) to the New Zealand household population by multiplying by the total number of households. 
 
