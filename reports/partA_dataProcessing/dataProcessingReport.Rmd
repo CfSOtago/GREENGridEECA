@@ -173,7 +173,7 @@ However, it should be noted that:
 
 As a result the _effective_ number of dwellings available for any given analysis will always be _lower_ than the numbers reported above and should be evaluated on a case by case basis.
 
-# Imputation of 'total load' per minute per dwelling
+# Imputation of 'total load' per minute per dwelling {#imputeTotal}
 
 Whilst in theory the calculation of total load in any given minute should be a matter of merely summing all monitored circuits, in practice the task is not quite this simple. There are a number of reasons for this:
 
@@ -736,21 +736,61 @@ kableExtra::kable(halfHourlyFilesDT[, .(file = all.files, "Mb (gzipped)" = fSize
 ```
 
 
-## Circuit labels (all){#circuitLabels}
+## Circuit labels {#circuitLabels}
+
+Table \@ref(tab:getCircuitLabels) shows all circuit labels and reports the number of dwellings with those circuit labels and descriptive statistics for half hourly mean power. Note that they include _all_ labels for _all_ households even those which we recoomend are excluded from subsequent analysis (see Section \@ref(imputeTotal)). The table is ordered by the most frequent (`Hot Water`)  but it should be noted that the labels were recorded by the installing engineers and so small variations in labels for similar appliances should be expected.
 
 ```{r getCircuitLabels}
 
-t <- halfHourlyPowerDT[, .(nObs = .N,
+t <- halfHourlyPowerDT[!(circuitLabel %like% "imputed"), # exclude total
+                       .(nObs = .N,
                       nDwellings = uniqueN(linkID),
-                      meanW = mean(meanPowerW, na.rm = TRUE)),
+                      meanW = mean(meanPowerW, na.rm = TRUE),
+                      minW = min(meanPowerW, na.rm = TRUE),
+                      maxW = max(meanPowerW, na.rm = TRUE)),
                   keyby = .(circuitLabel)]
 
-kableExtra::kable(t, 
+kableExtra::kable(t[order(-nDwellings)], digits = 2,
                   caption = "Summary statistics by circuit label") %>%
   kable_styling()
 
 # save as a data file for ease of use
 of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
+data.table::fwrite(t, file = of)
+```
+
+Table \@ref(tab:getCircuitLabelsByEECA) shows all the coding of circuit labels used to define:
+
+ * Hot Water
+ * Heat pump or heating
+ * Oven
+ * Lighting
+ * Other
+ 
+These circuit codings are used in Part B and note that they may vary slightly from those used in earlier sections of this report. Note that they include _all_ labels for _all_ households even those which we recoomend are excluded from subsequent analysis (see Section \@ref(imputeTotal)).
+
+We have deliberately used a _conservative_ coding approach so that circuits with multiple appliances and/or which are non-specific power circuits have been coded as `XX_Other` since we are unable to allocate load to specific appliances or usages. For the avoidance of doubt, readers should [review the function](https://github.com/CfSOtago/GREENGridEECA/blob/master/R/eeca.R) used to create these labels. The table reports the number of dwellings with those circuit labels and descriptive statistics for half hourly mean power. Clearly it would be possible to:
+
+ * adjust the coding of the EECA circuit labels so that specific circuits are excluded/included from each category;
+ * analyse the specific load patterns for specific ambiguous circuits to attempt to disaggregate different appliance loads.
+ 
+The former is straight foward but the latter would require substantial research and it is unclear how robust the results would be.
+
+```{r getCircuitLabelsByEECA}
+
+t <- halfHourlyPowerDT[!(circuitLabel %like% "imputed"), .(nObs = .N,
+                      nDwellings = uniqueN(linkID),
+                      meanW = mean(meanPowerW, na.rm = TRUE),
+                      minW = min(meanPowerW, na.rm = TRUE),
+                      maxW = max(meanPowerW, na.rm = TRUE)),
+                  keyby = .(eecaCircuit,circuitLabel)]
+
+kableExtra::kable(t, digits = 2,
+                  caption = "Summary statistics by EECA circuit label and original circuit label") %>%
+  kable_styling()
+
+# save as a data file for ease of use
+of <- paste0(repoParams$repoLoc, "/data/circuitLabelsCompleteByEECA.csv")
 data.table::fwrite(t, file = of)
 ```
 
