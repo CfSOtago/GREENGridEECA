@@ -234,10 +234,7 @@ ggplot(profileDT, aes(x = hms, y = totalResMWh, colour = season)) +
        )
 ```
 
-If we compare these results with the total derived from the GXP data for 2015 used in [Part B](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak) then we can see XXX
-
-
-Figure \@ref(fig:profiles) shows these values as a % of the total network electricity export by season for all regions combined as a data sense-check. As we can see the naive multiplication method produces broadly plausible results in summer where we estimate ~30%-40% of total electricity consumption in peak periods is due to households. However the method appears to substantially (and implausibly) over-estimate the contribution of households in winter peaks where the value approaches 70%. The is almost certainly due to the bias inherent in the GREEN Grid sample which had a higher proportion of families, households with higher incomes and no households using gas or solid fuels as a primary space heating energy source.
+Figure \@ref(fig:profiles) shows these values as a % of the total network electricity export [GXP data](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak) by season for all regions combined as a data sense-check. As we can see the naive multiplication method produces broadly plausible results in summer where we estimate ~30%-40% of total electricity consumption in peak periods is due to households. However the method appears to substantially (and implausibly) over-estimate the contribution of households in winter peaks where the value approaches 70%. The is almost certainly due to the bias inherent in the GREEN Grid sample which had a higher proportion of families, households with higher incomes and no households using gas or solid fuels as a primary space heating energy source.
 
 ```{r profiles, fig.cap="Mean total kWh per half hour by season"}
 myCaption <- paste0("Source: EA EMI Grid Exit Point (GXP) data",
@@ -293,6 +290,10 @@ describe approach and build ipf-based model of overall load for
 ## Example: Total electricity consumption
 
 re-run using method in [@anderson_small_2019]
+
+```{r ipfTotalLoad}
+
+```
 
 ## Example: Heat pump electricity consumption
 
