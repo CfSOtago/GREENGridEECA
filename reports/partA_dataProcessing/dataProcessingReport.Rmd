@@ -738,6 +738,7 @@ kableExtra::kable(halfHourlyFilesDT[, .(file = all.files, "Mb (gzipped)" = fSize
 
 ## Circuit labels {#circuitLabels}
 
+### All labels
 Table \@ref(tab:getCircuitLabels) shows all circuit labels and reports the number of dwellings with those circuit labels and descriptive statistics for half hourly mean power. Note that they include _all_ labels for _all_ households even those which we recoomend are excluded from subsequent analysis (see Section \@ref(imputeTotal)). The table is ordered by the most frequent (`Hot Water`)  but it should be noted that the labels were recorded by the installing engineers and so small variations in labels for similar appliances should be expected.
 
 ```{r getCircuitLabels}
@@ -758,6 +759,8 @@ kableExtra::kable(t[order(-nDwellings)], digits = 2,
 of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
 data.table::fwrite(t, file = of)
 ```
+
+### All labels with derived coding
 
 Table \@ref(tab:getCircuitLabelsByEECA) shows all the coding of circuit labels used to define:
 
