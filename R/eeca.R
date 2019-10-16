@@ -24,15 +24,14 @@ labelEECACircuits <- function(dt, loadVar = "imputedTotalDemand_circuitsToSum_v1
                                    "XX_Other") # default
            ]
   
-  # these match if the string is in the circuit label (i.e. circuit label could contain other words)
+  # %like% matches if the string is in the circuit label (i.e. circuit label could contain other words)
   # Be careful with these
-  # xx if this is the same code as before then we should write a function so it is always correct!
   dt <- dt[, eecaCircuit := ifelse( circuitLabel == "Oven" |
                                       circuitLabel == "Range" |
                                       circuitLabel == "Wall Oven" |
                                       circuitLabel %like% "Oven &" |
                                       circuitLabel %like% "Oven,", # if the circuit = Oven only
-                                    "Oven", eecaCircuit)]
+                                    "Oven", eecaCircuit)] # Hob is not included
   dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% "Hot water",
                                    "Hot water", eecaCircuit)]
   dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% "Hot Water",
@@ -40,7 +39,7 @@ labelEECACircuits <- function(dt, loadVar = "imputedTotalDemand_circuitsToSum_v1
   dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% "Lighting" |
                                      circuitLabel %like% "Lights",
                                    "Lighting", eecaCircuit)]
-  dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% loadVar,
+  dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% loadVar, #loadVar is a parameter to the function so we can change it
                                    "Total", eecaCircuit)]
   return(dt)
 }
