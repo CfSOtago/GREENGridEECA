@@ -16,17 +16,25 @@ GREENGridEECA::setup() # set data paths etc
 # parameters ----
 
 # Data ----
+# Load all data here, not in .Rmd
 
 #> Census data ----
-
+ipfCensusDT <- data.table::fread(paste0("~/Data/NZ_Census/data/processed/2013IpfInput.csv"))
 
 #> GREEN Grid half hourly total dwelling power data ----
 hhTotalLoadF <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv.gz")
 hhTotalLoadDT <- data.table::fread(hhTotalLoadF)
 
+#> HCS 2015 heat source
+hcs2015DT <- data.table::fread(paste0(here::here(), "/data/input/hcs2015HeatSources.csv"))
+
 #> GREEN Grid household survey data ----
 hhAttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
 hhAttributesDT <- data.table::fread(hhAttributesF)
+ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, "/survey/ggIpfInput.csv"))
+
+#> ipf weights data from previous run of model
+ipfWeightsDT <- data.table::fread(paste0(repoParams$GreenGridData, "/ipf/nonZeroWeightsAu2013.csv"))
 
 #> GXP data ----
 getGXPFileList <- function(dPath){
@@ -68,7 +76,7 @@ loadGXPData <- function(files){
   dt <- setPeakPeriod(dt)
   
   # load the POC lookup table Vince sent
-  f <- paste0(here::here(), "/data/gxp-lookup.csv")
+  f <- paste0(here::here(), "/data/input/gxp-lookup.csv")
   gxpLutDT <- data.table::fread(f)
   
   setkey(gxpLutDT, node)
@@ -77,7 +85,7 @@ loadGXPData <- function(files){
   dt <- gxpLutDT[dt] # merge them - this keeps all the gxpData
   
   # load the Transpower GIS table
-  f <- paste0(here::here(), "/data/gxpGeolookup.csv")
+  f <- paste0(here::here(), "/data/input/gxpGeolookup.csv")
   gxpGeoDT <- data.table::fread(f)
   # note there are differences
   # in the Transpower data MXLOCATION == node but without the trailing 0331 - whatever this means
