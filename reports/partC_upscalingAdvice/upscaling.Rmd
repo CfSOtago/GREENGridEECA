@@ -107,6 +107,8 @@ This data comprises the half-hourly electricity export (kWh) data for each New Z
 
 This sample comprises 44 households who were recruited via the local power lines companies in two areas: Taranaki starting in May 2014 and Hawkes Bay starting in November 2014 [@GREENGridData].
 
+> XX Should this content go in the Part B report to prevent readers of Part B thinking the results are likely to be representative of all NZ dwellings?
+
 Recruitment was via a non-random sampling method and a number of households were intentionally selected for their ‘complex’ electricity consumption (and embedded generation) patterns and appliances [@dianaThesis2015; @stephenson_smart_2017; @jack_minimal_2018; @suomalainen_detailed_2019].
 
 The lines companies invited their own employees and those of other local companies to participate in the research and ~80 interested potential participants completed short or long forms of the Energy Cultures 2 household survey [@ec2Survey2015]. Households were then selected from this pool by the project team based on selection criteria relevant to the GREEN Grid project. These included:
@@ -117,9 +119,11 @@ The lines companies invited their own employees and those of other local compani
 
 As a result of this process the sample cannot be assumed to represent the population of customers (or employees) of any of the companies involved, nor the populations in each location [@stephenson_smart_2017].
 
-As an example, Table \@ref(tab:ggHeatSource) shows the 'main method of heating' for the GREEN Grid sample and Figure \@ref(fig:ggHeatSource) compares these with the results from the BRANZ Housing Conditions Survey 2015 [@white_branz_2017]. As we can see the GREEn Grid sample has a higher heat pump rate than the HCS 2015 estimate of 40% (+/-6.1%) heat pump penetration for owner occupied homes (the most similar to the GREEN Grid sample) and 25% (+/-10.8%) for rentals. On the other hand, 25% of the GREEN Grid sample used enclosed woodburners as a main method of heating compared to HCS 2015 estimates of 39% and 23% for owener-occupied and rental dwellings respectively.
+### Heating
 
->Insert footnote re HCS confidence intervals of +/-6.1% for owner-occupier homes and +/-10.8% for rentals at the 95% level (Table 1, [@white_branz_2017]. This means that if we repeated the HCS 100 times we would expect that in 95 of them the % of owner occupier dwellings with heat pumps would be between 33.9% and 46.1% and the figure for rentals would be 14.2% to 35.8%. Clearly the small sample size of the HCS 2015 leads to substantial uncertainty in the estimates of heat pump prevalance (and all other estimates) in these groups. For a more detailed discussion of this problem see [@anderson_ensuring_2020].
+As an example, Table \@ref(tab:ggHeatSource) shows the 'main method of heating' for the GREEN Grid sample and Figure \@ref(fig:ggHeatSource) compares these with the results from the BRANZ Housing Conditions Survey 2015 [@vicki_white_warm_2017]. As we can see the GREEn Grid sample has a higher heat pump rate than the HCS 2015 estimate of 40% (+/-6.1%) heat pump penetration for owner occupied homes (the most similar to the GREEN Grid sample) and 25% (+/-10.8%) for rentals. On the other hand, 25% of the GREEN Grid sample used enclosed woodburners as a main method of heating compared to HCS 2015 estimates of 39% and 23% for owener-occupied and rental dwellings respectively.
+
+>Insert footnote re HCS confidence intervals of +/-6.1% for owner-occupier homes and +/-10.8% for rentals at the 95% level [@vicki_white_warm_2017,p51]. This means that if we repeated the HCS 100 times we would expect that in 95 of them the % of owner occupier dwellings with heat pumps would be between 33.9% and 46.1% and the figure for rentals would be 14.2% to 35.8%. Clearly the small sample size of the HCS 2015 leads to substantial uncertainty in the estimates of heat pump prevalance (and all other estimates) in these groups. For a more detailed discussion of this problem see [@anderson_ensuring_2020].
 
 On the other hand relatively few GREEN Grid households used portable electric or gas heaters =compared to the HCS 2015 sample.
 
@@ -156,12 +160,12 @@ ggplot2::ggplot(combined_dt, aes(x = Appliance , y = pc, fill = type)) +
   geom_errorbar(aes(ymin = pc-ci_95pc, ymax = pc+ci_95pc), position = dodge, width = 0.25) +
   coord_flip() +
   labs(x = "Appliance", y = "%",
-       caption = "Non-comparable appliances excluded, totals will not sum to 100%\nError bars = 95% CI for HCS 2015")
+       caption = "Non-comparable appliances excluded, within-sample totals will not sum to 100%\nError bars = 95% CI for HCS 2015")
 
 
 ```
 
-Further, Table \@ref(tab:compareheatSource) compares the 'Fuel type used to heat dwelling' for Census 2013 and the 'main method of heating' for the GREEN Grid sample. To do this we have recoded the GREEN Grid data summarised in Table \@ref(tab:ggHeatSource) to match the Census but note the virtual absence of gas and coal in the GREEN Grid sample.
+Further, Table \@ref(tab:compareheatSource) compares the 'Fuel type used to heat dwelling' for Census 2013 and the 'methods available for heating your house' in the GREEN Grid sample. Note that mutiple responses were possible in both data sources and we have coded the responses to be as comparable as possible.
  
 ```{r compareheatSource}
 # census
@@ -174,6 +178,7 @@ ct <- ipfCensusDT[, .(Electricity = sum(heatSourceElectricity, na.rm = TRUE),
                   ]
 pc_ct <- 100*prop.table(ct)
 
+# get census household counts per type
 crt <- ipfCensusDT[, .(ElectricityT = sum(heatSourceElectricity, na.rm = TRUE),
                        GasT = sum(heatSourceGas,na.rm = TRUE),
                        WoodT = sum(heatSourceWood,na.rm = TRUE),
@@ -183,7 +188,7 @@ crt <- ipfCensusDT[, .(ElectricityT = sum(heatSourceElectricity, na.rm = TRUE),
                        ), 
                    keyby = .(Region = REGC2013_label)
                    ]
-
+# % of total (will sum to > 100 as multiple responses possible)
 crt_pc <- crt[, .(Region,
                   Electricity = 100*(ElectricityT/Total),
                      Gas = 100*(GasT/Total),
@@ -192,49 +197,123 @@ crt_pc <- crt[, .(Region,
                      Other = 100*(OtherT/Total)
                   )
               ]
-# survey
-ht <- ipfSurveyDT[, .(Electricity = sum(heatSourceElectricity, na.rm = TRUE),
-                     Gas = sum(heatSourceGas,na.rm = TRUE),
-                     Wood = sum(heatSourceWood,na.rm = TRUE),
-                     Coal = sum(heatSourceCoal,na.rm = TRUE),
-                     Other = sum(heatSourceOther,na.rm = TRUE)
-                     )
-                  ]
+# get survey counts
+hhAttributesDT[, Electricity := ifelse(Q19_1 == 1 | # Heat pump
+                                         Q19_2 == 1 | # Night store
+                                         Q19_3 == 1 | # Portable elec
+                                         Q19_4 == 1 | # Fixed elec
+                                         Q19_10 == 1 | # elec CH
+                                         Q19_10.1 == 1 | # elec DVS - typo?
+                                         Q19_12 == 1 | # elec HRV
+                                         Q19_13 == 1 ,  # elec UFH
+                                       1, 0)]
+hhAttributesDT[, Gas := ifelse(Q19_7 == 1 | # Portable gas heater
+                                         Q19_8 == 1 | # Fixed gas heater
+                                         Q19_9 == 1 | # Gas CH
+                                         Q19_14 == 1 , # Gas UFH
+                                       1, 0)]
+hhAttributesDT[, Wood := ifelse(Q19_6 == 1 | # wood burner
+                                         Q19_17 == 1,  # pellets
+                                       1, 0)]
+hhAttributesDT[, Coal := ifelse(Q19_5 == 1 , # coal burner
+                                       1, 0)]
+hhAttributesDT[, Other := ifelse(Q19_15 == 1 | # open fire
+                                         Q19_16 == 1 , # Fixed elec
+                                       1, 0)]
 
+ht <- hhAttributesDT[, .(Electricity = sum(Electricity, na.rm = TRUE),
+                       Gas = sum(Gas,na.rm = TRUE),
+                       Wood = sum(Wood,na.rm = TRUE),
+                       Coal = sum(Coal,na.rm = TRUE),
+                       Other = sum(Other,na.rm = TRUE)
+                       )
+                   ]
+
+# ht <- ipfSurveyDT[, .(Electricity = sum(heatSourceElectricity, na.rm = TRUE),
+#                      Gas = sum(heatSourceGas,na.rm = TRUE),
+#                      Wood = sum(heatSourceWood,na.rm = TRUE),
+#                      Coal = sum(heatSourceCoal,na.rm = TRUE),
+#                      Other = sum(heatSourceOther,na.rm = TRUE)
+#                      )
+#                   ]
+
+# % of total (will sum to > 100 as multiple responses possible)
 pc_ht <- 100*prop.table(ht)
 pc_ct$source <- "Census 2013 (all regions)"
 pc_ht$source <-"GREEN Grid sample"
 setnames(crt_pc, "Region", "source") # fix var names
+extract <- crt_pc[source  %like% "Taranaki" | source %like% "Hawke", 
+                  .(Electricity = mean(Electricity),
+                    Gas = mean(Gas),
+                    Coal = mean(Coal),
+                    Wood = mean(Wood),
+                    Other = mean(Other),
+                    source = "Census 2013 (Taranaki & Hawke's Bay only)"
+                    )]
 t <- rbind(pc_ct, # total census data
-           crt_pc[source  %like% "Taranaki" | source %like% "Hawke"], # regions
+           extract, # regions
            pc_ht) # GG
 
 kableExtra::kable(t, digits = 2, 
-                  caption = "Comparing main heating fuel/method (% of dwellings)") %>%
-  kable_styling()
+                  caption = "Comparing heating fuel used/methods available (% of dwellings)") %>%
+  kable_styling() %>%
+  footnote(general = "Row totals may sum to more than 100% due to multiple responses\nOpen fire is coded as 'Other' in GREEN Grid - it is not clear how this is coded in the Census data")
 ```
 
-> XX can we have more than 1 fuel source in the census data? 
+Table \@ref(tab:compareheatSource) shows that the GREEN Grid sample has a similar 'available fuel' profile to New Zealand dwellings as a whole but is not representative of the combined regions of Taranaki and Hawke's Bay from which it was drawn. In particular there are lower rates of Gas and Wood and much higher 'Other' although as noted the latter may be a coding artefact.
 
-```{r nBedrooms}
-hhAttributesDT[, nBedrooms := `Q10#1_1_1_TEXT`]
-t <- table(hhAttributesDT$nBedrooms,  useNA = "always")
+### Number of rooms
 
-pc_t <- 100*prop.table(t)
+```{r nRooms}
 
-dt <- setnames(as.data.table(pc_t), c("N"), c("%"))
+# census
+ct <- ipfCensusDT[, .(nRooms1_4 = sum(nRooms1_4, na.rm = TRUE),
+                     nRooms5_6 = sum(nRooms5_6,na.rm = TRUE),
+                     nRooms7m = sum(nRooms7m,na.rm = TRUE)
+                     )
+                  ]
+pc_ct <- 100*prop.table(ct)
 
-setkey(dt, V1)
+# get census household counts per type
+crt <- ipfCensusDT[, .(nRooms1_4t = sum(nRooms1_4, na.rm = TRUE),
+                       nRooms5_6t = sum(nRooms5_6,na.rm = TRUE),
+                       nRooms7mt = sum(nRooms7m,na.rm = TRUE),
+                       Total = sum(nrooms_totalHouseholds, na.rm = TRUE )
+                       ), 
+                   keyby = .(Region = REGC2013_label)
+                   ]
+# % of total (will sum to > 100 as multiple responses possible)
+crt_pc <- crt[, .(Region,
+                  nRooms1_4 = 100*(nRooms1_4t/Total),
+                     nRooms5_6 = 100*(nRooms5_6t/Total),
+                     nRooms7m = 100*(nRooms7mt/Total)
+                  )
+              ]
+# get survey counts
+ht <- ipfSurveyDT[, .(nRooms1_4 = sum(nRooms1_4, na.rm = TRUE),
+                       nRooms5_6 = sum(nRooms5_6,na.rm = TRUE),
+                       nRooms7m = sum(nRooms7m,na.rm = TRUE)
+                       )
+                   ]
 
-dtf <- as.data.table(t)
-setkey(dtf, V1)
+# % of total (will sum to > 100 as multiple responses possible)
+pc_ht <- 100*prop.table(ht)
+pc_ct$source <- "Census 2013 (all regions)"
+pc_ht$source <-"GREEN Grid sample"
+setnames(crt_pc, "Region", "source") # fix var names
+extract <- crt_pc[source  %like% "Taranaki" | source %like% "Hawke", 
+                  .(nRooms1_4 = mean(nRooms1_4),
+                    nRooms5_6 = mean(nRooms5_6),
+                    nRooms7m = mean(nRooms7m),
+                    source = "Census 2013 (Taranaki & Hawke's Bay only)"
+                    )]
+t <- rbind(pc_ct, # total census data
+           extract, # regions
+           pc_ht) # GG
 
-dt <- dtf[dt]
-
-setnames(dt, "V1", "N bedrooms")
-kableExtra::kable(caption = paste0("Main heat source, n dwellings = ", sum(dt$N)), 
-                  dt, digits = 2) %>%
-  kable_styling()
+kableExtra::kable(t, digits = 2, 
+                  caption = "Comparing number of rooms per dwelling (% of dwellings)") %>%
+  kable_styling() 
 
 ```
 
