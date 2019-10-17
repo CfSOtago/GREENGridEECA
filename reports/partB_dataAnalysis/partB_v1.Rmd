@@ -208,7 +208,10 @@ kableExtra::kable(head(dataBucketDT, 10), digits = 3,
                   caption = "Example data: Extracted average demand by dwelling and circuit at 'peak'")  %>% # test result
   kable_styling()
 
-write_csv(resAllSeasonsDT, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted average demand by dwelling and circuit at 'peak'.csv")
+
+WriteDT <- data.table::fwrite(resAllSeasonsDT, paste0(here::here(), "/data/output/Extracted average demand by dwelling and circuit at 'peak'.csv"))
+
+
 
 ```
 ```{r wattageContributionAverageDemand}
@@ -359,7 +362,7 @@ kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 3,
                   caption = "Example data: Extracted winter peak load half-hour circuits (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
-write_csv(resAllSeasonsDT, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted winter peak load half-hour circuits.csv")
+WriteDT <- data.table::fwrite(resAllSeasonsDT, paste0(here::here(), "/data/output/Extracted winter peak load half-hour circuits.csv"))
 
 ```
 
@@ -608,7 +611,7 @@ hawkesDT <- hawkesDT[region=="Hawkes Bay"]#hawkes bay only
 
 ##Data import
 GXPtaranakiDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/taranakiGxpTop100DT.csv",
+ readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/taranakiGxpTop100DT.csv",
                        col_types = cols(
                        region = col_character(),
                        regionName = col_character(),
@@ -648,7 +651,7 @@ GXPtaranakiDT <- GXPtaranakiDT[month == 9 | month == 10 | month == 11, season :=
 
 ##Data import
 GXPHawkesDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/hawkesBayGxpTop100DT.csv",
+ readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/hawkesBayGxpTop100DT.csv",
                        col_types = cols(
                        region = col_character(),
                        regionName = col_character(),
@@ -741,7 +744,7 @@ GXPHawkesDT <- GXPHawkesDT[month == 9 | month == 10 | month == 11, season := "Sp
 
 #Loading Hawkes Bay extract data
 extractHawkesDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/Matched_date_times_top 100/extractHawkes.csv",
+ readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/extractHawkes.csv",
                        col_types = cols(
                        linkID = col_character(),
                        nObs = col_double(),
@@ -759,7 +762,7 @@ extractHawkesDT <- data.table::as.data.table(
 #Loading Taranaki extract data
 
 extractTaranakiDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/Matched_date_times_top 100/extractTaranaki.csv",
+ readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/extractTaranaki.csv",
                        col_types = cols(
                        linkID = col_character(),
                        nObs = col_double(),
@@ -817,7 +820,10 @@ kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
                   caption = "Example data: Extracted peak load half-hour circuits for Hawke's Bay (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
-write_csv(copiedtable, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted peak load half-hour circuits for Hawke's Bay.csv")
+
+WriteDT <- data.table::fwrite(copiedtable, paste0(here::here(), "/data/output/Extracted peak load half-hour circuits for Hawke's Bay.csv"))
+
+
 
 ```
 
@@ -998,7 +1004,10 @@ kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
   kable_styling()
 
 
-write_csv(copiedtable, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted peak load half-hour circuits for Taranaki.csv")
+
+
+
+WriteDT <- data.table::fwrite(copiedtable, paste0(here::here(), "/data/output/Extracted peak load half-hour circuits for Taranaki.csv"))
 
 
 
@@ -1181,7 +1190,10 @@ kableExtra::kable(head(sample2015DT[year == "2015"], 10), digits = 3,
   kable_styling()
 
 
-write_csv(resAllSeasonsDT, "/Users/carsten.dortans/Dropbox/GreenGrid_EECA/data/csv_full_data_tables/Extracted winter peak load half-hours in descending order for 2015.csv")
+
+WriteDT <- data.table::fwrite(resAllSeasonsDT, paste0(here::here(), "/data/output/Extracted winter peak load half-hours in descending order for 2015.csv"))
+
+
 
 
 #Now identufy these top20 times in the original data table and conduct analysis again. We only use this data table to identify the peak half hours. Now we go back to original data files
@@ -1515,7 +1527,7 @@ dt$season <- factor(dt$season, levels = c("Spring","Summer",
 
 
 dt$eecaCircuit <- factor(dt$eecaCircuit, levels = c("Hot Water","Heat Pump",
-                                                    "Lighting", "Oven", "Others"))#This puts the seasons in the right order in the plo
+                                                    "Lighting", "Oven", "Others"))#This puts the seasons in the right order in the plot
 ```
 Figure \@ref(fig:annualConsplot1) conceals the significant variation in demand by the various appliances. In particular it conceals the differences between seasons. Figure \@ref(fig:annualConsplot1) shows the distribution in seasonal energy consumption in kWh across all houses for Hot Water in 2015 using a density plot. Results show that most energy consumption of Hot Water is in winter, followed by spring and autumn. Energy consumption for hot water in summer is substantially lower with a distinctively different pattern to both the spring/autumn seasons and winter.
 
@@ -1688,13 +1700,95 @@ AveragePeakDemandDT <- AveragePeakDemandDT[, .(avgPeakDemandW = mean(meanPowerW,
 setkey(AverageDemandDT, linkID, eecaCircuit)
 setkey(AveragePeakDemandDT, linkID, eecaCircuit)
 
-MergedDT <- merge(AverageDemandDT, AveragePeakDemandDT, by = "linkID", all = TRUE, allow.cartesian = TRUE )
+
 MergedDT <- AveragePeakDemandDT[AverageDemandDT]
 
+#Calculating LF as being peak demand / average demand 
+
+MergedDT <- MergedDT[, LoadFactor := NA]
+MergedDT <- MergedDT[, LoadFactor := avgDemandW / avgPeakDemandW]
+
+#Calculating CLF as being (LF/1000) / 8760
+
+#MergedDT <- MergedDT[, CLF := NA]
+#MergedDT <- MergedDT[, CLF := LoadFactor*1000 / 8760]
+
+#Write CSV
+
+
+WriteDT <- data.table::fwrite(MergedDT, paste0(here::here(), "/data/output/Extracted load factor by household and circuit.csv"))
 
 
 
 
+kableExtra::kable(head(MergedDT, 10), digits = 3,
+                  caption = "Example data: Extracted load factor by household and circuit")  %>% # test result
+  kable_styling()
+
+```
+
+```{r Sorting}
+
+Merged2DT <- copy(MergedDT)
+
+Merged2DT <- dcast(Merged2DT, 
+           linkID ~ eecaCircuit, 
+           fun = mean, # won't do anything as we should just have 1 value?
+           value.var = "LoadFactor") # take 1 household and turn data round
+
+
+Merged2DT <- setnames(Merged2DT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "XX_Other"),
+                        new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Others"))
+
+
+Merged2DT <- Merged2DT[, c( "Total") := NULL]#We do not need this column
+
+
+#Summarising the variation in demand
+#We need to dcast it back into the original form
+dt <- data.table::as.data.table(gather(Merged2DT, eecaCircuit, LoadFactor, `Heat Pump`:`Others`, factor_key = TRUE))
+
+
+dt$eecaCircuit <- factor(dt$eecaCircuit, levels = c("Hot Water","Heat Pump",
+                                                    "Lighting", "Oven", "Others"))#This puts the seasons in the right order in the plo
+
+
+
+```
+
+```{r LoadFactorAverage}
+dt3 <- copy(dt)
+dt3 <- dt3[, .(meanLF = mean(LoadFactor, na.rm= TRUE)), keyby =. (eecaCircuit)]
+
+```
+
+The Load Factor (LF) is defined as the ratio of average demand (W) across all half hours to peak demand (W). The LF provides a measure of how much the load contributes to peak. If the LF for a particular load is 1 then the load is flat. Values greater 1 indicate that the average demand outside the peak period is higher than the average demand inside it. A LF less than 1 shows that the load disproportionately contributes to the peak. In this section we define peak demand to be the average demand between 17:00-21:00 in winter. Table \@ref(tab:LoadNew) shows the first rows of our calculation.
+
+The full data table containing LFs (if available) for each house is saved as "Extracted load factor by household and circuit.csv" and supplied with the report.
+
+Figure \@ref(fig:consLoadPlot) shows the Load Factor (LF) for each identifiable load averaged over all houses in the sample. Results show that the LF for Hot Water (1.19) is the highest followed by Heat Pump (0.47), Oven (0.38), and Lighting (0.34). Please note that these numbers represent  averages over all households, dates, and times for 2015. Furthermore, the average LF over all houses is skewed by some houses with a LF > 6 as Figure \@ref(fig:histoLF) shows.
+
+```{r histoLF, fig.cap="Load Factor distribution by circuit for peak demand (17:00-21:00) in winter 2015"}
+
+
+  
+    
+myPlot <- ggplot2::ggplot(dt, aes(x= eecaCircuit, y=LoadFactor)) +
+  geom_count(aes(y = LoadFactor), stat = "identity")+
+  theme(text = element_text(family = "Cambria"),
+        axis.text.y = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"),
+        legend.position = "none",
+        axis.ticks.y = element_line(colour = "black"))+
+  
+    
+  
+  #facet_grid(season ~ .) +
+  #scale_y_continuous(breaks = c()) +
+  #ggtitle("Contribution to peak demand (17:00-21:00) in 2015") +
+  guides(fill=guide_legend(title="Circuit"))+
+  labs(x='Circuit', y='Load Factor') 
+myPlot
 
 
 
@@ -1702,26 +1796,21 @@ MergedDT <- AveragePeakDemandDT[AverageDemandDT]
 
 ```
 
-The Load Factor (LF) is defined as the ratio of average demand (W) across all half hours to peak demand (W). The LF varies between 0 and 1 and provides a measure of how much the load contributes to peak. If the LF for a particular load is 1 then the load is flat. If it is less than one it shows that the load disproportionately contributes to the peak. In this section we define peak demand to be the maximum demand between 17:00-21:00 in winter (see first definition of peak demand).
-
-Figure \@ref(fig:consLoadPlot) shows the Load Factor (LF) for each identifiable load averaged over all houses in the sample. Based on this definition power was calculated as an average over all households. This calculation builds the average seasonal demand by circuit, linkID, and season and then averages this over the houses. In a second step, we utilise the identified maximum demand used for the first definition of peak demand to estimate the LF. Results show that the LF for Lighting (0.53) is the highest followed by Heat Pump (0.47) and Hot Water (0.25). Please note that these numbers represent  averages over all households, dates, and times for 2015.
-
-The full data table containing LFs (if available) for each house is saved as "Extracted load factors for all houses for 2015 in winter between 17_21_00.csv" and supplied with the report.
 
 
-```{r consLoadPlot, fig.cap="Conservation Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
+```{r consLoadPlot, fig.cap="Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
 
 
-myPlot <- ggplot2::ggplot(consloadCastDT, aes(x= eecaLabelContri, fill = eecaLabelContri)) +
-  geom_bar(aes(y = consLoadFac2), stat = "identity")+
+myPlot <- ggplot2::ggplot(dt3, aes(x= eecaCircuit, fill = eecaCircuit)) +
+  geom_bar(aes(y = meanLF), stat = "identity")+
   theme(text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
         axis.text.x = element_text(colour = "black"),
         legend.position = "none",
         axis.ticks.y = element_blank())+
   
-    geom_text(aes(y = consLoadFac2,
-             label = sprintf("%0.2f",consLoadFac2)),
+    geom_text(aes(y = meanLF,
+             label = sprintf("%0.2f",meanLF)),
             position = position_stack(vjust = .5))+
   
   #facet_grid(season ~ .) +
