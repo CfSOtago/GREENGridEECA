@@ -15,7 +15,6 @@ output:
     toc: yes
     toc_depth: 2
     toc_float: TRUE
-    fig_width: 5
   bookdown::pdf_document2:
     fig_caption: yes
     number_sections: yes
@@ -100,6 +99,10 @@ The remainder of this report therefore introduces two potential upscaling method
 
 A number of data sources are used in this report.
 
+## Census 2013
+
+This data comprises family, household or dwelling counts (depending on the variables of interest) at area unit level. The data was downloaded from the Stats NZ census table [download tool](http://nzdotstat.stats.govt.nz/wbos/index.aspx) and processed using [code](https://git.soton.ac.uk/ba1e12/spatialec/blob/master/dataProcessing/processCensusAu2013.Rmd) developed as part of the EU H2020 Marie Skłodowska-Curie scheme-funded [SPATIALEC](http://www.energy.soton.ac.uk/tag/spatialec/) Global Fellowship hosted by the University of Otago.
+
 ## Grid exit point kWh export (GXP)
 This data comprises the half-hourly electricity export (kWh) data for each New Zealand Grid Exit Point for [2015](https://cfsotago.github.io/GREENGridEECA/gxpReport_v0.5.html) downloaded from the Electricity Authority EMI [grid export database](https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export). We use this data to provide _total_ electricity consumption levels against which we can compare our various residential consumption estimates.
 
@@ -114,18 +117,17 @@ Recruitment was via a non-random sampling method and a number of households were
 The lines companies invited their own employees and those of other local companies to participate in the research and ~80 interested potential participants completed short or long forms of the Energy Cultures 2 household survey [@ec2Survey2015]. Households were then selected from this pool by the project team based on selection criteria relevant to the GREEN Grid project. These included:
 
  * having the majority of their energy supply from electricity (i.e. not gas heating);
- * household size;
+ * presence of children;
+ * family and dwelling size;
  * types of appliances owned.
 
-As a result of this process the sample cannot be assumed to represent the population of customers (or employees) of any of the companies involved, nor the populations in each location [@stephenson_smart_2017].
+As a result of this process the sample cannot be assumed to represent the population of customers (or employees) of any of the companies involved, nor the populations in each location or New Zealand dwellings as a whole [@stephenson_smart_2017].
 
 ### Heating
 
-As an example, Table \@ref(tab:ggHeatSource) shows the 'main method of heating' for the GREEN Grid sample and Figure \@ref(fig:ggHeatSource) compares these with the results from the BRANZ Housing Conditions Survey 2015 [@vicki_white_warm_2017]. As we can see the GREEn Grid sample has a higher heat pump rate than the HCS 2015 estimate of 40% (+/-6.1%) heat pump penetration for owner occupied homes (the most similar to the GREEN Grid sample) and 25% (+/-10.8%) for rentals. On the other hand, 25% of the GREEN Grid sample used enclosed woodburners as a main method of heating compared to HCS 2015 estimates of 39% and 23% for owener-occupied and rental dwellings respectively.
+As an example Figure \@ref(fig:ggHeatSource) compares the 'main method of heating' for the GREEN Grid sample with the results from the BRANZ Housing Conditions Survey 2015 [@vicki_white_warm_2017] where comparable. As we can see the GREEN Grid sample has a higher use of heat pumps compared to the HCS 2015 estimate of 40% heat pump penetration for owner occupied dwellings (the most similar to the GREEN Grid sample) and 25% for rentals. On the other hand, 25% of the GREEN Grid sample used enclosed woodburners as a main method of heating compared to HCS 2015 estimates of 39% and 23% for owner-occupied and rental dwellings respectively. Relatively few GREEN Grid dwellings used portable electric and none used portable gas heaters compared to the HCS 2015 sample.
 
->Insert footnote re HCS confidence intervals of +/-6.1% for owner-occupier homes and +/-10.8% for rentals at the 95% level [@vicki_white_warm_2017,p51]. This means that if we repeated the HCS 100 times we would expect that in 95 of them the % of owner occupier dwellings with heat pumps would be between 33.9% and 46.1% and the figure for rentals would be 14.2% to 35.8%. Clearly the small sample size of the HCS 2015 leads to substantial uncertainty in the estimates of heat pump prevalance (and all other estimates) in these groups. For a more detailed discussion of this problem see [@anderson_ensuring_2020].
-
-On the other hand relatively few GREEN Grid households used portable electric or gas heaters =compared to the HCS 2015 sample.
+These results suggest that the pattern of electricity use for space heating in the GREEN Grid sample is unlikely to be representative of all New Zealand dwellings.
 
 ```{r ggHeatSource, fig.cap = "Comparison of GREEN Grid and HCS 2015 heating appliance ownership rates"}
 t <- with(hhAttributesDT, table(Q20_coded, useNA = "always"))
@@ -135,9 +137,9 @@ setkey(pc_dt, Q20_coded)
 dtf <- as.data.table(t)
 setkey(dtf, Q20_coded)
 dt <- dtf[pc_dt]
-kableExtra::kable(caption = paste0("Main method of heating, n dwellings = ", sum(dt$N)), 
-                  dt, digits = 2) %>%
-  kable_styling()
+# kableExtra::kable(caption = paste0("Main method of heating, n dwellings = ", sum(dt$N)), 
+#                   dt, digits = 2) %>%
+#   kable_styling()
 
 # compare to HCS 2015
 
@@ -156,16 +158,19 @@ dodge <- position_dodge(width=0.9)
 # https://ggplot2.tidyverse.org/reference/geom_linerange.html
 ggplot2::ggplot(combined_dt, aes(x = Appliance , y = pc, fill = type)) +
   geom_col(position = "dodge") +
-  scale_fill_discrete(name = "Sample") +
+  scale_fill_discrete(name = "Sample:") +
   geom_errorbar(aes(ymin = pc-ci_95pc, ymax = pc+ci_95pc), position = dodge, width = 0.25) +
   coord_flip() +
+  theme(legend.position = "bottom") +
   labs(x = "Appliance", y = "%",
        caption = "Non-comparable appliances excluded, within-sample totals will not sum to 100%\nError bars = 95% CI for HCS 2015")
 
 
 ```
 
-Further, Table \@ref(tab:compareheatSource) compares the 'Fuel type used to heat dwelling' for Census 2013 and the 'methods available for heating your house' in the GREEN Grid sample. Note that mutiple responses were possible in both data sources and we have coded the responses to be as comparable as possible.
+>Insert footnote re HCS 2015 confidence intervals of +/-6.1% for owner-occupier homes and +/-10.8% for rentals at the 95% level [@vicki_white_warm_2017,p51]. This means that if we repeated the HCS 100 times we would expect that in 95 of them the % of owner occupier dwellings with heat pumps would be between 33.9% and 46.1% and the figure for rentals would be 14.2% to 35.8%. Clearly the small sample size of the HCS 2015 leads to substantial uncertainty in the estimates of heat pump prevalance (and all other estimates) in these groups. For a more detailed discussion of this problem see [@anderson_ensuring_2020].
+
+Further, Table \@ref(tab:compareheatSource) compares the 'Fuel type used to heat dwelling' for Census 2013 and the 'methods available for heating your house' in the GREEN Grid sample. Note that mutiple responses were possible in both data sources and we have [coded](https://git.soton.ac.uk/ba1e12/spatialec/blob/master/dataProcessing/processGreenGridSurvey.R) the responses to be as comparable as possible.
  
 ```{r compareheatSource}
 # census
@@ -318,6 +323,7 @@ kableExtra::kable(t, digits = 2,
 ```
 
 
+### Number of people
 ```{r nPeople}
 hhAttributesDT[, nPeople := nAdults + nChildren0_12 + nTeenagers13_18]
 t <- table(hhAttributesDT$nPeople,  useNA = "always")
@@ -340,18 +346,19 @@ kableExtra::kable(caption = paste0("Main heat source, n dwellings = ", sum(dt$N)
 
 ```
 
+### Number of children
 
-compare with (for e.g.) the BRANZ HCS results or Census 2013
+# Scaling examples
 
-## Census 2013
+## Simple multiplication
 
-# Simple multiplication
-
-## Example: Total electricity consumption {#totLoadBasic}
+### Example: Total electricity consumption {#totLoadBasic}
 
 In this case we use the half-hourly total kW load data set produced in [Part A](https://cfsotago.github.io/GREENGridEECA/partA_dataProcessingReport_v1.0.html#610_total_load). To produce national estimates we first prepare the household level consumption data to provide mean energy consumption (kWh) per half-hour for each season in 2015. We use kWh to enable comparison with the GXP data used in [Part B](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak).
 
 ```{r prepHHProfiles, fig.cap = "Mean kWh per half-hour by season"}
+hhTotalLoadDT <- drake::readd(ggHHpowerData)
+
 hhTotalLoadDT[, meankWh := (meanPowerW/1000)/2] # convert to kW & divide by 2 as half-hours
 hhTotalLoadDT[, r_dateTimeHalfHour := lubridate::as_datetime(r_dateTimeHalfHour, tz = "Pacific/Auckland")]
 hhTotalLoadDT[, date := lubridate::date(r_dateTimeHalfHour)]
@@ -395,6 +402,8 @@ ggplot(profileDT, aes(x = hms, y = totalResMWh, colour = season)) +
 Figure \@ref(fig:profiles) shows these values as a % of the total network electricity export [GXP data](https://cfsotago.github.io/GREENGridEECA/partB_dataAnalysisReport_v1.0.html#42_regionnetwork_coincident_peak) by season for all regions combined as a data sense-check. As we can see the naive multiplication method produces broadly plausible results in summer where we estimate ~30%-40% of total electricity consumption in peak periods is due to households. However the method appears to substantially (and implausibly) over-estimate the contribution of households in winter peaks where the value approaches 70%. The is almost certainly due to the bias inherent in the GREEN Grid sample which had a higher proportion of families, households with higher incomes and no households using gas or solid fuels as a primary space heating energy source.
 
 ```{r profiles, fig.cap="Mean total kWh per half hour by season"}
+gxpDataDT <- drake::readd(gxpData) # gxp data
+
 myCaption <- paste0("Source: EA EMI Grid Exit Point (GXP) data",
                     ", ", min(gxpDataDT$date, na.rm = TRUE)
                     , " - ", max(gxpDataDT$date, na.rm = TRUE))
@@ -423,17 +432,17 @@ ggplot(plotDT, aes(x = hms, y = pc, colour = season)) +
 
 This approach illustrates the difficulty of producing robust national level using simple multiplication of a small and biased sample.
 
-# Simple Proportional Upscaling
+## Simple Proportional Upscaling
 
 Summarise method used in [@dortans_estimating_2019]
 
-## Example: Heat pump electricity consumption
+### Example: Heat pump electricity consumption
 
 Summarise relevant [@dortans_estimating_2019] section
 
-## Summary
+### Summary
 
-# Complex re-weighting
+## Complex re-weighting
 
 Briefly summarise iterative proportional fitting [simpson_combining_2005; @anderson_estimating_2012] to re-weight households on multiple dimensions to match known Census distributions [@anderson_small_2019].
 
@@ -445,7 +454,7 @@ describe approach and build ipf-based model of overall load for
  
  using aggregated are unit Census data & half-hour kW/kWh data from Part A/B -> mean kW per half hour per season (using 2015) 
 
-## Example: Total electricity consumption
+### Example: Total electricity consumption
 
 re-run using method in [@anderson_small_2019]
 
@@ -453,11 +462,11 @@ re-run using method in [@anderson_small_2019]
 
 ```
 
-## Example: Heat pump electricity consumption
+### Example: Heat pump electricity consumption
 
 re-run using method in [@anderson_small_2019]
 
-## Sumary
+### Sumary
 
 # Overall summary and recommendations
 
