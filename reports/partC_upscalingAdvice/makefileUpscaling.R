@@ -4,6 +4,7 @@
 library(GREENGridEECA)
 
 libs <- c("data.table", # data munching
+          "drake", # data pre-loading etc
           "here", # here. not there
           "skimr") # skimming data for fast descriptives
 
@@ -11,32 +12,32 @@ GREENGridEECA::loadLibraries(libs) # should install any that are missing
 
 GREENGridEECA::setup() # set data paths etc
 
-# check
-
 # parameters ----
 
-# Data ----
-# Load all data here, not in .Rmd
+# > defn of peak ----
+amPeakStart <- hms::as_hms("07:00:00")
+amPeakEnd <- hms::as_hms("09:00:00")
+pmPeakStart <- hms::as_hms("17:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
+pmPeakEnd <- hms::as_hms("21:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
 
-#> Census data ----
-ipfCensusDT <- data.table::fread(paste0("~/Data/NZ_Census/data/processed/2013IpfInput.csv"))
+# funtions ----
+setPeakPeriod <- function(dt){
+  # assumes hms exists
+  dt[, peakPeriod := NA]
+  dt[, peakPeriod := ifelse(hms < amPeakStart, "Early morning", peakPeriod)]
+  dt[, peakPeriod := ifelse(hms >= amPeakStart & hms < amPeakEnd, "Morning peak", peakPeriod)]
+  dt[, peakPeriod := ifelse(hms >= amPeakEnd & hms < pmPeakStart, "Day time", peakPeriod)]
+  dt[, peakPeriod := ifelse(hms >= pmPeakStart & hms < pmPeakEnd, "Evening peak", peakPeriod)]
+  dt[, peakPeriod := ifelse(hms >= pmPeakEnd, "Late evening", peakPeriod)]
+  dt[, peakPeriod := forcats::fct_relevel(peakPeriod, 
+                                          "Early morning",
+                                          "Morning peak",
+                                          "Day time",
+                                          "Evening peak",
+                                          "Late evening")]
+  return(dt)
+}
 
-#> GREEN Grid half hourly total dwelling power data ----
-hhTotalLoadF <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv.gz")
-hhTotalLoadDT <- data.table::fread(hhTotalLoadF)
-
-#> HCS 2015 heat source
-hcs2015DT <- data.table::fread(paste0(here::here(), "/data/input/hcs2015HeatSources.csv"))
-
-#> GREEN Grid household survey data ----
-hhAttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
-hhAttributesDT <- data.table::fread(hhAttributesF)
-ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, "/survey/ggIpfInput.csv"))
-
-#> ipf weights data from previous run of model
-ipfWeightsDT <- data.table::fread(paste0(repoParams$GreenGridData, "/ipf/nonZeroWeightsAu2013.csv"))
-
-#> GXP data ----
 getGXPFileList <- function(dPath){
   # check for EA GXP files
   message("Checking for data files")
@@ -65,7 +66,7 @@ loadGXPData <- function(files){
   dt[, date := lubridate::date(rDateTime)]
   dt[, month := lubridate::month(rDateTime)]
   dt[, day_of_week := lubridate::wday(rDateTime, label = TRUE)]
-  dt[, hms := hms::as.hms(rDateTime)] # set to middle of half-hour
+  dt[, hms := hms::as_hms(rDateTime)] # set to middle of half-hour
   dt[, halfHour := hms::trunc_hms(hms, 30*60)] # truncate to previous half-hour
   
   # Create factor for weekdays/weekends ----
@@ -100,44 +101,59 @@ loadGXPData <- function(files){
   return(dt)
 } # should be in package functions
 
+getGXPData <- function(files){
+  if(nrow(files) == 0){
+    message("No data!")
+  } else {
+    message("Yep, we've got (some) data")
+    dt <- loadGXPData(gxpFiles)
+    # remove the date NAs here (DST breaks)
+    dt <- dt[!is.na(date)]
+  }
+  return(dt)
+}
+
+getGgHalfHourLoad <- function(f){
+  dt <- data.table::fread(hhTotalLoadF) # do in drake
+  return(dt)
+}
+
+# Code ----
+# Load all data here, not in .Rmd
+
+#> Census data ----
+# will load the latest version
+ipfCensusDT <- data.table::fread(paste0("~/Data/NZ_Census/data/processed/2013IpfInput.csv"))
+
+#> GREEN Grid half hourly total dwelling power data ----
+hhTotalLoadF <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv.gz")
+# hhTotalLoadDT <- data.table::fread(hhTotalLoadF) # do in drake
+
+#> HCS 2015 heat source
+hcs2015DT <- data.table::fread(paste0(here::here(), "/data/input/hcs2015HeatSources.csv"))
+
+#> GREEN Grid household survey data ----
+hhAttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
+hhAttributesDT <- data.table::fread(hhAttributesF)
+# will load the latest version
+ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, "/survey/ggIpfInput.csv"))
+
+#> ipf weights data from previous run of model
+ipfWeightsDT <- data.table::fread(paste0(repoParams$GreenGridData, "/ipf/nonZeroWeightsAu2013.csv"))
+
 years <- c("2015")
 
 gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
 
-if(nrow(gxpFiles) == 0){
-  message("No data!")
-} else {
-  message("Yep, we've got (some) data")
-  gxpDataDT <- loadGXPData(gxpFiles)
-}
+# this is where we use drake if we can
+plan <- drake::drake_plan(
+  gxpData = getGXPData(gxpFiles),
+  ggHHpowerData = getGgHalfHourLoad(hhTotalLoadF)
+)
 
-# remove the date NAs here (DST breaks)
-gxpDataDT <- gxpDataDT[!is.na(date)]
 
-# > defn of peak ----
-amPeakStart <- hms::as_hms("07:00:00")
-amPeakEnd <- hms::as_hms("09:00:00")
-pmPeakStart <- hms::as_hms("17:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
-pmPeakEnd <- hms::as_hms("21:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
-
-# Functions ----
-setPeakPeriod <- function(dt){
-  # assumes hms exists
-  dt[, peakPeriod := NA]
-  dt[, peakPeriod := ifelse(hms < amPeakStart, "Early morning", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= amPeakStart & hms < amPeakEnd, "Morning peak", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= amPeakEnd & hms < pmPeakStart, "Day time", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= pmPeakStart & hms < pmPeakEnd, "Evening peak", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= pmPeakEnd, "Late evening", peakPeriod)]
-  dt[, peakPeriod := forcats::fct_relevel(peakPeriod, 
-                                          "Early morning",
-                                          "Morning peak",
-                                          "Day time",
-                                          "Evening peak",
-                                          "Late evening")]
-  return(dt)
-}
-
+plan # test the plan
+make(plan) # run the plan, re-loading data if needed
 
 makeReport <- function(f){
   # default = html
@@ -161,6 +177,6 @@ authors <- "Ben Anderson"
 
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/reports/partC_upscalingAdvice/upscaling.Rmd")
-makeReport(rmdFile)
+#makeReport(rmdFile)
 
 
