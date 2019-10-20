@@ -60,6 +60,7 @@ if(nrow(gxpFiles) == 0){
   message("No data, refreshing!")
   # this just brute force overwrites whatever years you set above. Nothing fancy or clever
   GREENGridEECA::refreshGXPData(years) # generates melt warnings
+  try(file.remove(temp.csv)) # curl side effect
   gxpFiles <- getGXPFileList(repoParams$gxpData) # should be some now
   message("Using drake to pre-load")
   make(drakePlan) # load them using drake
@@ -68,6 +69,7 @@ if(nrow(gxpFiles) == 0){
   if(forceRefresh == "Yes"){ # force refresh anyway
     message("Data refresh forced in any case - please wait")
     GREENGridEECA::refreshGXPData(years) # generates melt warnings
+    try(file.remove(temp.csv)) # curl side effect
     gxpFiles <- getGXPFileList(repoParams$gxpData) # refresh file list
   } 
   message("Using drake to pre-load")
@@ -92,6 +94,6 @@ authors <- "Ben Anderson"
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/dataProcessing/gxpReport.Rmd")
 
-#makeReport(rmdFile)
+makeReport(rmdFile)
 
 
