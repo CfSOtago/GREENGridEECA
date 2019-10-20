@@ -21,83 +21,14 @@ pmPeakStart <- hms::as_hms("17:00:00") # see https://www.electrickiwi.co.nz/hour
 pmPeakEnd <- hms::as_hms("21:00:00") # see https://www.electrickiwi.co.nz/hour-of-power
 
 # funtions ----
-setPeakPeriod <- function(dt){
-  # assumes hms exists
-  dt[, peakPeriod := NA]
-  dt[, peakPeriod := ifelse(hms < amPeakStart, "Early morning", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= amPeakStart & hms < amPeakEnd, "Morning peak", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= amPeakEnd & hms < pmPeakStart, "Day time", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= pmPeakStart & hms < pmPeakEnd, "Evening peak", peakPeriod)]
-  dt[, peakPeriod := ifelse(hms >= pmPeakEnd, "Late evening", peakPeriod)]
-  dt[, peakPeriod := forcats::fct_relevel(peakPeriod, 
-                                          "Early morning",
-                                          "Morning peak",
-                                          "Day time",
-                                          "Evening peak",
-                                          "Late evening")]
-  return(dt)
-}
 
 getGXPFileList <- function(dPath){
   # check for EA GXP files
   message("Checking for data files")
-  all.files <- list.files(path = dPath, pattern = ".csv")
+  all.files <- list.files(path = dPath, pattern = ".csv") # will pick up .csv & .csv.gz
   dt <- as.data.table(all.files)
   dt[, fullPath := paste0(dPath, all.files)]
   message("Found ", nrow(dt))
-  return(dt)
-} # should be in package functions
-
-
-loadGXPData <- function(files){
-  # load the EA GXP data
-  # https://stackoverflow.com/questions/21156271/fast-reading-and-combining-several-files-using-data-table-with-fread
-  # this is where we need drake
-  # and probably more memory
-  message("Loading ", nrow(files), " GXP files")
-  l <- lapply(files$fullPath, data.table::fread)
-  dt <- rbindlist(l)
-  setkey(dt, rDateTime)
-  try(file.remove("temp.csv")) # side effect
-  # fix dates & times ----
-  dt <- dt[!is.na(rTime)] # drop the TP49 & TP50
-  dt[, rDateTime := lubridate::as_datetime(rDateTime)]
-  dt[, rDateTime := lubridate::force_tz(rDateTime, tzone = "Pacific/Auckland")]
-  dt[, date := lubridate::date(rDateTime)]
-  dt[, month := lubridate::month(rDateTime)]
-  dt[, day_of_week := lubridate::wday(rDateTime, label = TRUE)]
-  dt[, hms := hms::as_hms(rDateTime)] # set to middle of half-hour
-  dt[, halfHour := hms::trunc_hms(hms, 30*60)] # truncate to previous half-hour
-  
-  # Create factor for weekdays/weekends ----
-  dt[, weekdays := "Weekdays"]
-  dt[, weekdays := ifelse(day_of_week == "Sat" |
-                            day_of_week == "Sun", "Weekends", weekdays)]
-  # locate in peak/not peak ----
-  dt <- setPeakPeriod(dt)
-  
-  # load the POC lookup table Vince sent
-  f <- paste0(here::here(), "/data/input/gxp-lookup.csv")
-  gxpLutDT <- data.table::fread(f)
-  
-  setkey(gxpLutDT, node)
-  setkey(dt, POC)
-  
-  dt <- gxpLutDT[dt] # merge them - this keeps all the gxpData
-  
-  # load the Transpower GIS table
-  f <- paste0(here::here(), "/data/input/gxpGeolookup.csv")
-  gxpGeoDT <- data.table::fread(f)
-  # note there are differences
-  # in the Transpower data MXLOCATION == node but without the trailing 0331 - whatever this means
-  dt[, MXLOCATION := substr(node, start = 1, stop = 3)] # note this produces non-unique locations
-  # so presumably some gxps share a location where they feed different networks
-  uniqueN(dt$node)
-  uniqueN(dt$MXLOCATION)
-  dt[, .(nNodes = uniqueN(node)), keyby = .(MXLOCATION)]
-  setkey(dt, MXLOCATION)
-  setkey(gxpGeoDT, MXLOCATION)
-  gxpDataDT <- gxpGeoDT[dt]
   return(dt)
 } # should be in package functions
 
@@ -106,7 +37,7 @@ getGXPData <- function(files){
     message("No data!")
   } else {
     message("Yep, we've got (some) data")
-    dt <- loadGXPData(gxpFiles)
+    dt <- GREENGridEECA::loadGXPData(gxpFiles)
     # remove the date NAs here (DST breaks)
     dt <- dt[!is.na(date)]
   }
@@ -126,29 +57,42 @@ getGgHalfHourLoad <- function(f){
 ipfCensusDT <- data.table::fread(paste0("~/Data/NZ_Census/data/processed/2013IpfInput.csv"))
 
 #> GREEN Grid half hourly total dwelling power data ----
-hhTotalLoadF <- paste0(repoParams$GreenGridData, "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv.gz")
+hhTotalLoadF <- paste0(repoParams$GreenGridData, 
+                       "/gridSpy/halfHour/extracts/halfHourImputedTotalDemand.csv.gz")
 # hhTotalLoadDT <- data.table::fread(hhTotalLoadF) # do in drake
 
+#> GREEN Grid half hourly heat pump data ----
+hhHPLoadF <- paste0(repoParams$GreenGridData, 
+                    "/gridSpy/halfHour/extracts/halfHourHeatPump.csv.gz")
+# load in drake
+
+
 #> HCS 2015 heat source
-hcs2015DT <- data.table::fread(paste0(here::here(), "/data/input/hcs2015HeatSources.csv"))
+hcs2015DT <- data.table::fread(paste0(here::here(), 
+                                      "/data/input/hcs2015HeatSources.csv"))
 
 #> GREEN Grid household survey data ----
-hhAttributesF <- paste0(repoParams$GreenGridData,"/survey/ggHouseholdAttributesSafe.csv.gz") 
+hhAttributesF <- paste0(repoParams$GreenGridData,
+                        "/survey/ggHouseholdAttributesSafe.csv.gz") 
 hhAttributesDT <- data.table::fread(hhAttributesF)
 # will load the latest version
-ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, "/survey/ggIpfInput.csv"))
+ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, 
+                                        "/survey/ggIpfInput.csv"))
 
 #> ipf weights data from previous run of model
-ipfWeightsDT <- data.table::fread(paste0(repoParams$GreenGridData, "/ipf/nonZeroWeightsAu2013.csv"))
+ipfWeightsDT <- data.table::fread(paste0(repoParams$GreenGridData, 
+                                         "/ipf/nonZeroWeightsAu2013.csv"))
 
-years <- c("2015")
+years <- c("2013","2015")
 
 gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run before so
 
+# drake plan ----
 # this is where we use drake if we can
 plan <- drake::drake_plan(
   gxpData = getGXPData(gxpFiles),
-  ggHHpowerData = getGgHalfHourLoad(hhTotalLoadF)
+  ggHHData = getGgHalfHourLoad(hhTotalLoadF),
+  ggHPData = data.table::fread(hhHPLoadF) 
 )
 
 
@@ -169,7 +113,7 @@ makeReport <- function(f){
 
 # > Make report ----
 # >> yaml ----
-version <- "0.5"
+version <- "0.8"
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part C) Upscaling Advice Report v", version)
 authors <- "Ben Anderson"
