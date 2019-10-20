@@ -54,7 +54,7 @@ getGgHalfHourLoad <- function(f){
 
 #> Census data ----
 # will load the latest version
-ipfCensusDT <- data.table::fread(paste0("~/Data/NZ_Census/data/processed/2013IpfInput.csv"))
+ipfCensusDT <- data.table::fread(paste0(repoParams$censusData, "/data/processed/2013IpfInput.csv"))
 
 #> GREEN Grid half hourly total dwelling power data ----
 hhTotalLoadF <- paste0(repoParams$GreenGridData, 
@@ -73,7 +73,7 @@ hcs2015DT <- data.table::fread(paste0(here::here(),
 
 #> GREEN Grid household survey data ----
 hhAttributesF <- paste0(repoParams$GreenGridData,
-                        "/survey/ggHouseholdAttributesSafe.csv.gz") 
+                        "/survey/ggHouseholdAttributesSafe_2019-10-20.csv.gz") # latest version 
 hhAttributesDT <- data.table::fread(hhAttributesF)
 # will load the latest version
 ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, 
