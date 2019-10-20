@@ -139,6 +139,6 @@ hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseho
 
 # > run report ----
 f <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")
-makeHtmlReport(f)
+#makeHtmlReport(f)
 #makeOdtReport(f)
 #makeWordReport(rmdFile) # can't seem to handle kableExtra tables
