@@ -75,6 +75,7 @@ if(nrow(gxpFiles) == 0){
 }
 
 # > data stuff ----
+gxpDataDT <- drake::readd(gxpData) # get gxp data back from wherever drake put it
 # check data load worked
 message("N rows GXP data: ", nrow(gxpDataDT), " from ", 
         min(gxpDataDT$rDate), " to ", max(gxpDataDT$rDate))
@@ -90,7 +91,7 @@ authors <- "Ben Anderson"
 
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/dataProcessing/gxpReport.Rmd")
-gxpDataDT <- drake::readd(gxpData) # get gxp data back from wherever drake put it
-makeReport(rmdFile)
+
+#makeReport(rmdFile)
 
 
