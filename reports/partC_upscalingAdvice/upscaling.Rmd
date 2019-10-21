@@ -508,7 +508,7 @@ Setting aside the conclusion that the GREEN grid sample comprises more larger dw
 
 Under this method we simply multiply an estimated mean (or total) household values derived from the GREEN Grid 2015 sample by the  national or regional household populations of interest.
 
-### Total electricity comsumption profiles - 2015 {totalLoad2015}
+### Total electricity comsumption profiles - 2015 {#totalLoad2015}
 
 As an example let us assume we wish to calculate half-hourly national total residential electricity consumption profiles by season for 2015 to estimate their contributon to overall electricity consumption profiles in New Zealand. To do this, we use the half-hourly total kW load data produced in [Part A](https://cfsotago.github.io/GREENGridEECA/partA_dataProcessingReport_v1.0.html#610_total_load) and calculate mean energy consumption (kWh) per half-hour for each season in 2015. We do this using all values even where negative as we assume that -ve consumption is export to the grid by the few households with photovoltaic panels (see Table \@ref(tab:prepHHProfiles)). Clearly we could remove these households but as the -ve power values are only likely to have an effect during the middle of the day (during off-peak periods) and mainly in summer, we have chosen not to exclude them in the analysis that follows.
 
@@ -743,8 +743,6 @@ It should be noted that, as reported in Section \@cite(ref:ggSample), the GREEN 
 ### Example: Total residential electricity consumption 2015
 
 
-
-
 #### National estimates
 
 In this example we use the IPF method to reweight the GREEN Grid sample so that it fits to the 2013 NZ census distributions of the variables listed above at the national level. 
@@ -780,23 +778,32 @@ ggplot2::ggplot(plotDT, aes(x = hms, y = ipfTotalMWh, colour = season)) +
        y = "Mean total MWh")
 ```
 
-XX compare with earlier results
+Figure \@ref(fig:compareMethods) compares the simple multiplicative results from Section \@ref(totalLoad2015) and the IPF-derived results. As we can see the IPF method produces lower overall consumption estimates and this appears to be especially the case during the day in summer. This is likely to be cuased by the upweighting of the PV-equipped dwellings although we note that the IPF results are generally lower at all times of day and in all seasons.
 
-```{r compareMethods}
+```{r compareMethods, fig.cap="Comparison of simple multiplicative and IPF- reweighting based results"}
 # merge with total load from above
-setkey(totalLoadProfileDT, hms, season)
-setkey(plotDT, hms, season)
-dt <- plotDT[totalLoadProfileDT]
 
-dt[, diff := totalResMWh2015/ipfTotalMWh]
+totalLoadProfileDT[, source := "Simple multiplication"]
+totalLoadProfileDT[, totalMWh := totalResMWh2015]
+plotDT[, source := "IPF re-weighting"]
+plotDT[, totalMWh := ipfTotalMWh]
 
-ggplot2::ggplot(dt, aes(x = hms)) + 
-  geom_line(aes(y = ipfTotalMWh), colour = "black") +
-  geom_line(aes(y = totalResMWh2015), colour = "grey") +
+dt <- rbind(plotDT[, .(hms,season,source, totalMWh)],totalLoadProfileDT[, .(hms,season,source,totalMWh)])
+
+ggplot2::ggplot(dt[!is.na(season)], aes(x = hms, y = totalMWh, colour = source)) + 
+  geom_line() +
+  scale_color_discrete(name = "Source") +
   facet_wrap(. ~ season) +
   labs(y = "Mean MWh per half hour",
        x = "Time of day")
 
+t <- dt[, .("Min MWh" = min(totalMWh, na.rm = TRUE),
+            "Mean MWh" = mean(totalMWh, na.rm = TRUE),
+            "Max MWh" = max(totalMWh, na.rm = TRUE)),
+        keyby = .(source)
+        ]
+kableExtra::kable(t, caption = "Summary of national level half-hourly MWh estimates by source") %>%
+  kable_styling()
 ```
 
 Notes:
