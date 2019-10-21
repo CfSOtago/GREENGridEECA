@@ -263,7 +263,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Analysis (Part C) Upscaling Advice Report v0.8</h3>
 <h4 class="author">Ben Anderson</h4>
-<h4 class="date">Last run at: 2019-10-22 00:18:31 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2019-10-22 00:29:14 (Pacific/Auckland)</h4>
 
 </div>
 
@@ -2033,6 +2033,9 @@ Figure 4.10: Estimated total residential electricity consumption per half-hour b
 </div>
 <div id="summary-1" class="section level3">
 <h3><span class="header-section-number">4.3.2</span> Summary</h3>
+<blockquote>
+<p>To do</p>
+</blockquote>
 </div>
 </div>
 </div>
@@ -2049,7 +2052,7 @@ Figure 4.10: Estimated total residential electricity consumption per half-hour b
 <li>the recent NZ Stats/MBIE <a href="https://www.stats.govt.nz/methods/framework-for-housing-quality">Housing Quality Indicator survey</a> - although detailed energy monitoring was not included;</li>
 <li>the potential future population representative BRANZ Household Energy End-Use (HEEP2) study;</li>
 <li>representative smart meter datasets linked to household attributes;</li>
-<li>imputed load profiles generated using population representative New Zealand Time Use diary data (see [<a href="mailto:mckenna_high-resolution_2016;@mckenna_simulating_2017">mckenna_high-resolution_2016;@mckenna_simulating_2017</a>] for a UK example)</li>
+<li>imputed load profiles generated using population representative New Zealand Time Use diary data (see <span class="citation">(McKenna and Thomson 2016; McKenna et al. 2017)</span> for a UK example)</li>
 </ul>
 <p>Would these samples be large <em>enough</em> for these purposes? Unfortunately there is no simple answer to this question since in the first instance the size of the chosen sample will depend on the precision of the estimates required. In Section <a href="#ggSample">3.3</a> we noted that the BRANZ Housing Condition Survey 2015 sample size of 560 dwellings enabled a precision (95% confidence interval) of +/- 5% for overall sample statistics but +/- 6% and +/- 11% for the smaller owned and rental subgroups <span class="citation">(Vicki White and Mark Jones 2017)</span>. As shown in Figure <a href="#fig:compareHeatSourceHCS">3.1</a> this means that the percentage of owner-occupied dwellings with heat pumps (for example) can only be estimated to lie between 34% and 46% (lower and upper 95% intervals). If greater precision is required at the whole sample or sub-group levels then larger samples will be needed and there are a number of recent papers which can provide guidance in this regard <span class="citation">(Sovacool, Axsen, and Sorrell 2018; Anderson et al. 2020)</span>.</p>
 <p>However, in the case of multivariate upscaling (Section <a href="#complex">4.3</a>) it is clear that a representative sample would also need to be large enough to include sufficient numbers of households to represent key sub-groups of interest (i.e. reweighting constraints) at the required level of precision. In the work reported above this is evident in the inability to re-weight the GREEN Grid sample to fit national, regional or local distributions of space heating appliance or even main heating fuel source due to an absence of representative cases. As noted, no method can re-weight households types that are absent from the sample…</p>
@@ -2065,88 +2068,6 @@ Figure 4.10: Estimated total residential electricity consumption per half-hour b
 <div id="census-data-summary" class="section level2">
 <h2><span class="header-section-number">6.1</span> Census data summary</h2>
 <p>Descriptive statistics for census data:</p>
-<pre><code>## Skim summary statistics
-##  n obs: 2020 
-##  n variables: 35 
-## 
-## ── Variable type:character ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##        variable missing complete    n min max empty n_unique
-##    AU2013_label       0     2020 2020   4  34     0     2020
-##  REGC2013_label       0     2020 2020  12  24     0       17
-## 
-## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##                      variable missing complete    n      mean       sd
-##                   AU2013_code       0     2020 2020 558310.19 36014.2 
-##                       calcSum       8     2012 2020    776.19   624.19
-##          fuel_totalHouseholds       8     2012 2020    776.29   623.96
-##    fuel_totalStatedHouseholds       8     2012 2020    733.37   590.5 
-##                heatSourceCoal       8     2012 2020     30.3     62.1 
-##         heatSourceElectricity       8     2012 2020    592.64   498.79
-##                 heatSourceGas       8     2012 2020    200.97   205.12
-##               heatSourceOther       8     2012 2020     76.61    98.01
-##                heatSourceWood       8     2012 2020    269.51   245.25
-##                     i.calcSum       8     2012 2020    770.13   618.81
-##                   i.calcSum.1       8     2012 2020   1170.03   898.84
-##                   i.calcSum.2       8     2012 2020    564.81   452.99
-##                 i.calcSumPc.2     134     1886 2020    100        0   
-##                       nKids_0       8     2012 2020    508.75   433.1 
-##              nKids_0_families       8     2012 2020    303.24   247   
-##                      nKids_1m       8     2012 2020    261.57   220.29
-##           nkids_totalFamilies       8     2012 2020    564.81   452.99
-##         nkids_totalHouseholds       8     2012 2020    770.32   618.78
-##                          nMBs       0     2020 2020     23.09    16.9 
-##                     nPeople_1       8     2012 2020    176.58   168.71
-##                     nPeople_2       8     2012 2020    262.21   217.39
-##                     nPeople_3       8     2012 2020    126.64   106.58
-##                    nPeople_4m       8     2012 2020    204.7    182.03
-##       npeople_totalHouseholds       8     2012 2020    770.32   618.78
-##                     nRooms1_4       8     2012 2020    121.33   182.91
-##                     nRooms5_6       8     2012 2020    312.3    263.44
-##                      nRooms7m       8     2012 2020    342.56   285.93
-##  nrooms_statedtotalHouseholds       8     2012 2020    731.16   589.34
-##        nrooms_totalHouseholds       8     2012 2020    776.29   623.96
-##     p0       p25      p50       p75   p100     hist
-##  5e+05 526176.5  555350   587302.25 666673 ▆▇▅▆▇▅▁▁
-##      0    231       685.5   1194.75   5562 ▇▅▂▁▁▁▁▁
-##      0    233.25    685.5   1197      5568 ▇▅▂▁▁▁▁▁
-##      0    219       646.5   1131      4920 ▇▅▂▁▁▁▁▁
-##      0      6        15       30       930 ▇▁▁▁▁▁▁▁
-##      0    156       492      918      3342 ▇▅▃▁▁▁▁▁
-##      0     45       138      300      1371 ▇▃▂▁▁▁▁▁
-##      0     18        51      105.75   2202 ▇▁▁▁▁▁▁▁
-##      0     96       213      375      1764 ▇▅▂▁▁▁▁▁
-##      0    231       684     1191      5364 ▇▅▂▁▁▁▁▁
-##      0    393      1071     1773.75   5922 ▇▆▅▂▁▁▁▁
-##      0    168       502.5    861      2460 ▇▅▅▃▁▁▁▁
-##    100    100       100      100       100 ▁▁▁▇▁▁▁▁
-##      0    152.25    430.5    771      4929 ▇▃▁▁▁▁▁▁
-##      0     96       262.5    453      1728 ▇▆▃▁▁▁▁▁
-##      0     69       222      402      1335 ▇▅▃▂▁▁▁▁
-##      0    168       502.5    861      2460 ▇▅▅▃▁▁▁▁
-##      0    231       681     1188.75   5367 ▇▅▂▁▁▁▁▁
-##      1      9        20       34       124 ▇▆▃▁▁▁▁▁
-##      0     48       132      261      1797 ▇▃▁▁▁▁▁▁
-##      0     84       228      390.75   2199 ▇▅▁▁▁▁▁▁
-##      0     33       108      198       948 ▇▅▂▁▁▁▁▁
-##      0     54       168      306      1167 ▇▅▃▁▁▁▁▁
-##      0    231       681     1188.75   5367 ▇▅▂▁▁▁▁▁
-##      0     24        72      165      4122 ▇▁▁▁▁▁▁▁
-##      0     84       261      489      1758 ▇▅▃▂▁▁▁▁
-##      0    108       297      504.75   1992 ▇▆▃▁▁▁▁▁
-##      0    219       643.5   1131      4968 ▇▅▂▁▁▁▁▁
-##      0    233.25    685.5   1197      5568 ▇▅▂▁▁▁▁▁
-## 
-## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##       variable missing complete    n   mean    sd p0    p25    p50    p75
-##      calcSumPc     131     1889 2020  98.5  12.46  0  99.69 100    100.28
-##    i.calcSumPc     124     1896 2020  98.39 12.52  0  99.69 100    100.24
-##  i.calcSumPc.1     131     1889 2020 154.81 25.82  0 141.04 153.8  167.98
-##  pc_nPeople_4m     124     1896 2020  25.38 10.35  0  19.41  24.91  30.75
-##    p100     hist
-##  137.5  ▁▁▁▁▁▇▁▁
-##  125    ▁▁▁▁▁▁▇▁
-##  233.33 ▁▁▁▁▅▇▂▁
-##   80    ▁▃▇▃▁▁▁▁</code></pre>
 </div>
 <div id="green-grid-half-hourly-total-load-summary" class="section level2">
 <h2><span class="header-section-number">6.2</span> GREEN Grid half-hourly total load summary</h2>
@@ -2179,59 +2100,6 @@ Figure 4.10: Estimated total residential electricity consumption per half-hour b
 ## 4: Autumn 0.6867428
 ## 5: Autumn 0.5563255
 ## 6: Autumn 1.2172255</code></pre>
-<pre><code>## Skim summary statistics
-##  n obs: 1770614 
-##  n variables: 14 
-## 
-## ── Variable type:character ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##      variable missing complete       n min max empty n_unique
-##       circuit       0  1770614 1770614  37  37     0        1
-##  circuitLabel       0  1770614 1770614  37  37     0        1
-##        linkID       0  1770614 1770614   5   6     0       45
-## 
-## ── Variable type:Date ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n        min        max     median
-##      date       0  1770614 1770614 2014-01-06 2018-08-01 2016-03-13
-##  n_unique
-##      1613
-## 
-## ── Variable type:difftime ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n    min        max     median n_unique
-##       hms       0  1770614 1770614 0 secs 84600 secs 43200 secs       48
-## 
-## ── Variable type:factor ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n n_unique
-##    season       0  1770614 1770614        4
-##                                          top_counts ordered
-##  Win: 488290, Aut: 454306, Spr: 430353, Sum: 397665   FALSE
-## 
-## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n  mean   sd p0 p25 p50 p75 p100     hist
-##      nObs       0  1770614 1770614 30.23 2.83  1  30  30  30   60 ▁▁▁▇▁▁▁▁
-## 
-## ── Variable type:logical ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##   variable missing complete       n mean   count
-##  circuitID 1770614        0 1770614  NaN 1770614
-## 
-## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##    variable missing complete       n    mean      sd        p0    p25
-##   maxPowerW       0  1770614 1770614 1675.04 1749.32  -6970.85 378.08
-##     meankWh       0  1770614 1770614    0.43    0.58     -3.81   0.13
-##  meanPowerW       0  1770614 1770614  863.39 1156.8   -7627.66 250.2 
-##   minPowerW       0  1770614 1770614  397.11  957.93 -12407.52 122.81
-##    sdPowerW     101  1770513 1770614  411.54  470.71      0     61.4 
-##     p50     p75     p100     hist
-##  973.47 2723.49 15593.2  ▁▁▇▅▁▁▁▁
-##    0.26    0.62     5.49 ▁▁▁▇▂▁▁▁
-##  512.88 1238.96 10981.59 ▁▁▁▇▂▁▁▁
-##  242.9   519.99  9600.58 ▁▁▁▁▇▁▁▁
-##  145.74  706.27  4954    ▇▂▁▁▁▁▁▁
-## 
-## ── Variable type:POSIXct ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##            variable missing complete       n        min        max
-##  r_dateTimeHalfHour       0  1770614 1770614 2014-01-06 2018-08-01
-##      median n_unique
-##  2016-03-13    77345</code></pre>
 <p>Descriptive statistics for dwelling half hourly heat pump kWh data:</p>
 <pre><code>##    linkID        circuit  r_dateTimeHalfHour nObs meanPowerW sdPowerW
 ## 1:  rf_08 Heat Pump$2092 2014-05-29 10:00:00   23   167.1439  522.577
@@ -2254,284 +2122,10 @@ Figure 4.10: Estimated total residential electricity consumption per half-hour b
 ## 4: 0.00000000
 ## 5: 0.00000000
 ## 6: 0.00000000</code></pre>
-<pre><code>## Skim summary statistics
-##  n obs: 1342357 
-##  n variables: 14 
-## 
-## ── Variable type:character ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##      variable missing complete       n min max empty n_unique
-##       circuit       0  1342357 1342357  14  35     0       35
-##  circuitLabel       0  1342357 1342357   9  30     0       17
-##        linkID       0  1342357 1342357   5   6     0       29
-## 
-## ── Variable type:Date ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n        min        max     median
-##      date       0  1342357 1342357 2014-05-29 2018-08-01 2016-05-02
-##  n_unique
-##      1525
-## 
-## ── Variable type:difftime ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n    min        max   median n_unique
-##       hms       0  1342357 1342357 0 secs 84600 secs 12:00:00       48
-## 
-## ── Variable type:factor ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n n_unique
-##    season       0  1342357 1342357        4
-##                                          top_counts ordered
-##  Win: 369994, Aut: 345402, Spr: 327971, Sum: 298990   FALSE
-## 
-## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##   variable missing complete       n    mean     sd   p0  p25  p50  p75
-##  circuitID       0  1342357 1342357 3399.98 870.66 2092 2598 4130 4186
-##       nObs       0  1342357 1342357   29.99   0.5     1   30   30   30
-##  p100     hist
-##  4399 ▃▂▃▁▁▁▁▇
-##    60 ▁▁▁▇▁▁▁▁
-## 
-## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##    variable missing complete       n    mean     sd       p0 p25   p50
-##   maxPowerW       0  1342357 1342357 230.23  536.16 -2228.29   0 15.14
-##     meankWh       0  1342357 1342357   0.063   0.17    -1.17   0  0   
-##  meanPowerW       0  1342357 1342357 126.1   332.28 -2343.79   0  0   
-##   minPowerW       0  1342357 1342357  57.07  245.18 -3973.34   0  0   
-##    sdPowerW      21  1342336 1342357  55.65  140.97     0      0  1.38
-##      p75     p100     hist
-##  185.48  27759    ▇▁▁▁▁▁▁▁
-##    0.053     2.67 ▁▁▇▁▁▁▁▁
-##  106.06   5340.91 ▁▁▇▁▁▁▁▁
-##   37      4860.41 ▁▁▁▇▁▁▁▁
-##   41.32   5068.08 ▇▁▁▁▁▁▁▁
-## 
-## ── Variable type:POSIXct ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##            variable missing complete       n        min        max
-##  r_dateTimeHalfHour       0  1342357 1342357 2014-05-29 2018-08-01
-##      median n_unique
-##  2016-05-02    73166</code></pre>
 </div>
 <div id="green-grid-household-data-summary" class="section level2">
 <h2><span class="header-section-number">6.3</span> GREEN Grid household data summary</h2>
 <p>Descriptive statistics for household data:</p>
-<pre><code>## Skim summary statistics
-##  n obs: 44 
-##  n variables: 123 
-## 
-## ── Variable type:character ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##             variable missing complete  n min max empty n_unique
-##        Clothes Dryer       0       44 44   0   3    23        2
-##           Dishwasher       0       44 44   0   3    15        2
-##      Electric heater       0       44 44   0   3    30        2
-##       Energy Storage       0       44 44   0   3    43        2
-##   Fridge / Freezer 1       0       44 44   0   3    13        2
-##   Fridge / Freezer 2       0       44 44   0   3    24        2
-##   Fridge / Freezer 3       0       44 44   0   3    38        2
-##  hasApplianceSummary       0       44 44   0   3    13        2
-##          hasHeatPump       0       44 44   2   3     0        2
-##        hasLongSurvey       0       44 44   0   3    15        2
-##       hasShortSurvey       0       44 44   0   3    31        2
-##   Heated towel rails       0       44 44   0   3    23        2
-##                 hhID       0       44 44   5   5     0       42
-##   Hot water cylinder       0       44 44   0   3    16        2
-##               linkID       0       44 44   5   6     0       44
-##             Location       0       44 44   8  10     0        2
-##            Microwave       0       44 44   0   3    14        2
-##                notes       0       44 44   0 113    39        6
-##      Other Appliance       0       44 44   0  42    30        9
-##                 Oven       0       44 44   0   3    14        2
-##          PV Inverter       0       44 44   0   3    40        2
-##            Q12_coded       0       44 44   0  27     2        4
-##            Q20_coded       0       44 44   0  31     2        9
-##            Q49_coded       0       44 44   0  19     2        5
-##           r_stopDate       0       44 44   0  10    41        4
-##            StartDate       0       44 44   0  16     2       43
-##      surveyStartDate       0       44 44   0  20     2       43
-##      Washing Machine       0       44 44   0   3    13        2
-## 
-## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##          variable missing complete  n    mean     sd p0    p25   p50
-##  Heat pump number      19       25 44   1.16    0.55  1   1      1  
-##           nAdults       1       43 44   1.93    0.51  1   2      2  
-##     nChildren0_12       2       42 44   1.02    1.02  0   0      1  
-##   nTeenagers13_18       2       42 44   0.26    0.54  0   0      0  
-##    Q10#1_1_1_TEXT      15       29 44   3.38    0.9   2   3      3  
-##    Q10#1_1_2_TEXT      16       28 44   1.57    1.4   0   0.75   1.5
-##    Q10#1_2_1_TEXT      15       29 44   1.38    0.49  1   1      1  
-##    Q10#1_2_2_TEXT      16       28 44   1.32    0.67  1   1      1  
-##    Q10#1_3_1_TEXT      15       29 44   1       0     1   1      1  
-##    Q10#1_3_2_TEXT      18       26 44   0.92    0.27  0   1      1  
-##    Q10#1_4_1_TEXT      15       29 44   0.14    0.35  0   0      0  
-##    Q10#1_4_2_TEXT      26       18 44   0.11    0.32  0   0      0  
-##    Q10#1_5_1_TEXT      15       29 44   0.34    0.48  0   0      0  
-##    Q10#1_5_2_TEXT      24       20 44   0       0     0   0      0  
-##    Q10#1_6_1_TEXT      15       29 44   1.62    0.62  1   1      2  
-##    Q10#1_6_2_TEXT      23       21 44   0.43    0.87  0   0      0  
-##    Q10#1_7_1_TEXT      15       29 44   0.69    0.54  0   0      1  
-##    Q10#1_7_2_TEXT      26       18 44   0.056   0.24  0   0      0  
-##    Q10#1_8_1_TEXT      15       29 44   0.83    0.38  0   1      1  
-##    Q10#1_8_2_TEXT      25       19 44   0.053   0.23  0   0      0  
-##             Q11_1      15       29 44   7.76    1.83  4   7      8  
-##               Q12       2       42 44   4.76    0.69  1   5      5  
-##             Q15_1      15       29 44  14.03    9.76  3   7     10  
-##               Q16      15       29 44   1.45    0.51  1   1      1  
-##             Q17_1      28       16 44  20.31    1.58 18  19     20  
-##             Q18_1      15       29 44  20.69    1.58 18  20     20  
-##             Q19_1      17       27 44   1       0     1   1      1  
-##            Q19_12      33       11 44   1       0     1   1      1  
-##            Q19_13      41        3 44   1       0     1   1      1  
-##            Q19_14      43        1 44   1      NA     1   1      1  
-##            Q19_15      40        4 44   1       0     1   1      1  
-##            Q19_16      40        4 44   1       0     1   1      1  
-##             Q19_3      28       16 44   1       0     1   1      1  
-##             Q19_4      35        9 44   1       0     1   1      1  
-##             Q19_6      28       16 44   1       0     1   1      1  
-##             Q19_7      38        6 44   1       0     1   1      1  
-##             Q19_8      43        1 44   1      NA     1   1      1  
-##               Q20       2       42 44   4.07    4.45  1   1      1  
-##             Q30_1      36        8 44  19       2.07 16  18     18  
-##             Q33_1      28       16 44  57.06    4.57 50  54     56.5
-##                Q4       2       42 44  14.45    3.83  1  15     15  
-##             Q40_1      15       29 44   1.31    0.54  1   1      1  
-##            Q40_10      15       29 44   2.55    0.74  1   2      3  
-##            Q40_11      15       29 44   2       0.93  1   1      2  
-##            Q40_12      15       29 44   1.97    1.02  1   1      1  
-##            Q40_13      15       29 44   2.86    0.52  1   3      3  
-##            Q40_14      15       29 44   2.28    0.84  1   2      3  
-##            Q40_15      15       29 44   2.1     0.9   1   1      2  
-##            Q40_16      15       29 44   1       0     1   1      1  
-##            Q40_17      15       29 44   1.76    0.99  1   1      1  
-##            Q40_18      15       29 44   2.24    0.99  1   1      3  
-##            Q40_19      15       29 44   3       0     3   3      3  
-##             Q40_2      15       29 44   2.79    0.62  1   3      3  
-##            Q40_20      15       29 44   2.93    0.37  1   3      3  
-##            Q40_21      15       29 44   1.93    0.96  1   1      2  
-##             Q40_3      15       29 44   1.93    1     1   1      1  
-##            Q40_38      15       29 44   1.24    0.64  1   1      1  
-##             Q40_4      15       29 44   3       0     3   3      3  
-##             Q40_5      15       29 44   2.31    0.85  1   2      3  
-##             Q40_6      15       29 44   1.9     1.01  1   1      1  
-##             Q40_7      15       29 44   2.55    0.83  1   3      3  
-##             Q40_9      15       29 44   2.14    0.95  1   1      3  
-##               Q49       2       42 44   2.93    0.81  1   3      3  
-##                Q5      15       29 44   9.66    0.77  8  10     10  
-##             Q53_1       2       42 44 157.24   78.38 50 100.5  140  
-##             Q53_2      25       19 44  31.11   23.06  0   9.5   40  
-##             Q53_3      37        7 44   0       0     0   0      0  
-##             Q53_4      34       10 44   0       0     0   0      0  
-##             Q53_5      28       16 44 224.38  178.13  0  75    226  
-##             Q53_6      36        8 44  16.62   47.02  0   0      0  
-##             Q53_7      36        8 44   0       0     0   0      0  
-##             Q54_1       2       42 44 213.62  100.9  60 146.25 200  
-##             Q54_2      24       20 44  56.55   51.54  0  19.75  50  
-##             Q54_3      37        7 44   0       0     0   0      0  
-##             Q54_4      28       16 44  87.38  115.96  0  18.75  56.5
-##             Q54_5      29       15 44 241.8   172.44  0 115    252  
-##             Q54_6      35        9 44  15.56   46.67  0   0      0  
-##             Q54_7      37        7 44   0       0     0   0      0  
-##               Q55       2       42 44  12.88    4.55  4  10     12.5
-##               Q57       2       42 44   3.17    1.34  1   2      3  
-##           Q58#2_1       2       42 44  42.07    9.29 28  34.25  41.5
-##                Q7       2       42 44   2       1.1   1   1      2  
-##     p75 p100     hist
-##    1       3 ▇▁▁▁▁▁▁▁
-##    2       3 ▂▁▁▇▁▁▁▁
-##    2       3 ▇▁▅▁▁▅▁▂
-##    0       2 ▇▁▁▂▁▁▁▁
-##    4       6 ▂▇▁▆▁▁▁▁
-##    2       6 ▆▆▇▂▁▁▁▁
-##    2       2 ▇▁▁▁▁▁▁▅
-##    1.25    4 ▇▁▂▁▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▁▁▁▁▇
-##    0       1 ▇▁▁▁▁▁▁▁
-##    0       1 ▇▁▁▁▁▁▁▁
-##    1       1 ▇▁▁▁▁▁▁▅
-##    0       0 ▁▁▁▇▁▁▁▁
-##    2       3 ▇▁▁▇▁▁▁▁
-##    0       3 ▇▁▁▁▁▁▁▁
-##    1       2 ▅▁▁▇▁▁▁▁
-##    0       1 ▇▁▁▁▁▁▁▁
-##    1       1 ▂▁▁▁▁▁▁▇
-##    0       1 ▇▁▁▁▁▁▁▁
-##    9      10 ▂▁▂▅▁▅▇▃
-##    5       5 ▁▁▁▁▁▂▁▇
-##   20      44 ▇▇▃▃▁▂▁▁
-##    2       2 ▇▁▁▁▁▁▁▆
-##   21      24 ▃▆▇▇▁▃▁▂
-##   22      23 ▂▂▁▇▃▁▅▅
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    1       1 ▁▁▁▇▁▁▁▁
-##    6      17 ▇▁▃▁▁▁▁▁
-##   21      22 ▂▁▇▁▁▁▃▂
-##   60      65 ▃▂▇▃▂▇▁▃
-##   16      17 ▁▁▁▁▁▁▇▆
-##    2       3 ▇▁▁▂▁▁▁▁
-##    3       3 ▂▁▁▂▁▁▁▇
-##    3       3 ▇▁▁▃▁▁▁▇
-##    3       3 ▇▁▁▁▁▁▁▇
-##    3       3 ▁▁▁▁▁▁▁▇
-##    3       3 ▃▁▁▃▁▁▁▇
-##    3       3 ▆▁▁▃▁▁▁▇
-##    1       1 ▁▁▁▇▁▁▁▁
-##    3       3 ▇▁▁▁▁▁▁▅
-##    3       3 ▅▁▁▁▁▁▁▇
-##    3       3 ▁▁▁▇▁▁▁▁
-##    3       3 ▁▁▁▁▁▁▁▇
-##    3       3 ▁▁▁▁▁▁▁▇
-##    3       3 ▇▁▁▂▁▁▁▇
-##    3       3 ▇▁▁▁▁▁▁▇
-##    1       3 ▇▁▁▁▁▁▁▁
-##    3       3 ▁▁▁▇▁▁▁▁
-##    3       3 ▃▁▁▃▁▁▁▇
-##    3       3 ▇▁▁▁▁▁▁▆
-##    3       3 ▂▁▁▁▁▁▁▇
-##    3       3 ▆▁▁▂▁▁▁▇
-##    3       4 ▁▁▂▁▁▇▁▃
-##   10      10 ▂▁▁▁▁▁▁▇
-##  197.5   429 ▆▇▇▃▂▁▁▁
-##   50      60 ▇▁▅▂▁▃▇▅
-##    0       0 ▁▁▁▇▁▁▁▁
-##    0       0 ▁▁▁▇▁▁▁▁
-##  352.5   500 ▇▃▂▂▆▂▁▇
-##    0     133 ▇▁▁▁▁▁▁▁
-##    0       0 ▁▁▁▇▁▁▁▁
-##  258.75  485 ▃▇▇▆▃▂▁▂
-##   80.75  180 ▇▂▇▃▂▁▁▂
-##    0       0 ▁▁▁▇▁▁▁▁
-##  100.75  451 ▇▆▁▁▁▁▁▁
-##  385     500 ▆▃▂▂▆▂▁▇
-##    0     140 ▇▁▁▁▁▁▁▁
-##    0       0 ▁▁▁▇▁▁▁▁
-##   16      26 ▂▃▇▅▃▅▁▁
-##    4       6 ▃▇▁▇▇▁▃▂
-##   49      64 ▆▇▃▅▇▂▁▂
-##    3       4 ▇▁▅▁▁▃▁▂
-## 
-## ── Variable type:logical ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##                 variable missing complete  n mean count
-##                     Coal      44        0 44  NaN    44
-##  Other Generation Device      44        0 44  NaN    44
-##                   Q19_10      44        0 44  NaN    44
-##                 Q19_10.1      44        0 44  NaN    44
-##                   Q19_17      44        0 44  NaN    44
-##                    Q19_2      44        0 44  NaN    44
-##                    Q19_5      44        0 44  NaN    44
-##                    Q19_9      44        0 44  NaN    44
-## 
-## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##     variable missing complete  n mean   sd p0 p25 p50 p75 p100     hist
-##  Electricity       6       38 44 1    0     1   1 1     1    1 ▁▁▁▇▁▁▁▁
-##          Gas      36        8 44 1    0     1   1 1     1    1 ▁▁▁▇▁▁▁▁
-##        Other      36        8 44 1    0     1   1 1     1    1 ▁▁▁▇▁▁▁▁
-##        Q14_1      15       29 44 5.28 5.03  0   1 3.5   7   20 ▇▆▅▂▁▁▁▁
-##         Wood      28       16 44 1    0     1   1 1     1    1 ▁▁▁▇▁▁▁▁</code></pre>
 </div>
 <div id="green-gridspatialec-ipf-household-weights" class="section level2">
 <h2><span class="header-section-number">6.4</span> GREEN Grid/SPATIALEC ipf household weights</h2>
@@ -2543,29 +2137,6 @@ Figure 4.10: Estimated total residential electricity consumption per half-hour b
 ## 4:      500100       Awanui Northland Region    8  rf_09  3.684882
 ## 5:      500100       Awanui Northland Region    8  rf_10  1.001497
 ## 6:      500100       Awanui Northland Region    8  rf_12 11.031443</code></pre>
-<pre><code>## Skim summary statistics
-##  n obs: 78078 
-##  n variables: 6 
-## 
-## ── Variable type:character ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##        variable missing complete     n min max empty n_unique
-##    AU2013_label       0    78078 78078   4  33     0     1859
-##          linkID       0    78078 78078   5   6     0       42
-##  REGC2013_label       0    78078 78078  12  24     0       17
-## 
-## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##     variable missing complete     n      mean       sd    p0    p25    p50
-##  AU2013_code       0    78078 78078 554468.19 33426.1  5e+05 524711 551030
-##         nMBs       0    78078 78078     24.75    16.54     1     11     22
-##     p75   p100     hist
-##  584936 622201 ▇▇▇▅▆▇▆▃
-##      35    124 ▇▇▅▁▁▁▁▁
-## 
-## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-##   variable missing complete     n  mean    sd      p0 p25  p50   p75
-##  ipfWeight       0    78078 78078 19.84 37.87 2.6e-75 3.3 9.88 20.64
-##     p100     hist
-##  1973.35 ▇▁▁▁▁▁▁▁</code></pre>
 <table>
 <caption>
 <span id="tab:weightsTable">Table 6.1: </span>Household level ipfWeights for national rescaling with example household attributes (oredered by ipfWeight)
@@ -3137,7 +2708,7 @@ Figure 6.1: Box plot of ipf weights by PV inverter ownership
 <p><img src="data:image/png;base64,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" width="672" /></p>
 <pre><code>## Warning: Removed 2 rows containing non-finite values (stat_boxplot).</code></pre>
 <p><img src="data:image/png;base64,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" width="672" /> # Runtime</p>
-<p>Analysis completed in 104.38 seconds ( 1.74 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.4.4 (2018-03-15) running on x86_64-pc-linux-gnu.</p>
+<p>Analysis completed in 83.69 seconds ( 1.39 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.4.4 (2018-03-15) running on x86_64-pc-linux-gnu.</p>
 </div>
 </div>
 <div id="r-environment" class="section level1">
@@ -3258,6 +2829,12 @@ Figure 6.1: Box plot of ipf weights by PV inverter ownership
 </div>
 <div id="ref-jack_minimal_2018">
 <p>Jack, M. W., K. Suomalainen, J. J. W. Dew, and D. Eyers. 2018. “A Minimal Simulation of the Electricity Demand of a Domestic Hot Water Cylinder for Smart Control.” <em>Applied Energy</em> 211: 104–12. <a href="https://www.sciencedirect.com/science/article/pii/S0306261917316197" class="uri">https://www.sciencedirect.com/science/article/pii/S0306261917316197</a>.</p>
+</div>
+<div id="ref-mckenna_high-resolution_2016">
+<p>McKenna, Eoghan, and Murray Thomson. 2016. “High-Resolution Stochastic Integrated Thermal–electrical Domestic Demand Model.” <em>Applied Energy</em> 165 (March): 445–61. doi:<a href="https://doi.org/10.1016/j.apenergy.2015.12.089">10.1016/j.apenergy.2015.12.089</a>.</p>
+</div>
+<div id="ref-mckenna_simulating_2017">
+<p>McKenna, Eoghan, Sarah Higginson, Philipp Grunewald, and Sarah J. Darby. 2017. “Simulating Residential Demand Response: Improving Socio-Technical Assumptions in Activity-Based Models of Energy Demand.” <em>Energy Efficiency</em>, May, 1–15. doi:<a href="https://doi.org/10.1007/s12053-017-9525-4">10.1007/s12053-017-9525-4</a>.</p>
 </div>
 <div id="ref-baseR">
 <p>R Core Team. 2016. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/" class="uri">https://www.R-project.org/</a>.</p>

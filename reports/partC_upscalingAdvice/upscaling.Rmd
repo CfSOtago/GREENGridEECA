@@ -50,7 +50,7 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 # Local parameters
 
-doSkim <- 1 # set to 1 to get skimmed tables in Data Annex (takes time)
+doSkim <- 0 # set to 1 to get skimmed tables in Data Annex (takes time)
 
 # Local functions ----
 ```
@@ -944,6 +944,8 @@ On the other hand it can be used to develop are unit level profiles for the regi
 
 ### Summary
 
+> To do
+
 # Overall summary and recommendations
 
 This report has outlined a number of methods that could be used to upscale the GREEN Grid (or similar) household energy demand datasets to develop national or regional level residential demand or consumption estimates. However we have noted that in all cases the GREEN grid data is insufficient for this purpose due to:
@@ -957,7 +959,7 @@ We have demonstrated this through a number of worked examples and suggest that f
  * the recent NZ Stats/MBIE [Housing Quality Indicator survey](https://www.stats.govt.nz/methods/framework-for-housing-quality) - although detailed energy monitoring was not included;
  * the potential future population representative BRANZ Household Energy End-Use (HEEP2) study;
  * representative smart meter datasets linked to household attributes;
- * imputed load profiles generated using population representative New Zealand Time Use diary data (see [mckenna_high-resolution_2016;@mckenna_simulating_2017] for a UK example)
+ * imputed load profiles generated using population representative New Zealand Time Use diary data (see [@mckenna_high-resolution_2016;@mckenna_simulating_2017] for a UK example)
 
 Would these samples be large _enough_ for these purposes? Unfortunately there is no simple answer to this question since in the first instance the size of the chosen sample will depend on the precision of the estimates required. In Section \@ref(ggSample) we noted that the BRANZ Housing Condition Survey 2015 sample size of 560 dwellings enabled a precision (95% confidence interval) of +/- 5% for overall sample statistics but +/- 6% and +/- 11% for the smaller owned and rental subgroups [@vicki_white_warm_2017]. As shown in Figure \@ref(fig:compareHeatSourceHCS) this means that the percentage of owner-occupied dwellings with heat pumps (for example) can only be estimated to lie between 34% and 46% (lower and upper 95% intervals). If greater precision is required at the whole sample or sub-group levels then larger samples will be needed and there are a number of recent papers which can provide guidance in this regard [@sovacool_promoting_2018;@anderson_ensuring_2020]. 
 
