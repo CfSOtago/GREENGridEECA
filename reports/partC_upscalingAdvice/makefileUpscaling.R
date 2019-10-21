@@ -54,7 +54,8 @@ getGgHalfHourLoad <- function(f){
 
 #> Census data ----
 # will load the latest version
-ipfCensusDT <- data.table::fread(paste0(repoParams$censusData, "/data/processed/2013IpfInput.csv"))
+ipfCensusF <- paste0(repoParams$censusData, "/data/processed/2013IpfInput.csv")
+ipfCensusDT <- data.table::fread(ipfCensusF)
 
 #> GREEN Grid half hourly total dwelling power data ----
 hhTotalLoadF <- paste0(repoParams$GreenGridData, 
@@ -80,8 +81,9 @@ ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData,
                                         "/survey/ggIpfInput.csv"))
 
 #> ipf weights data from previous run of model
-ipfWeightsDT <- data.table::fread(paste0(repoParams$GreenGridData, 
-                                         "/ipf/nonZeroWeightsAu2013.csv"))
+ipfWeightsF <- paste0(repoParams$GreenGridData, 
+                      "ipf/nonZeroWeightsAu2013.csv")
+ipfWeightsDT <- data.table::fread(ipfWeightsF)
 
 years <- c("2013","2015")
 
@@ -99,14 +101,14 @@ plan <- drake::drake_plan(
 plan # test the plan
 make(plan) # run the plan, re-loading data if needed
 
-makeReport <- function(f){
+makeReport <- function(inF,outF){
   # default = html
-  rmarkdown::render(input = rmdFile,
+  rmarkdown::render(input = inF,
                     params = list(title = title,
                                   subtitle = subtitle,
                                   authors = authors),
-                    output_file = paste0(repoParams$repoLoc,"/docs/partC_upscalingAdvice_v", version, ".html")
-  )
+                    output_file = outF
+                    )
 }
 
 # code ----
@@ -118,9 +120,14 @@ title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part C) Upscaling Advice Report v", version)
 authors <- "Ben Anderson"
 
+# quick test - up to date?
+file.info(ipfWeightsF)
+file.info(ipfCensusF)
+file.info(hhAttributesF)
 
 # >> run report ----
-rmdFile <- paste0(repoParams$repoLoc, "/reports/partC_upscalingAdvice/upscaling.Rmd")
-#makeReport(rmdFile)
+inF <- paste0(repoParams$repoLoc, "/reports/partC_upscalingAdvice/upscaling.Rmd")
+outF <- paste0(repoParams$repoLoc,"/docs/partC_upscalingAdvice_v", version, ".html")
+makeReport(inF,outF)
 
 
