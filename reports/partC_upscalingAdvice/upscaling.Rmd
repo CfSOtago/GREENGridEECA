@@ -742,6 +742,11 @@ It should be noted that, as reported in Section \@cite(ref:ggSample), the GREEN 
 
 ### Example: Total residential electricity consumption 2015
 
+
+
+
+#### National estimates
+
 In this example we use the IPF method to reweight the GREEN Grid sample so that it fits to the 2013 NZ census distributions of the variables listed above at the national level. 
 
 ```{r ipfWeightsNational}
@@ -751,10 +756,9 @@ ipfNationalWDT <- ipfWeightsDT[, .(ipfWeight = sum(ipfWeight)), keyby = .(linkID
 
 t <- summary(ipfNationalWDT)
 
-kableExtra::kable(t, caption = "Summary of household level IPF weights", digits = 2) %>%
+kableExtra::kable(t, caption = "Summary of household level IPF weights required to re-weight the GREEN Grid sample to the national household population", digits = 2) %>%
   kable_styling()
 
-sum(ipfNationalWDT$ipfWeight)
 ```
 
 As \@ref(tab:ipfWeightsNational) shows, the household level weights required range from `r min(ipfNationalWDT$ipfWeight)` for relatively common combinations of the constraint variables to `r max(ipfNationalWDT$ipfWeight)` for less common combinations.
@@ -776,6 +780,8 @@ ggplot2::ggplot(plotDT, aes(x = hms, y = ipfTotalMWh, colour = season)) +
        y = "Mean total MWh")
 ```
 
+XX compare with earlier results
+
 ```{r compareMethods}
 # merge with total load from above
 setkey(totalLoadProfileDT, hms, season)
@@ -793,13 +799,33 @@ ggplot2::ggplot(dt, aes(x = hms)) +
 
 ```
 
-XX compare with earlier results
+Notes:
 
-```{r ipfTotalLoadRegional}
+ * -ve values side-effect of inflating the 4 PV owning households
+ * reduced peak demand not due to PV but to more realistic re-weighting of the GREEN Grid smaple
+
+#### Regional estimates
+
+In this example we use the IPF method to reweight the GREEN Grid sample so that it fits to the 2013 NZ census distributions of the variables listed above at the regional levels. 
+
+```{r ipfWeightsRegional}
+# sum the IPF weights per household at regional level
+ipfRegionalWDT <- ipfWeightsDT[, .(ipfWeight = sum(ipfWeight)), keyby = .(REGC2013_label, linkID)]
+
+t <- summary(ipfRegionalWDT)
+
+kableExtra::kable(t, caption = "Summary of household level IPF weights required to re-weight the GREEN Grid sample to the regional household populations", digits = 2) %>%
+  kable_styling()
+
+```
+
+As \@ref(tab:ipfWeightsRegional) shows, the household level weights required range from `r min(ipfRegionalWDT$ipfWeight)` for relatively common combinations of the constraint variables to `r max(ipfRegionalWDT$ipfWeight)` for less common combinations.
+
+```{r ipfTotalLoadRegional, fig.cap = "Estimated total residential electricity consumption per half-hour by season for selected regions (IPF, 2015)"}
 # sum the IPF weights per household at regional level
 setkey(ipfRegionalWDT, linkID)
-setkey(profileDT, linkID)
-weightedProfileRegionalDT <- profileDT[ipfRegionalWDT, allow.cartesian = TRUE]
+setkey(powerProfileDT, linkID)
+weightedProfileRegionalDT <- powerProfileDT[ipfRegionalWDT, allow.cartesian = TRUE]
 weightedProfileRegionalDT[, weightedkWh := meankWh*ipfWeight]
 plotDT <- weightedProfileRegionalDT[, .(totalkWh = sum(weightedkWh)), keyby = .(hms, season, REGC2013_label)]
 
@@ -810,6 +836,9 @@ ggplot2::ggplot(plotDT[!is.na(season) & REGC2013_label %like% "Hawke" |
   facet_wrap(. ~ REGC2013_label) +
   scale_color_discrete(name = "Season")
 ```
+
+Figure \@ref(fig:ipfTotalLoadRegional) shows the results of this re-weighting process
+
 
 ### Example: Heat pump electricity consumption
 
