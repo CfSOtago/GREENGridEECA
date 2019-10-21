@@ -116,7 +116,6 @@ nzHhPop2015 <- 1796000
 hhGrowth <- (100*(nzHhPop2015/nzHhPop2013)) - 100
 ```
 
-
 This data comprises family, household or dwelling counts (depending on the variables of interest) at area unit level. The data was downloaded from the Stats NZ census table [download tool](http://nzdotstat.stats.govt.nz/wbos/index.aspx) and processed using [code](https://git.soton.ac.uk/ba1e12/spatialec/blob/master/dataProcessing/processCensusAu2013.Rmd) developed as part of the EU H2020 Marie Skłodowska-Curie scheme-funded [SPATIALEC](http://www.energy.soton.ac.uk/tag/spatialec/) Global Fellowship hosted by the University of Otago.
 
 ## Grid exit point kWh export (GXP)
@@ -543,7 +542,7 @@ Figure \@ref(fig:prepHHProfiles) shows the results of the intial sample-based pr
 
 Figure \@ref(fig:nationalProfiles2015) shows the simple upscaling of Figure \@ref(fig:prepHHProfiles) to the 2015 New Zealand household population by multiplying by the total number of households projected. 
 
-```{r nationalProfiles2015, fig.cap = "Estimated total residential electricity consumption per half-hour by season (2015)"}
+```{r nationalProfiles2015, fig.cap = "Estimated total residential electricity consumption per half-hour by season (simple multiplication, 2015)"}
 totalLoadProfileDT <- totalLoadProfileDT[, totalResMWh2015 := (meankWh * nzHhPop2015)/1000]
   
 # test
@@ -574,7 +573,7 @@ gxpDT <- gxpDataDT[year == 2015, .(sumkWh = sum(kWh), meankWh = mean(kWh),
 
 gxpDT[,totDailyMWh := (sumkWh/(nDays))/1000]
 setkey(gxpDT, hms, season)
-setkey(profileDT, hms, season)
+setkey(totalLoadProfileDT, hms, season)
 
 plotDT <- totalLoadProfileDT[gxpDT]
 plotDT[, pc := 100 * (totalResMWh2015/totDailyMWh)]
@@ -594,9 +593,9 @@ Clearly it would be possible to repeat this simple method using regional househo
 
 ## Simple proportional scaling
 
-In this method, rather than assume that the base (GREEN Grid) sample represents all New Zealand consunmotion profiles we proportionately adjust the profiles using some other data source to attempt to correct for sample bias. 
+In this method, rather than assume that the base (GREEN Grid) sample represents all New Zealand consumption profiles and mean values can simply be multipiled by the overall hosuehold count, we proportionately adjust the profiles using some other data source to attempt to correct for sample bias. We provide two examples of this below.
 
-### Example: Adjusting for different available heat sources
+### Example: Adjusting total consumption for different available heat sources
 
 Table \ref(tab:ggHeatSource) showed that there were differences between the GREEN Grid sample and the overall household population in terms of main heat source used. We might expect main space heat source to make a difference to the load profile of the households. In principle we can use this information to proportionately adjust the estimates by calculating overall kWh profiles for each main heat type in the GREEN Grid sample. We would then multiply these different profiles by the number of each household type we would expect in the population calculated by combining Census household counts with HCS 2015 estimates of heat source prevalence (see Table \ref(tab:ggHeatSource)).
 
@@ -722,7 +721,7 @@ In addition it should be clear that proportional upscaling as described above ca
 
 ## Complex re-weighting
 
-A number of multi-variate weighting schemes have been developed which allow the multiple re-weighitng of survey data along several dimensions. Whilst some use forms of regression modelling [@battaglia_sampling_2016], others use a conceptually more simple iterative reweighting process. This seeks to calculate weights for each household that, when summed, add up to totals derived from another source such as a national survey or census. Of the range of methods available to do this, the iterative proportional fitting (IPF) method is well established and appears in a multitude of guises, from balancing factors in spatial interaction modelling to the RAS method in economic accounting, and its behaviour is relatively well known [@wong_reliability_1992; @simpson_combining_2005]. Further, the IPF approach is well suited to our current purpose where we wish to preserve household level heterogeneity in demand whilst re-weighting to match known Census household distributions at national, regional or small area levels [@simpson_combining_2005, @birkin_spatial_2011, @anderson_estimating_2012; @anderson_small_2019].
+A number of multi-variate weighting schemes have been developed which allow the multiple re-weighitng of survey data along several dimensions. Whilst some use forms of regression modelling [@battaglia_sampling_2016], others use a conceptually more simple iterative reweighting process. This seeks to calculate weights for each household that, when summed, add up to totals derived from another source such as a national survey or census. Of the range of methods available to do this, the iterative proportional fitting (IPF) method is well established and appears in a multitude of guises, from balancing factors in spatial interaction modelling through survey raking (re-weighting) [@beaujouan_reweighting_2011; @casati_synthetic_2015] to the RAS method in economic accounting, and its behaviour is relatively well known [@wong_reliability_1992; @simpson_combining_2005]. Further, the IPF approach is well suited to our current purpose where we wish to preserve household level heterogeneity in demand whilst re-weighting to match known Census household distributions at national, regional or small area levels [@simpson_combining_2005, @birkin_spatial_2011, @anderson_estimating_2012; @anderson_small_2019].
 
 In this section we demonstrate the value of this approach in re-weighting the GREEN Grid sample along several dimensions to produce estimates of total electricity consumption for:
 
@@ -731,27 +730,42 @@ In this section we demonstrate the value of this approach in re-weighting the GR
  * Hawke's Bay
  * a set of Census 2013 area units in the Hawke's Bay region
  
-This is done using a household weights dataset developed using the IPF method which reweight the GREEN Grid dwellings so that they fit the appropriate area level distributions of:
+This is done using a household weights dataset developed using the IPF method which reweight the GREEN Grid dwellings so that they fit the appropriate area level distributions of the following 'constraint' variables:
 
  * number of people (1,2,3,4+)
  * number of rooms (1-4, 5-6 or 7+)
  * number of children (0, 1+)
- 
-Whilst it would have been preferable to also re-weight by heat source/space heating method (see Section \@ref(ggHeating)) the GREEN Grid sample does not contain cases with mainly cial or gas heating that would make this possible. These weights were originally developed under an EU funded MSCA Fellowship (SPATIALEC) and have already been used to estimate household electricity consumption patterns for New Zealand Census 2013 area units [@anderson_small_2019].
 
-### Example: Total electricity consumption
+Whilst it would have been preferable to also re-weight by heat source/space heating method (see Section \@ref(ggHeating)), the GREEN Grid sample does not contain cases with mainly coal or gas heating that would make this possible.  The weights were originally developed under an EU funded MSCA Fellowship (SPATIALEC) and have already been used to estimate household electricity consumption patterns for New Zealand Census 2013 area units [@anderson_small_2019].
 
-re-run using method in [@anderson_small_2019]
+It should be noted that, as reported in Section \@cite(ref:ggSample), the GREEN Grid sample is sufficiently small and sufficiently different from the overall Census 2013 household proportions on these dimensions that a number of the households are likely to be allocated extremely large weights because we are, in effect, forcing ~ 40 households to represent `r tidyNum(nzHhPop2013)`. As a result, unusual patterns of consumption or, as we will see, generation may well become inflated where the dwellings exhibiting them are dispropotionately upweighted due to the rarity of cases. This is described in some detail below.
 
-```{r ipfTotalLoadNational}
+### Example: Total residential electricity consumption 2015
+
+In this example we use the IPF method to reweight the GREEN Grid sample so that it fits to the 2013 NZ census distributions of the variables listed above at the national level. 
+
+```{r ipfWeightsNational}
 # sum the IPF weights per household at regional level
 ipfRegionalWDT <- ipfWeightsDT[, .(ipfWeight = sum(ipfWeight)), keyby = .(REGC2013_label, linkID)]
 ipfNationalWDT <- ipfWeightsDT[, .(ipfWeight = sum(ipfWeight)), keyby = .(linkID)]
 
-profileDT <- hhTotalLoadDT[, .(meankWh = mean(meankWh)), keyby = .(linkID, season, hms)]
+t <- summary(ipfNationalWDT)
+
+kableExtra::kable(t, caption = "Summary of household level IPF weights", digits = 2) %>%
+  kable_styling()
+
+sum(ipfNationalWDT$ipfWeight)
+```
+
+As \@ref(tab:ipfWeightsNational) shows, the household level weights required range from `r min(ipfNationalWDT$ipfWeight)` for relatively common combinations of the constraint variables to `r max(ipfNationalWDT$ipfWeight)` for less common combinations.
+
+Figure \@ref(fig:ipfTotalLoadNational) shows the results of this re-weighting process
+
+```{r ipfTotalLoadNational, fig.cap = "Estimated total residential electricity consumption per half-hour by season (IPF, 2015)"}
+powerProfileDT <- hhTotalLoadDT[, .(meankWh = mean(meankWh)), keyby = .(linkID, season, hms)]
 setkey(ipfNationalWDT, linkID)
-setkey(profileDT, linkID)
-weightedProfileDT <- profileDT[ipfNationalWDT]
+setkey(powerProfileDT, linkID)
+weightedProfileDT <- powerProfileDT[ipfNationalWDT]
 weightedProfileDT[, weightedMWh := (meankWh*ipfWeight)/1000]
 plotDT <- weightedProfileDT[, .(ipfTotalMWh = sum(weightedMWh)), keyby = .(hms, season)]
 
@@ -760,19 +774,15 @@ ggplot2::ggplot(plotDT, aes(x = hms, y = ipfTotalMWh, colour = season)) +
   scale_color_discrete(name = "Season") +
   labs(x = "Time of Day",
        y = "Mean total MWh")
+```
 
+```{r compareMethods}
 # merge with total load from above
 setkey(totalLoadProfileDT, hms, season)
 setkey(plotDT, hms, season)
 dt <- plotDT[totalLoadProfileDT]
 
 dt[, diff := totalResMWh2015/ipfTotalMWh]
-
-summary(dt)
-
-ggplot2::ggplot(dt, aes(x = ipfTotalMWh, y = totalResMWh2015)) + 
-  geom_point() +
-  facet_wrap(. ~ season)
 
 ggplot2::ggplot(dt, aes(x = hms)) + 
   geom_line(aes(y = ipfTotalMWh), colour = "black") +
