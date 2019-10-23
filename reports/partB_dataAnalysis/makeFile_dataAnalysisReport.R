@@ -52,7 +52,7 @@ doReport <- function(){
 }
 
 # Local parameters ----
-version <- "1.0"
+version <- "1.1"
 
 # data paths
 dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
