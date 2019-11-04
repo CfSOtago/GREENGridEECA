@@ -161,11 +161,16 @@ fix <- function(dt){
 # Total load
 hhTotalLoadDT <- fix(drake::readd(ggHHData))
 
+annualKwhDT <- hhTotalLoadDT[, .(annualkWh = sum(meankWh),
+                                 annualkW = sum(meanPowerW)/1000,
+                                 nObs = .N), keyby = .(linkID)]
+
+
 # HP
 hhHeatPumpLoadDT <- fix(drake::readd(ggHPData))
 ```
 
-This sample comprises 44 households who were recruited via the local power lines companies in two areas: Taranaki starting in May 2014 and Hawkes Bay starting in November 2014 [@GREENGridData].
+This sample comprises 44 households who were recruited via the local electricity distribution businesses (EDBs) in two areas: Taranaki starting in May 2014 and Hawkes Bay starting in November 2014 [@GREENGridData].
 
 > XX Should this content go in the Part B report to prevent readers of Part B thinking the results are likely to be representative of all NZ dwellings?
 
@@ -180,9 +185,52 @@ The lines companies invited their own employees and those of other local compani
 
 As a result of this process the sample cannot be assumed to represent the population of customers (or employees) of any of the companies involved, nor the populations in each location or New Zealand dwellings as a whole [@stephenson_smart_2017].
 
+### Annual electricity consumption
+
+Table \@cite(tab:ggAnnualkWh) shows the mean annualised electricity consumption for all dwellings in the data by whether or not they have a PV inverter. For those that don't the mean annual consumption of ~ 8,000 kWh, slightly higher than the ~ 7,000 kWh reported for 2018 [@electricityInNZ_2018]. As we discuss below, this is likely to be due to the social composition of these dwelling.
+
+```{r ggAnnualkWh}
+kWhDT <- hhTotalLoadDT[, .(sumkWh = sum(meankWh),
+                           nDays = uniqueN(date)), keyby = linkID]
+kWhDT[, annualkWh := 365*(sumkWh/nDays)]
+setkey(kWhDT, linkID)
+
+setkey(hhAttributesDT, linkID)
+kWhDT <- hhAttributesDT[kWhDT]
+
+t <- kWhDT[, .(min = min(annualkWh),
+               mean = mean(annualkWh),
+               max = max(annualkWh),
+               sd = sd(annualkWh),
+               nHouseholds = .N), keyby = `PV Inverter`]
+
+# lower = estimate - (s.e.*1.96) 
+# upper = estimate + (s.e.*1.96)
+
+# plotDT <- plotDT[, ci_upper := meanWh + qnorm(0.975)*(sdWh/sqrt(nObs))]
+
+t[, ci_lower := mean - (sd/sqrt(nHouseholds))*qnorm(0.975)]
+t[, ci_upper := mean + (sd/sqrt(nHouseholds))*qnorm(0.975)]
+  
+kableExtra::kable(caption = "Summary statistics for annualised electricity consumption by presence of PV Inverter (NA indicates unkown)", t, digits = 2) %>%
+  kable_styling()
+
+dodge <- position_dodge(width=0.9)
+# https://ggplot2.tidyverse.org/reference/geom_linerange.html
+ggplot2::ggplot(t, aes(x = `PV Inverter` , y = mean, fill = `PV Inverter`)) +
+  geom_col(position = "dodge") +
+  scale_fill_discrete(name = "Presence of PV inverter") +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), position = dodge, width = 0.25) +
+  coord_flip() +
+  theme(legend.position = "bottom") +
+  labs(x = "Presence of PV inverter", y = "Mean annualised kWh",
+       caption = "Error bars = 95% CI")
+
+```
+
 ### Heating {#ggHeating}
 
-As an example. Table \@ref(tab:ggHeatSource) shows the main heat source used for space heating in the GREEN Grid sample. As we can see heat pumps were the main heat source in 55% of dwellings and wood burners in 25% with very little use of gas in any form and no record of coal use.
+As an example of the sample bias, Table \@ref(tab:ggHeatSource) shows the main heat source used for space heating in the GREEN Grid sample. As we can see heat pumps were the main heat source in 55% of dwellings and wood burners in 25% with very little use of gas in any form and no record of coal use.
 
 ```{r ggHeatSource}
 t <- with(hhAttributesDT, table(Appliance = Q20_coded, useNA = "always"))
@@ -201,26 +249,28 @@ For comparison, Table \@ref(tab:compareHeatSourceHCS) and Figure \@ref(fig:compa
 
 ```{r compareHeatSourceHCS, fig.cap = "Comparison of GREEN Grid and HCS 2015 heating appliance ownership rates"}
 t <- with(hhAttributesDT, table(Q20_coded, useNA = "always"))
-pc_t <- 100*prop.table(t)
-pc_dt <- setnames(as.data.table(pc_t), "N", "pc")
-setkey(pc_dt, Q20_coded)
+p_t <- prop.table(t)
+p_dt <- setnames(as.data.table(p_t), "N", "p")
+setkey(p_dt, Q20_coded)
 dtf <- as.data.table(t)
 setkey(dtf, Q20_coded)
-dt <- dtf[pc_dt]
+dt <- dtf[p_dt]
 # kableExtra::kable(caption = paste0("Main method of heating, n dwellings = ", sum(dt$N)), 
 #                   dt, digits = 2) %>%
 #   kable_styling()
 
 # compare to HCS 2015
 
-setnames(pc_dt, "Q20_coded", "Appliance")
-pc_dt[,type := "GREEN Grid sample"]
-pc_dt[,ci_95pc := NA]
+setnames(dt, "Q20_coded", "Appliance")
+dt[,type := "GREEN Grid sample"]
+dt[, ci_95pc := 100 * (qnorm(0.975) * (sqrt(p*(1-p)/N)))]
+dt[, pc:= 100*p]
+  
 # keep comparables for clarity
-r_pc_dt <- pc_dt[Appliance == "Heat pump" |
+r_pc_dt <- dt[Appliance == "Heat pump" |
         Appliance == "Enclosed wood burner" |
         Appliance == "Portable electric heaters" |
-        Appliance == "Portable gas heaters"]
+        Appliance == "Portable gas heaters", .(Appliance, pc, type, ci_95pc)]
 
 combined_dt <- rbind(r_pc_dt,hcs2015DT)
 combined_dt[, ci_lower := pc - ci_95pc]
@@ -840,7 +890,6 @@ kableExtra::kable(t, caption = "Summary of national level half-hourly MWh estima
 
 ```{r pvWeights}
 dt <- ipfNationalWDT[hhAttributesDT]
-dt[, `PV Inverter` := ifelse(`PV Inverter` == "", "No", "Yes")]
 t <- dt[, .(nHouseholds = sum(ipfWeight, na.rm = TRUE)), keyby = .(`PV Inverter`)]
 kableExtra::kable(t, digits = -2, caption = "Weighted number of GREEN Grid households with PV inverter (IPF results, rounded)") %>%
   kable_styling()
