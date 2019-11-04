@@ -76,6 +76,10 @@ hcs2015DT <- data.table::fread(paste0(here::here(),
 hhAttributesF <- paste0(repoParams$GreenGridData,
                         "/survey/ggHouseholdAttributesSafe_2019-10-20.csv.gz") # latest version 
 hhAttributesDT <- data.table::fread(hhAttributesF)
+# fix PV inverter
+hhAttributesDT[, `PV Inverter` := ifelse(`PV Inverter` == "", "No", "Yes")]
+
+
 # will load the latest version
 ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, 
                                         "/survey/ggIpfInput.csv"))
