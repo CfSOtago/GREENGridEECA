@@ -119,7 +119,7 @@ makeReport <- function(inF,outF){
 
 # > Make report ----
 # >> yaml ----
-version <- "0.8"
+version <- "0.975"
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part C) Upscaling Advice Report v", version)
 authors <- "Ben Anderson"
