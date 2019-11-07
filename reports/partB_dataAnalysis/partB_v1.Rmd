@@ -210,7 +210,7 @@ kableExtra::kable(head(dataBucketDT, 10), digits = 3,
   kable_styling()
 
 
-WriteDT <- data.table::fwrite(resAllSeasonsDT, paste0(here::here(), "/data/output/Extracted mean demand by dwelling and circuit at 'peak'.csv"))
+WriteDT <- data.table::fwrite(dataBucketDT, paste0(here::here(), "/data/output/Extracted mean demand by dwelling and circuit at 'peak'.csv"))
 
 
 
@@ -1766,11 +1766,11 @@ dt3 <- copy(dt)
 dt3 <- dt3[, .(meanCLF = mean(CLF, na.rm= TRUE)), keyby =. (eecaCircuit)]
 
 ```
-The Load Factor (LF) is defined as the ratio of average demand (W) and the peak demand (W) for each load. In this section we define peak demand to be the mean demand between 17:00-21:00 in winter.  The LF provides a measure of how much the load contributes to peak. If the LF for a particular load is 1 then the load is flat.  A the LF is less than 1 this shows that the load disproportionately contributes to the peak. Note that values greater than 1 indicate that demand during the peak is reduced below the mean.  An alternative measure is given by the conservation load factor defined by:  CLF=1000/(LF*8760). The CLF represents the ratio of the power demand at peak to the annual energy consumption over the year (in kW/Wh). The advantage of the CLF is that is gives a larger value when the load makes larger contribution to the peak. Table \@ref(tab:LoadNew) shows the first rows of our calculation of LF and CLF.
+The Load Factor (LF) is defined as the ratio of mean demand (W) and the peak demand (W) for each load. In this section we define peak demand to be the mean demand between 17:00-21:00 in winter.  The LF provides a measure of how much the load contributes to peak. If the LF for a particular load is 1 then the load is flat.  If the LF is less than 1 this shows that the load disproportionately contributes to the peak. Note that values greater than 1 indicate that demand during the peak is reduced below the mean.  An alternative measure is given by the conservation load factor defined by:  CLF=1000/(LF*8760). The CLF represents the ratio of the power demand at peak to the annual energy consumption over the year (in kW/Wh). The advantage of the CLF is that is gives a larger value when the load makes larger contribution to the peak. Table \@ref(tab:LoadNew) shows the first rows of our calculation of LF and CLF.
 
 The full data table containing LFs and CLFs (if available) for each house is saved as “Extracted load factor by household and circuit.csv” and supplied with the report.
 
-Figure \@ref(fig:consLoadPlot) shows the Conservation Load Factor (CLF) for each identifiable load averaged over all houses in the sample. Results show that the CLF for Haet Pumps (0.55) is the highest, followed by Oven (0.43), Lighting (0.38), and Hot Water (0.17). 'Other' took on a CLF of 0.25. Note that these numbers are means over all households, dates, and times for 2015. This means that each household contributes equally to the mean and it is not weighted by its total demand. For example, the load factor from households with very low hot water demand will contribute equally to the mean.
+Figure \@ref(fig:consLoadPlot) shows the Conservation Load Factor (CLF) for each identifiable load averaged over all houses in the sample. Results show that the CLF for Heat Pumps (0.55) is the highest, followed by Oven (0.43), Lighting (0.38), and Hot Water (0.17). 'Other' took on a CLF of 0.25. Note that these numbers are means over all households, dates, and times for 2015. This means that each household contributes equally to the mean and it is not weighted by its total demand. For example, the load factor from households with very low hot water demand will contribute equally to the mean.
 
 In addition, the mean CLF over all houses is skewed by some houses with CLF > 0.9 as Figure \@ref(fig:histoLF) shows.
 
@@ -1839,7 +1839,7 @@ The results show plausible results, however there are a number of key considerat
 
 1.	Unidentified loads represented a significant contribution in the sample
 
-2.	Averages over the sample can significantly distort the results
+2.	Means calculated over the sample can significantly distort the results
 
 3.	The non-representative nature of the sample means that the results cannot be considered to be representative of New Zealand households 
 
