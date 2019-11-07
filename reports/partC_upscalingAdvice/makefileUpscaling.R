@@ -76,6 +76,10 @@ hcs2015DT <- data.table::fread(paste0(here::here(),
 hhAttributesF <- paste0(repoParams$GreenGridData,
                         "/survey/ggHouseholdAttributesSafe_2019-10-20.csv.gz") # latest version 
 hhAttributesDT <- data.table::fread(hhAttributesF)
+# fix PV inverter
+hhAttributesDT[, `PV Inverter` := ifelse(`PV Inverter` == "", "No", "Yes")]
+
+
 # will load the latest version
 ipfSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, 
                                         "/survey/ggIpfInput.csv"))
@@ -115,7 +119,7 @@ makeReport <- function(inF,outF){
 
 # > Make report ----
 # >> yaml ----
-version <- "0.8"
+version <- "0.975"
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part C) Upscaling Advice Report v", version)
 authors <- "Ben Anderson"
