@@ -250,7 +250,7 @@ ContriW1DT$eecaCircuit <- factor(ContriW1DT$eecaCircuit, levels = c("Hot Water",
 
 myPlot <- ggplot2::ggplot(ContriW1DT, aes(x= eecaCircuit, fill = eecaCircuit)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour ="black"),
         legend.position = "none")+
@@ -276,7 +276,7 @@ myPlot <- ggplot2::ggplot(ContriW1DT, aes(x= "", y= percentage, fill = eecaCircu
    #facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
- theme(text = element_text(family = "Cambria"),
+ theme(#text = element_text(family = "Cambria"),
        legend.position = 'bottom')+
   guides(fill=guide_legend(title="Circuit"))+
   geom_text(aes(y = percentage,
@@ -662,25 +662,26 @@ GXPtaranakiDT <- GXPtaranakiDT[month == 9 | month == 10 | month == 11, season :=
 ```{r LoadingGXPHawkes}
 
 ##Data import
-GXPHawkesDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/hawkesBayGxpTop100DT.csv",
-                       col_types = cols(
-                       region = col_character(),
-                       regionName = col_character(),
-                       rDateTime = col_datetime(format = ""),
-                       weekdays = col_character(),
-                       peakPeriod = col_character(),
-                       sumkWh = col_double(),
-                       nObs = col_double(),
-                       nRegions = col_double(),
-                       nPOCs = col_double(),
-                       nNetworks = col_double(),
-                       nGenTypes = col_double(),
-                       month = col_character() # <- crucial otherwise readr infers integers for some reason
-                     )
-                 )
-)
+# GXPHawkesDT <- data.table::as.data.table(
+#  readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/hawkesBayGxpTop100DT.csv",
+#                        col_types = cols(
+#                        region = col_character(),
+#                        regionName = col_character(),
+#                        rDateTime = col_datetime(format = ""),
+#                        weekdays = col_character(),
+#                        peakPeriod = col_character(),
+#                        sumkWh = col_double(),
+#                        nObs = col_double(),
+#                        nRegions = col_double(),
+#                        nPOCs = col_double(),
+#                        nNetworks = col_double(),
+#                        nGenTypes = col_double(),
+#                        month = col_character() # <- crucial otherwise readr infers integers for some reason
+#                      )
+#                  )
+# )
 
+GXPHawkesDT <- data.table::fread(paste0(here::here(), "/data/output/hawkesBayGxpTop100DT.csv"))
 # set to NZ time from UTC
 GXPHawkesDT <- GXPHawkesDT[, r_dateTime_nz := lubridate::as_datetime(rDateTime, 
                                                tz = "Pacific/Auckland")] # this will be UTC unless you set this
@@ -873,7 +874,7 @@ summaryP1DT$season <- factor(summaryP1DT$season, levels = c("Spring","Summer",
 
 myPlot <- ggplot2::ggplot(summaryP1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
         axis.text.x = element_blank(),
         axis.ticks.y = element_blank())+
@@ -937,7 +938,7 @@ The mean contribution of each identifiable load to the Hawke’s Bay regional pe
 
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
         axis.text.y = element_text(colour ="black"))+
@@ -965,7 +966,7 @@ myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= "", y= percentage, fi
    #facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
- theme(text = element_text(family = "Cambria"),
+ theme(#text = element_text(family = "Cambria"),
        legend.position = 'bottom',
         axis.text.y = element_blank())+
   guides(fill=guide_legend(title="Circuit"))+
@@ -1069,7 +1070,7 @@ summaryP1DT$eecaLabelContri <- factor(summaryP1DT$eecaLabelContri, levels = c("H
 
 myPlot <- ggplot2::ggplot(summaryP1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
         axis.text.x = element_text(colour = "black"),
         axis.ticks.y = element_blank())+
@@ -1134,7 +1135,7 @@ The mean contribution by identifiable load to the regional peak across the sampl
 
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-    theme(text = element_text(family = "Cambria"),
+    theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
         axis.text.y = element_text(colour ="black"))+
@@ -1161,7 +1162,7 @@ myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= "", y= percentage, fi
    #facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
- theme(text = element_text(family = "Cambria"),
+ theme(#text = element_text(family = "Cambria"),
        legend.position = 'bottom')+
   guides(fill=guide_legend(title="Circuit"))+
   geom_text(aes(y = percentage,
@@ -1338,7 +1339,7 @@ myPlot <- ggplot2::ggplot(ContriWSDT, aes(x= dateChar, fill = eecaLabelContri)) 
   geom_bar(aes(y = averageContri), stat = "identity")+
   coord_flip()+
   #scale_y_datetime(r_dateTime_nz= "%Y")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour="black"),
         axis.ticks.x = element_line(colour="black"),
         axis.text.y = element_text(colour ="black"))+
@@ -1364,7 +1365,7 @@ myPlot <- ggplot2::ggplot(ContriWSDT[r_dateTime_nz == "2015-06-28 18:00:00"], ae
    #facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
- theme(text = element_text(family = "Cambria"),
+ theme(#text = element_text(family = "Cambria"),
        legend.position = 'bottom')+
   guides(fill=guide_legend(title="Circuit"))+
   geom_text(aes(y = percentage,
@@ -1386,7 +1387,7 @@ myPlot
 
 myPlot <- ggplot2::ggplot(summaryPSDT[r_dateTime_nz =="2015-06-28 18:00:00"], aes(x= eecaLabelContri, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
         axis.text.x = element_text(colour = "black"),
         legend.position = "none",
@@ -1473,12 +1474,12 @@ myPlot <- ggplot2::ggplot(dt[year == 2015], aes((y=totalEnergykWh), x=eecaCircui
   labs(x = "Circuit", y= "Annual Energy consumption (kWh)") +
   #scale_x_continuous( limits = c(0,2000))+
   #facet_grid( season ~ year)+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
         axis.ticks.x = element_line(colour = "black"))+
-  theme(text = element_text(family = "Cambria")) 
+  theme(#text = element_text(family = "Cambria")) 
 myPlot
 
 
@@ -1551,7 +1552,7 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/100
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
@@ -1570,7 +1571,7 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Heat Pump"], aes(x=totalEnergyWh/100
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
@@ -1591,7 +1592,7 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Lighting"], aes(x=totalEnergyWh/1000
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
@@ -1637,7 +1638,7 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Others"], aes(x=totalEnergyWh/1000, 
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
@@ -1665,7 +1666,7 @@ myPlot <- ggplot2::ggplot(dt2[season =="Winter"], aes(x=totalEnergyWh/1000, colo
   labs(x = "Energy consumption in winter (kWh)") +
   scale_x_continuous( limits = c(0,4000))+
   #facet_grid( season ~ year)+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
@@ -1793,7 +1794,7 @@ In addition, the mean CLF over all houses is skewed by some houses with CLF > 0.
     
 myPlot <- ggplot2::ggplot(dt, aes(x= eecaCircuit, y=CLF)) +
   geom_count(aes(y = CLF), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.y = element_text(colour = "black"),
         axis.text.x = element_text(colour = "black"),
         legend.position = "none",
@@ -1821,7 +1822,7 @@ myPlot
 
 myPlot <- ggplot2::ggplot(dt3, aes(x= eecaCircuit, fill = eecaCircuit)) +
   geom_bar(aes(y = meanCLF), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
         axis.text.x = element_text(colour = "black"),
         legend.position = "none",
