@@ -532,7 +532,14 @@ In this section we focus on the contribution of these identifiable loads to regi
 
 For further details see https://cfsotago.github.io/GREENGridData/householdAttributeProcessingReport_v1.0.html#51_main_heat_source
 
-To determine the timing of the matching regional peaks, data on regional demand for the Hawke’s Bay and Taranaki Grid Exit Point (GXP) was obtained from the Electricity Authority and for each GXP, the timestamps of the 100 half hours with the highest demand were identified. We then extracted the power demand of each dwelling in each of the two regions during these 100 half hours for analysis.
+To determine the timing of the matching regional peaks, data on regional demand for the Hawke’s Bay and Taranaki Grid Exit Points (GXPs - see Table \@ref(tab:whichGXPs)) was obtained from the Electricity Authority and for each GXP, the timestamps of the 100 half hours with the highest demand were identified. We then extracted the power demand of each dwelling in each of the two regions during these 100 half hours for analysis.
+
+```{r whichGXPs}
+gxpsToUse <- data.table::fread(paste0(here::here(), "/data/input/gxp-lookup.csv"))
+gxpGeo <- data.table::fread(paste0(here::here(), "/data/input/gxpGeolookup.csv"))
+
+kableExtra::kable(gxpsToUse[, .(node, `region name`)], caption = "GXPs used")
+```
 
 ```{r regionalpeak}
 
@@ -612,24 +619,27 @@ hawkesDT <- hawkesDT[region=="Hawkes Bay"]#hawkes bay only
 ```{r LoadingGXPTaranaki}
 
 ##Data import
-GXPtaranakiDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/taranakiGxpTop100DT.csv",
-                       col_types = cols(
-                       region = col_character(),
-                       regionName = col_character(),
-                       rDateTime = col_datetime(format = ""),
-                       weekdays = col_character(),
-                       peakPeriod = col_character(),
-                       sumkWh = col_double(),
-                       nObs = col_double(),
-                       nRegions = col_double(),
-                       nPOCs = col_double(),
-                       nNetworks = col_double(),
-                       nGenTypes = col_double(),
-                       month = col_character() # <- crucial otherwise readr infers integers for some reason
-                     )
-                 )
-)
+# GXPtaranakiDT <- data.table::as.data.table(
+#  readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/taranakiGxpTop100DT.csv",
+#                        col_types = cols(
+#                        region = col_character(),
+#                        regionName = col_character(),
+#                        rDateTime = col_datetime(format = ""),
+#                        weekdays = col_character(),
+#                        peakPeriod = col_character(),
+#                        sumkWh = col_double(),
+#                        nObs = col_double(),
+#                        nRegions = col_double(),
+#                        nPOCs = col_double(),
+#                        nNetworks = col_double(),
+#                        nGenTypes = col_double(),
+#                        month = col_character() # <- crucial otherwise readr infers integers for some reason
+#                      )
+#                  )
+# )
+
+GXPtaranakiDT <- data.table::fread(paste0(here::here(), "/data/output/taranakiGxpTop100DT.csv"))
+
 
 # set to NZ time from UTC
 GXPtaranakiDT <- GXPtaranakiDT[, r_dateTime_nz := lubridate::as_datetime(rDateTime, 
