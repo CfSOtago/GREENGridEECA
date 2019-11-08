@@ -71,5 +71,8 @@ filesDT <- getFileList(dPath)
 # > get data  ----
 origPowerDT <- getData(filesDT)
 
+hhSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, 
+                                       "survey/ggHouseholdAttributesSafe.csv.gz"))
+
 # > run report ----
 doReport() # uncomment to run automatically

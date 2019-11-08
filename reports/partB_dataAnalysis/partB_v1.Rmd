@@ -149,6 +149,10 @@ powerDT <- powerDT[, peak := ifelse(obsHalfHour >= PS & obsHalfHour <= PE,
                                     "Peak",
                                     peak)]
 # this stops the RHS coercion errors
+
+# do this here once (slow)
+powerDT <- GREENGridEECA::labelEECACircuits(powerDT)
+
 ```
 
 
@@ -182,7 +186,7 @@ Table \@ref(tab:averageAtPeak) shows the winter mean demand (W) at 'peak' for ea
 ```{r averageAtPeak}
 powerDT[, year := lubridate::year(r_dateTime_nz)] # so we can do per-year analysis
 
-selectDT <- powerDT[season == "Winter" & 
+dataBucketDT <- powerDT[season == "Winter" & 
                     year == 2015 &
                     obsHalfHour >= hms::as.hms("17:00:00") & 
                     obsHalfHour <= hms::as.hms("21:00:00")]
@@ -196,8 +200,6 @@ selectDT <- powerDT[season == "Winter" &
 # - oven
 # - lighting
 
-
-dataBucketDT <- GREENGridEECA::labelEECACircuits(selectDT) # use the function to split the circuit string for easier string matching
 
 #Calculating average demand over the period for each dwelling and circuit
 
@@ -308,15 +310,19 @@ selectDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' &
 #kableExtra::kable(head(selectDT), caption = "Extracted peak load half-hours - first 6 rows")  %>% # test result
 #  kable_styling()
 
-dataBucketDT <- data.table::data.table()
-for(n in 1:nrow(selectDT)){
-  # extract the rows which match the dateTime
-  row <- selectDT[n]
-  dt <- powerDT[linkID == row$linkID & # matches household
-                  r_dateTime_nz == row$r_dateTime_nz, # matches dateTime
-                .(linkID, year, season, r_dateTime_nz, circuit, nObs, meanPowerW, minPowerW, maxPowerW)] # selects just the basic columns we need
-  dataBucketDT <- rbind(dataBucketDT, dt)
-}
+# dataBucketDT <- data.table::data.table()
+setkey(selectDT, r_dateTime_nz, linkID)
+setkey(powerDT, r_dateTime_nz, linkID)
+dataBucketDT <- powerDT[selectDT] # way quicker - selects the ones that match
+#   
+# for(n in 1:nrow(selectDT)){
+#   # extract the rows which match the dateTime
+#   row <- selectDT[n]
+#   dt <- powerDT[linkID == row$linkID & # matches household
+#                   r_dateTime_nz == row$r_dateTime_nz, # matches dateTime
+#                 .(linkID, year, season, r_dateTime_nz, circuit, nObs, meanPowerW, minPowerW, maxPowerW, eecaCircuit, circuitLabel)] # selects just the basic columns we need
+#   dataBucketDT <- rbind(dataBucketDT, dt)
+# }
 
 
 
@@ -328,15 +334,13 @@ for(n in 1:nrow(selectDT)){
 # - lighting
 
 
-dataBucketDT <- GREENGridEECA::labelEECACircuits(dataBucketDT) # use the function to split the circuit string for easier string matching
-
-
 #kableExtra::kable(head(dataBucketDT, 10), caption = "Example date peak load half-hour circuits - first 10 rows showing circuit demand at the peak total demand half-hour")  %>% # test result
 
  # kable_styling()
 
 # Full EECA category label check table is in Data Annex
-categoriseCircuitsTable <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
+t <- unique(dataBucketDT, circuitLabel, eecaCircuit)
+categoriseCircuitsTable <- table(t$circuitLabel, t$eecaCircuit)
 
 ```
 
@@ -394,7 +398,7 @@ summaryP1DT$season <- factor(summaryP1DT$season, levels = c("Spring","Summer",
 
 myPlot <- ggplot2::ggplot(summaryP1DT[season == "Winter" & year == 2015], aes(x= eecaLabelContri, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"), legend.position = "none",
+  theme(#text = element_text(family = "Cambria"), legend.position = "none",
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black")) +
   
@@ -419,7 +423,7 @@ myPlot <- ggplot2::ggplot(summaryP1DT[season == "Winter" & year == 2015], aes(x=
 
 myPlot <- ggplot2::ggplot(summaryP1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.y = element_blank(),
         axis.text.x = element_text(colour = "black"),
         axis.ticks.y = element_blank())+
@@ -486,7 +490,7 @@ We have then used this data to calculate the mean contribution of each identifia
 
 myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= season, fill = eecaLabelContri)) +
   geom_bar(aes(y = averageContri), stat = "identity")+
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour ="black"))+
   
@@ -512,7 +516,7 @@ myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= "", y= percentage, fi
    facet_grid(facets=. ~season) +
   coord_polar("y", start = 0)+
   theme_void()+
- theme(text = element_text(family = "Cambria"),
+ theme(#text = element_text(family = "Cambria"),
        legend.position = 'bottom')+
   guides(fill=guide_legend(title="Circuit"))+
   geom_text(aes(y = percentage,
@@ -559,52 +563,57 @@ regpeakDT <- regpeakDT[, maxPowerW := NULL]
 regpeakDT <- regpeakDT[, date := NULL]
 regpeakDT <- regpeakDT[, obsHalfHour := NULL]#We do not need these, it slows down our computer...
 
+setkey(hhSurveyDT, linkID)
+setkey(regpeakDT, linkID)
 
-regpeakDT <- regpeakDT[, region := NA]#Creating new variable
+# Location = region in the survey data
+regpeakDT <- hhSurveyDT[,.(linkID, Location)][regpeakDT] # attach Location to linkID in power data
 
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_08", "Taranaki", region)]#Match regions with IDs
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_26", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_21", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_13", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_24", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_27", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_19", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_11", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_10", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_22", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_06", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_14", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_23", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_07", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_25", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_12", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_16", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_20", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_09", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_15", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_17", "Taranaki", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_18", "Taranaki", region)]
+regpeakDT <- regpeakDT[, region := Location] #Creating new variable
 
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_43", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_34", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_30", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_28", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_38", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_37", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_41", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_42", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_36", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_45", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_40", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_32", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_33", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_39", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_44", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_35", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_46", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_29", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_31", "Hawkes Bay", region)]
-regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_47", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_08", "Taranaki", region)]#Match regions with IDs
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_26", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_21", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_13", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_24", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_27", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_19", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_11", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_10", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_22", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_06", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_14", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_23", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_07", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_25", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_12", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_16", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_20", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_09", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_15", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_17", "Taranaki", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_18", "Taranaki", region)]
+# 
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_43", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_34", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_30", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_28", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_38", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_37", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_41", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_42", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_36", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_45", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_40", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_32", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_33", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_39", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_44", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_35", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_46", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_29", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_31", "Hawkes Bay", region)]
+# regpeakDT <- regpeakDT[, region := ifelse(`linkID`== "rf_47", "Hawkes Bay", region)]
 
 
 ind <- with(regpeakDT, region == is.na(regpeakDT$region))#Now let's remove the households that do not match the two regions
@@ -620,7 +629,7 @@ hawkesDT <- hawkesDT[region=="Hawkes Bay"]#hawkes bay only
 
 ##Data import
 # GXPtaranakiDT <- data.table::as.data.table(
-#  readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/taranakiGxpTop100DT.csv",
+#  readr::read_csv(paste0(here::here(), "/data/output/taranakiGxpTop100DT.csv",
 #                        col_types = cols(
 #                        region = col_character(),
 #                        regionName = col_character(),
@@ -663,7 +672,7 @@ GXPtaranakiDT <- GXPtaranakiDT[month == 9 | month == 10 | month == 11, season :=
 
 ##Data import
 # GXPHawkesDT <- data.table::as.data.table(
-#  readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/hawkesBayGxpTop100DT.csv",
+#  readr::read_csv(paste0(here::here(), "/data/output/hawkesBayGxpTop100DT.csv",
 #                        col_types = cols(
 #                        region = col_character(),
 #                        regionName = col_character(),
@@ -757,7 +766,7 @@ GXPHawkesDT <- GXPHawkesDT[month == 9 | month == 10 | month == 11, season := "Sp
 
 #Loading Hawkes Bay extract data
 extractHawkesDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/extractHawkes.csv",
+ readr::read_csv(paste0(here::here(), "/data/output/extractHawkes.csv"),
                        col_types = cols(
                        linkID = col_character(),
                        nObs = col_double(),
@@ -775,7 +784,7 @@ extractHawkesDT <- data.table::as.data.table(
 #Loading Taranaki extract data
 
 extractTaranakiDT <- data.table::as.data.table(
- readr::read_csv("/Users/carsten.dortans/Desktop/R Profiles/github/CFSOtago/GREENGridEECA/data/output/extractTaranaki.csv",
+ readr::read_csv(paste0(here::here(), "/data/output/extractTaranaki.csv"),
                        col_types = cols(
                        linkID = col_character(),
                        nObs = col_double(),
@@ -1615,7 +1624,7 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Oven"], aes(x=totalEnergyWh/1000, co
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
-  theme(text = element_text(family = "Cambria"),
+  theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
@@ -1729,7 +1738,7 @@ MergedDT <- MergedDT[, CLF := 1000/(LoadFactor*8760)]
 #Write CSV
 
 
-WriteDT <- data.table::fwrite(MergedDT, paste0(here::here(), "/data/output/Extracted load factor by household and circuit.csv"))
+WriteDT <- data.table::fwrite(MergedDT, paste0(here::here(), "/data/output/Extracted load factor by household and circuit.csv")))
 
 MergedTable <- copy(MergedDT)
 
