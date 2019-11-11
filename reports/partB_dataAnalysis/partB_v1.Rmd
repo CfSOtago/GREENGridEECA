@@ -311,6 +311,7 @@ selectDT <- powerDT[circuit == 'imputedTotalDemand_circuitsToSum_v1.1' &
 #  kable_styling()
 
 # dataBucketDT <- data.table::data.table()
+selectDT <- selectDT[,.(r_dateTime_nz, linkID)]
 setkey(selectDT, r_dateTime_nz, linkID)
 setkey(powerDT, r_dateTime_nz, linkID)
 dataBucketDT <- powerDT[selectDT] # way quicker - selects the ones that match
@@ -339,8 +340,7 @@ dataBucketDT <- powerDT[selectDT] # way quicker - selects the ones that match
  # kable_styling()
 
 # Full EECA category label check table is in Data Annex
-t <- unique(dataBucketDT, circuitLabel, eecaCircuit)
-categoriseCircuitsTable <- table(t$circuitLabel, t$eecaCircuit)
+categoriseCircuitsTable <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
 
 ```
 
@@ -1488,7 +1488,8 @@ myPlot <- ggplot2::ggplot(dt[year == 2015], aes((y=totalEnergykWh), x=eecaCircui
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
         axis.ticks.x = element_line(colour = "black"))+
-  theme(#text = element_text(family = "Cambria")) 
+  theme(#text = element_text(family = "Cambria")
+    ) 
 myPlot
 
 
@@ -1738,7 +1739,7 @@ MergedDT <- MergedDT[, CLF := 1000/(LoadFactor*8760)]
 #Write CSV
 
 
-WriteDT <- data.table::fwrite(MergedDT, paste0(here::here(), "/data/output/Extracted load factor by household and circuit.csv")))
+WriteDT <- data.table::fwrite(MergedDT, paste0(here::here(), "/data/output/Extracted load factor by household and circuit.csv"))
 
 MergedTable <- copy(MergedDT)
 
@@ -1877,7 +1878,7 @@ Table \@ref(tab:categoriseCircuitsTable) shows the categorised circuit labels us
 
 
 ```{r categoriseCircuitsTable}
-kableExtra::kable(categoriseCircuitsTable, caption = "Categorised circuits")  %>% # test result
+kableExtra::kable(categoriseCircuitsTable, caption = "Categorised circuits (counts are half-hours in the 2015 winter peak period")  %>% # test result
   kable_styling()
 ```
 
