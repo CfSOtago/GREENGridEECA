@@ -99,9 +99,13 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 
 In this section we use the GREEN Grid residential sample to estimate the contribution of each appliance to peak demand. For this analysis we use demand data averaged over 30 minute intervals. We consider three different definitions of peak demand:
 
-* Sample winter evenings 17:00 - 21:00. In this case we:
-    * find the maximum half-hour demand for each household during the defined peak period
-    * calculate the percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in that half hour.
+* Sample winter evenings 17:00 - 21:00.
+    * Mean winter evening load: 
+        * Find the average load across each circuit during the period
+        * Calculate the percentage contribution of each identified load type to this average peak load. 
+    * Maximum winter evening load
+        * find the maximum half-hour demand for each household during the defined peak period
+        * calculate the percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in that half hour.
 
 * Regional/network peak. In this case we:
     * find the 100 maximum regional network (GXP) peak half hours
@@ -227,7 +231,7 @@ myPlot
 
 ```
 
-We have then used this data to calculate the mean contribution of each identifiable load to peak demand (time period 17:00-21:00) across the sample for winter in 2015. This is shown in Figure \@ref(fig:wattageContributionPeak1Plot1) and Figure \@ref(fig:wattageContributionPeak1PlotPercent1) (as percentage contribution). On this measure, of the identifiable loads, Heat Pumps contributed the most to peak demand, followed by Hot Water, Lighting, and Oven. However overall 'Other' loads contributed the most at 32% suggesting further research is needed to disaggregate this demand where possible (see Table \@ref(tab:categoriseCircuitsTable)) for circuits contributing to 'Other'. 
+We have then used this data to calculate the mean contribution of each identifiable load to peak demand (time period 17:00-21:00) across the sample for winter in 2015. This is shown in Figure \@ref(fig:wattageContributionPeak1Plot1) and Figure \@ref(fig:wattageContributionPeak1PlotPercent1) (as percentage contribution). On this measure, of the identifiable loads, Heat Pumps contributed the most to peak demand, followed by Hot Water, Lighting, and Oven. However overall 'Other' loads contributed the most at ~`r round(ContriW1DT[eecaCircuit == "Other"]$percentage)`% suggesting further research is needed to disaggregate this demand where possible (see Table \@ref(tab:categoriseCircuitsTable)) for circuits contributing to 'Other'. 
 
 
 
