@@ -52,7 +52,6 @@ doReport <- function(){
 }
 
 # Local parameters ----
-version <- "2.1"
 
 # data paths
 dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
@@ -175,4 +174,5 @@ powerDT[, eecaCircuit := ifelse(eecaCircuitOrig == "Calculated_Total",
 table(powerDT$eecaCircuit, powerDT$eecaCircuitOrig)
 
 # > run report ----
+version <- "2.1_fixedOther"
 doReport() # uncomment to run automatically
