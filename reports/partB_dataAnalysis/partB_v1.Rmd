@@ -126,7 +126,6 @@ To do this last part we classify the circuit labels according to the load types 
 
 ## Winter (June - August)  evenings 17:00 – 21:00
 
-### Mean load (W)
 In this section we select the peak-period half hours for all households for the winter evening period and then calculate the mean demand for each dwelling over the period of peak demand.
 
 Table \@ref(tab:averageAtPeak) shows the winter mean demand (W) at 'peak' for each dwelling and circuit in 2015. The complete data table across all houses is saved as “Extracted mean demand by dwelling and circuit at 'peak'.csv” and is supplied with the report.
@@ -242,8 +241,8 @@ We have then used this data to calculate the mean contribution of each identifia
 
 
 
-### Maximum load per season (W)
-In this section, for each household and year of measurement we locate the half-hour which had the maximum total load during the evening period (17:00-21:00) for each season.
+## Maximum load per season (W)
+In this section we extract the half-hour which had the maximum total load during the evening period (17:00-21:00) for each household in season.
 
 ```{r findMaxHalfHours}
 powerDT[, year := lubridate::year(r_dateTime_nz)] # so we can do per-year analysis
@@ -283,12 +282,6 @@ dataBucketDT <- powerDT[selectDT] # way quicker - selects the ones that match
 # - lighting
 
 
-#kableExtra::kable(head(dataBucketDT, 10), caption = "Example date peak load half-hour circuits - first 10 rows showing circuit demand at the peak total demand half-hour")  %>% # test result
-
- # kable_styling()
-
-# Full EECA category label check table is in Data Annex
-categoriseCircuitsTable <- table(dataBucketDT$circuitLabel, dataBucketDT$eecaCircuit)
 
 ```
 
@@ -429,9 +422,9 @@ ContriW1DT$eecaLabelContri <- factor(ContriW1DT$eecaLabelContri, levels = c("Hot
 ConsLoadFactorSupplyDT <- copy(ContriW1DT)
 ```
 
-We have then used this data to calculate the mean contribution of each identifiable load to peak demand (time period 17:00-21:00) for each season across the sample and this is shown in Figure \@ref(fig:wattageContributionPeak1Plot) and Figure \@ref(fig:wattageContributionPeak1PlotPercent) (as percentage contribution). Figure \@ref(fig:wattageContributionPeak1Plot) shows the seasonal variation in power demand especially for heat pumps and lighting but also shows the relative constancy of hot water’s contribution across the seasons. As a consequence the percentage contribution of hot water slightly increases in summer whereas the contribution of heat pumps decreases (see Table \@ref(tab:categoriseCircuitsTable)). Hot water is identified as the appliance that is contributing the most to peak demand in this case. It should be noted that these mean values will mask considerable day to day and inter/intra-household variation. Note that ‘Other’ almost certainly contains some forms of heating as it is much lower in summer (see also Table \@ref(tab:categoriseCircuitsTable)). 
+We have then used this data to calculate the mean contribution of each identifiable load to peak demand (time period 17:00-21:00) for each season and year across the sample.
 
-
+Results for 2015 are shown in Figure \@ref(fig:wattageContributionPeak1Plot) and Figure \@ref(fig:wattageContributionPeak1PlotPercent) (as percentage contribution). 
 
 
 ```{r wattageContributionPeak1Plot, fig.cap="Mean contribution to peak demand (17:00-21:00) per season in 2015"}
@@ -475,6 +468,8 @@ myPlot <- ggplot2::ggplot(ContriW1DT[year == 2015], aes(x= "", y= percentage, fi
 myPlot
 
 ```
+
+Figure \@ref(fig:wattageContributionPeak1Plot) shows the seasonal variation in power demand especially for heat pumps and lighting but also shows the relative constancy of hot water’s contribution across the seasons. As a consequence the percentage contribution of hot water slightly increases in summer whereas the contribution of heat pumps decreases (see Figure \@ref(fig:wattageContributionPeak1PlotPercent)). Hot water is identified as the appliance that is contributing the most to peak demand in this case. It should be noted that these mean values will mask considerable day to day and inter/intra-household variation. Note also that ‘Other’ almost certainly contains some forms of heating as it is much lower in summer (see the coding definitions in Table \@ref(tab:categoriseCircuitsTable)). 
 
 ## Region/network coincident peak
 
@@ -1590,7 +1585,6 @@ myPlot
 ```
 
 
-
 For ovens, there is less seasonal variation in seasonal energy consumption as shown in Figure \@ref(fig:annualConsplot4). Again, energy consumption in summer is less than in other seasons.
 
 ```{r annualConsplot4, fig.cap="Distribution of seasonal energy consumption for Ovens for all houses for 2015", warning=FALSE}
@@ -1852,7 +1846,10 @@ These short comings suggest that future work should focus on (1) collecting data
 Table \@ref(tab:categoriseCircuitsTable) shows the categorised circuit labels used in this analysis. It would be relatively easy to adjust these definitions in future work if required.
 
 ```{r categoriseCircuitsTable}
-kableExtra::kable(categoriseCircuitsTable, caption = "Definition of 'eeca circuits' (columns) based on original circuits (rows). Values are are the number of half-hours in the 2015 winter peak period")  %>% # test result
+
+t <- with(powerDT, table(circuit, eecaCircuit))
+
+kableExtra::kable(t, caption = "Definition of 'eeca circuits' (columns) based on original circuits (rows). Values are the count of half-hours in the complete power data")  %>% # test result
   kable_styling()
 ```
 
