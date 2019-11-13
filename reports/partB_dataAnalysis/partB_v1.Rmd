@@ -1528,7 +1528,7 @@ In contrast, Figure \@ref(fig:annualConsplot2) presents as similar density plot 
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Heat Pump"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seasonal energy (kWh)") +
-  scale_x_continuous( limits = c(0,500))+
+  #scale_x_continuous( limits = c(0,500))+
      geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
@@ -1549,7 +1549,7 @@ Energy consumption of Lighting is particularly apparent in spring, autumn, and w
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Lighting"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seaonal energy (kWh)") +
-  scale_x_continuous( limits = c(0,500))+
+  #scale_x_continuous( limits = c(0,500))+
      geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
@@ -1572,7 +1572,7 @@ For ovens, there is less seasonal variation in seasonal energy consumption as sh
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Oven"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seasonal energy (kWh)") +
-  scale_x_continuous( limits = c(0,500))+
+  #scale_x_continuous( limits = c(0,500))+
      geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
@@ -1595,7 +1595,7 @@ For "Other", there is a lot of seasonal variation in seasonal energy consumption
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Other"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seasonal energy (kWh)") +
-  scale_x_continuous( limits = c(0,500))+
+  #scale_x_continuous( limits = c(0,500))+
      geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
@@ -1623,17 +1623,18 @@ dt2 <- setnames(dt2, old=c("eecaCircuit"),
 
 ```{r annualConsplotwinter, fig.cap="Distribution of winter 2015 total energy consumption for al circuits for all houses", warning=FALSE}
 
-myPlot <- ggplot2::ggplot(dt2[season =="Winter"], aes(x=totalEnergyWh/1000, colour=Circuit)) +
+myPlot <- ggplot2::ggplot(dt2, aes(x=totalEnergyWh/1000, colour=Circuit)) +
   geom_density() +
   labs(x = "Energy consumption in winter (kWh)") +
-  scale_x_continuous( limits = c(0,4000))+
-  #facet_grid( season ~ year)+
+  #scale_x_continuous( limits = c(0,4000))+
+  facet_grid( season ~ year) +
   theme(#text = element_text(family = "Cambria"),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
         axis.ticks.x = element_line(colour = "black"),
-        legend.title = element_text(colour = "black"))
+        legend.title = element_text(colour = "black")
+        )
   
 myPlot
 
