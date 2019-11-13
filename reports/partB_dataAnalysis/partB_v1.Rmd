@@ -1507,11 +1507,11 @@ dt$eecaCircuit <- factor(dt$eecaCircuit, levels = c("Hot Water","Heat Pump",
 
 Figure \@ref(fig:annualBoxPlot) conceals the significant variation in demand between seasons and in the following we use [density plots](https://ggplot2.tidyverse.org/reference/geom_density.html) to show the shape of the distribution for each circuit by season. 
 
-Figure \@ref(fig:annualConsplot1) shows the distribution in seasonal energy consumption in kWh across all houses for Hot Water in 2015 using a density plot. Results show that most energy consumption of Hot Water is in winter, followed by spring and autumn. Energy consumption for hot water in summer is substantially lower with a distinctively different pattern to both the spring/autumn seasons and winter.
+Figure \@ref(fig:annualConsplotHW) shows the distribution of seasonal energy consumption in kWh across all houses for Hot Water in 2015 using a density plot. This shows that most energy consumption for Hot Water is in winter, followed by spring and autumn. Energy consumption for hot water in summer is substantially lower with a distinctively different pattern to both the spring/autumn seasons and winter.
 
 > Histogram test included as a test - don't think it works
 
-```{r annualConsplot1, fig.cap="Distribution of seasonal energy consumption for Hot Water for all houses for 2015", warning=FALSE}
+```{r annualConsplotHW, fig.cap="Distribution of seasonal energy consumption for Hot Water for all houses for 2015", warning=FALSE}
 
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
@@ -1543,8 +1543,10 @@ myhisto <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/10
         axis.ticks.x = element_line(colour = "black"))
 myhisto
 ```
-In contrast, Figure \@ref(fig:annualConsplot2) presents a similar density plot for Heat Pumps. As expected, most energy consumption is in winter. In summer, total energy consumption is mostly 0 (appliance is turned off). Only a few observations registered energy consumption in summer which may be cooling.
-```{r annualConsplot2, fig.cap="Distribution of seasonal energy consumption for Heat Pumps for all houses for 2015", warning=FALSE}
+
+In contrast, Figure \@ref(fig:annualConsPlotHP) presents a similar density plot for Heat Pumps. As expected, most energy consumption is in winter. In summer, total energy consumption is mostly 0 (appliance is turned off). Only a few observations registered energy consumption in summer which may be cooling.
+
+```{r annualConsPlotHP, fig.cap="Distribution of seasonal energy consumption for Heat Pumps for all houses for 2015", warning=FALSE}
 
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Heat Pump"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
@@ -1562,10 +1564,11 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Heat Pump"], aes(x=totalEnergyWh/100
 myPlot
 
 ```
-Energy consumption of Lighting is particularly apparent in spring, autumn, and winter as presented in Figure \@ref(fig:annualConsplot3). Less energy consumption is identified in summer.
+
+Energy consumption of Lighting is particularly apparent in spring, autumn, and winter as presented in Figure \@ref(fig:annualConsPlotL). Less energy consumption is identified in summer.
 
 
-```{r annualConsplot3, fig.cap="Distribution of seasonal energy consumption for Lighting for all houses for 2015", warning=FALSE}
+```{r annualConsPlotL, fig.cap="Distribution of seasonal energy consumption for Lighting for all houses for 2015", warning=FALSE}
 
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Lighting"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
@@ -1585,9 +1588,9 @@ myPlot
 ```
 
 
-For ovens, there is less seasonal variation in seasonal energy consumption as shown in Figure \@ref(fig:annualConsplot4). Again, energy consumption in summer is less than in other seasons.
+For ovens, there is less seasonal variation in seasonal energy consumption as shown in Figure \@ref(fig:annualConsPlotOven). Again, energy consumption in summer is less than in other seasons.
 
-```{r annualConsplot4, fig.cap="Distribution of seasonal energy consumption for Ovens for all houses for 2015", warning=FALSE}
+```{r annualConsPlotOven, fig.cap="Distribution of seasonal energy consumption for Ovens for all houses for 2015", warning=FALSE}
 
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Oven"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
@@ -1607,10 +1610,10 @@ myPlot
 ```
 
 
-For "Other", there is a lot of seasonal variation in seasonal energy consumption as shown in Figure \@ref(fig:annualConsplot5). As this circuit contains appliances not further specified it is difficult to identify the appliance causing this energy consumption, particularly in summer. Therefore, further research is necessary.
+For "Other", there is a lot of seasonal variation in seasonal energy consumption as shown in Figure \@ref(fig:annualConsPlotOther). As this circuit contains appliances not further specified it is difficult to identify the appliance causing this energy consumption, particularly in summer. Therefore, further research is necessary.
 
 
-```{r annualConsplot5, fig.cap="Distribution of seasonal energy consumption for Other for all houses for 2015", warning=FALSE}
+```{r annualConsPlotOther, fig.cap="Distribution of seasonal energy consumption for Other for all houses for 2015", warning=FALSE}
 
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Other"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
@@ -1641,7 +1644,7 @@ dt2 <- setnames(dt2, old=c("eecaCircuit"),
 
 ```
 
-```{r annualConsplotwinter, fig.cap="Distribution of winter 2015 total energy consumption for all circuits for all houses", warning=FALSE}
+```{r annualConsPlotWinter, fig.cap="Distribution of winter 2015 total energy consumption for all circuits for all houses", warning=FALSE}
 
 myPlot <- ggplot2::ggplot(dt2[year == 2015 & season == "Winter"], aes(x=totalEnergyWh/1000, colour=Circuit)) +
   geom_density() +
@@ -1660,7 +1663,7 @@ myPlot
 
 ```
 
-Finally, Figure \@ref(fig:annualConsplotwinter) shows the variation in all circuits for winter 2015. On average, Hot Water used the most energy, followed by Heat Pumps, Lighting, and Ovens but 'Other' shows a wide variation which again warrants further investigation.
+Finally, Figure \@ref(fig:annualConsPlotWinter) shows the variation in all circuits for winter 2015. On average, Hot Water used the most energy, followed by Heat Pumps, Lighting, and Ovens but 'Other' shows a wide variation which again warrants further investigation.
 
 
 
