@@ -157,11 +157,6 @@ doReport <- function(){
 # > data paths ----
 dPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
 
-#> yaml ----
-title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
-subtitle <- paste0("EECA Data Analysis (Part B) Report v", version)
-authors <- "Dortans, C., Anderson, B. and Jack, M."
-
 # drake plan ----
 plan <- drake::drake_plan(
   powerData = getData(filesDT),
@@ -186,10 +181,16 @@ hhSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData,
                                        "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 
+# reload data from wherever drake put it
 powerDT <- drake::readd(cleanPowerData)
 # check
 table(powerDT$eecaCircuit, powerDT$eecaCircuitOrig)
 
 # > run report ----
 version <- "2.1_fixedOther"
+
+#> yaml ----
+title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
+subtitle <- paste0("EECA Data Analysis (Part B) Report v", version)
+authors <- "Dortans, C., Anderson, B. and Jack, M."
 doReport() # uncomment to run automatically
