@@ -1835,17 +1835,17 @@ kableExtra::kable(categoriseCircuitsTable, caption = "Categorised circuits (coun
 Descriptive statistics for aggregate half hourly power data for all households and all circuits:
 
 ```{r skimData}
-skimr::skim(origPowerDT)
+skimr::skim(powerDT)
 ```
 
 The following tables show descriptive statistics for the meanPowerW values for each circuit by household.
 
 ```{r powerCube, results = "asis"}
-ids <- unique(origPowerDT$linkID)
+ids <- unique(powerDT$linkID)
 
 for(hh in ids){
   # prints a lot of tables
-    t <- data.table::cube(origPowerDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
+    t <- data.table::cube(powerDT[linkID == hh], j = c(list(meanPowerW = mean(meanPowerW),
                                                               minPowerW = min(meanPowerW),
                                                               maxPowerW = max(meanPowerW),
                                                               nObs = .N)), by = c("circuit"))
