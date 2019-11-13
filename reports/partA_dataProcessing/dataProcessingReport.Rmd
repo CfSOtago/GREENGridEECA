@@ -756,7 +756,7 @@ kableExtra::kable(t[order(-nDwellings)], digits = 2,
   kable_styling()
 
 # save as a data file for ease of use
-of <- paste0(repoParams$repoLoc, "/data/circuitLabelsComplete.csv")
+of <- paste0(repoParams$repoLoc, "/data/output/circuitLabelsComplete.csv")
 data.table::fwrite(t, file = of)
 ```
 
@@ -793,7 +793,7 @@ kableExtra::kable(t, digits = 2,
   kable_styling()
 
 # save as a data file for ease of use
-of <- paste0(repoParams$repoLoc, "/data/circuitLabelsCompleteByEECA.csv")
+of <- paste0(repoParams$repoLoc, "/data/output/circuitLabelsCompleteByEECA.csv")
 data.table::fwrite(t, file = of)
 ```
 

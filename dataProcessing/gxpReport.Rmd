@@ -83,9 +83,10 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 # Introduction
 
-This report uses the Electricity Authority EMI [grid export database](https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export) for 2015 to:
+This report uses the Electricity Authority EMI [grid export database](https://www.emi.ea.govt.nz/Wholesale/Datasets/Metered_data/Grid_export) to:
 
- * identify system peak half-hours for the regions of Taranaki and Hawke's Bay for use in the Part B data analysis
+ * explore the GXP data
+ * identify system peak half-hours for the regions of Taranaki and Hawke's Bay in 2015 for use in the Part B data analysis
 
 This report describes the results of this work and directs the reader to relevant R code where necessary.
 
@@ -99,39 +100,78 @@ The archived and most recent version of the report is available from:
  
 # Data
 
-"Grid exit point (GXP)
+# Grid exit point (GXP)
 
 A grid exit point (GXP) is defined in Part 1 of the Code and means any point of connection on the grid at which electricity predominantly flows out of the grid or is determined as being such by the Authority following an application in accordance with clause 13.28. Any such point of connection may, at any given time, be a GXP or a GIP, but may not be both at the same time."
 
 For (very little) further information see the [EMI glossary](https://www.emi.ea.govt.nz/Glossary#G).
 
-```{r removeDST}
+```{r addRegions}
+# add the POC lookup table Vince sent ----
+# this tells us which POCs are in the regions we are interested in
+f <- paste0(here::here(), "/data/input/gxp-lookup.csv")
+gxpLutDT <- data.table::fread(f)
+  
+setkey(gxpLutDT, node)
+setkey(gxpDataDT, POC) 
+  
+gxpDataDT <- gxpLutDT[gxpDataDT] # merge kWh to label data - this keeps all the gxpData
+  
+gxpDataDT[, regionName := `region name`]
+
+# set peak period - used later
+gxpDataDT <- GREENGridEECA::codePeakPeriod(gxpDataDT) # NA are DST breaks?
+t <- table(gxpDataDT$hour, gxpDataDT$peakPeriod, useNA = "always")
+# t
+# yes :-)
+
+# add useful time vars ----
+gxpDataDT[, month := lubridate::month(date)]
+gxpDataDT[, year := lubridate::year(date)]
+gxpDataDT[, hms := hms::as_hms(rDateTime)]
+gxpDataDT <- GREENGridEECA::addNZSeason(gxpDataDT) # add season
+
+message("Matched regions:")
+table(gxpDataDT$regionName, useNA = "always")
+```
+
+```{r cleanData}
 # remove the date NAs here (DST breaks)
 gxpDataDT <- gxpDataDT[!is.na(date)]
+
+# remove any kWh NA
+gxpDataDT <- gxpDataDT[!is.na(kWh)]
 ```
 
 Start date: `r min(gxpDataDT$date)`
 
 End date: `r max(gxpDataDT$date)`
 
-# EMI GXP data
+```{r monthYearTab}
 
-Figure \@ref(fig:profiles) shows the mean total network electricity export by season for all regions combined as a data sense-check.
+t <- table(gxpDataDT$month, gxpDataDT$year)
+kableExtra::kable(t, digits = 2,
+                  caption = "Number of observations per month and year in data used for this report") %>%
+  kable_styling()
+```
+
+# Explore GXP data
+
+Figure \@ref(fig:profiles) shows the mean total network electricity export by season and year for all regions combined as a data sense-check.
 
 ```{r profiles, fig.cap="Mean total kWh per half hour by season"}
 myCaption <- paste0("Source: EA EMI Grid Exit Point (GXP) data",
                     ", ", min(gxpDataDT$date, na.rm = TRUE)
                     , " - ", max(gxpDataDT$date, na.rm = TRUE))
-gxpDataDT[, hms := hms::as.hms(rDateTime)]
-gxpDataDT <- GREENGridEECA::addNZSeason(gxpDataDT)
 
 plotDT <- gxpDataDT[, .(sumkWh = sum(kWh), meankWh = mean(kWh), 
                         nGXPs = uniqueN(node), nDays = uniqueN(date)), 
-                    keyby = .(hms, season)]
+                    keyby = .(hms, season, year)]
 plotDT[,totDaily := sumkWh/(nDays)]
 
 ggplot2::ggplot(plotDT, aes(x = hms, y = totDaily/1000, colour = season)) +
   geom_point() +
+  facet_grid(. ~ year) +
   labs(x = "Date", y = "Total daily MWh per half-hour", 
        caption = paste0(myCaption, "\nN GXPs: ", uniqueN(gxpDataDT$node))) +
   scale_color_discrete(name = "Season:") +
@@ -142,13 +182,12 @@ Next we use the GXP data to identify local (regional) system peak load half-hour
 Selected GXPs for the regions we are interested in:
 
 ```{r testRegions}
-gxpDataDT[, regionName := `region name`]
 t <- gxpDataDT[!is.na(regionName), .(nHalfHours = .N,
-                               meanMWh = mean(kWh)/1000),
-                           keyby = .(regionName, node, NWK_Code)]
+                               meanMWh = mean(kWh, na.rm = TRUE)/1000),
+                           keyby = .(regionName, node, NWK_Code, year)]
 
 kableExtra::kable(t, digits = 2,
-                  caption = "Summary of MWh per half hour by region, GXP nodes selected and network codes") %>%
+                  caption = "Summary of MWh per half hour by year, region, GXP nodes selected and network codes") %>%
   kable_styling()
 ```
 
@@ -160,33 +199,29 @@ Figure \@ref(fig:regionProfiles) shows the same results as above but only for th
 dt <- gxpDataDT[region == "t" | region == "h"]
   
 plotDT <- dt[, .(sumkWh = sum(kWh), meankWh = mean(kWh), nDays = uniqueN(date)), 
-                    keyby = .(hms, season, region, regionName)]
+                    keyby = .(hms, season, region, regionName, year)]
 plotDT[, totDaily := sumkWh/(nDays)]
 ggplot2::ggplot(plotDT, aes(x = hms, y = totDaily/1000, colour = season)) +
   geom_point() +
-  facet_grid(. ~ regionName) +
+  facet_grid(year ~ regionName) +
   labs(x = "Date", y = "Total daily MWh per half-hour", 
        caption = paste0(myCaption, "\nN GXPs: ", uniqueN(dt$node))) +
   scale_color_discrete(name = "Season:") +
   theme(legend.position="bottom")
 ```
 
-# Top 100 'peaks'
+# Top 100 'peaks' in 2015
 
-Extract data for winter (Jun - August) 2015 as per original EECA file. Aggregate to region level and select the top 100 half hours for eachh region.
+Extract data for winter (Jun - August) 2015 as per original EECA file. Aggregate to region level and select the top 100 half hours for each region.
 
 ```{r extractWinter2015Data}
-gxpWinter2015DT <- gxpDataDT[lubridate::year(rDate) == 2015 & 
-                                 rDate >= "2015-06-01" & # Vince's extract seems to start 1st June
-                                   rDate <= "2015-08-31"] # and end 31st August 
+gxpWinter2015DT <- gxpDataDT[year == 2015 & 
+                                 date >= "2015-06-01" & # Vince's extract seems to start 1st June
+                                   date <= "2015-08-31"] # and end 31st August 
   
   summary(gxpWinter2015DT)
   
   gxpWinter2015DT[,regionName := `region name`]
-  
-  # test what we've got
-  
-  testGxp(gxpWinter2015DT)
 
   # the NA in TP = 49 is expected, this is the DST break placeholder
   t <- gxpWinter2015DT[is.na(kWh), .(node, Time_Period, rDateTime, kWh)]
@@ -196,7 +231,6 @@ gxpWinter2015DT <- gxpDataDT[lubridate::year(rDate) == 2015 &
   # yep, all NA
   # so let's just kick it out
   gxpWinter2015DT <- gxpWinter2015DT[!is.na(kWh)]
-  testGxp(gxpWinter2015DT)
   
   # grab the GXPs we want
   gxpSelectWinter2015DT <- gxpWinter2015DT[!is.na(regionName)]
@@ -225,7 +259,7 @@ gxpWinter2015DT <- gxpDataDT[lubridate::year(rDate) == 2015 &
   regionSumGxpDT <- gxpSelectWinter2015DT[, .(sumkWh = sum(kWh),
                                               nObs = .N,
                                               nRegions = uniqueN(regionName),
-                                              nPOCs = uniqueN(node),
+                                              nLocations = uniqueN(node),
                                               nNetworks = uniqueN(NWK_Code),
                                               nGenTypes = uniqueN(GENERATION_TYPE)), # number of half-hourly records contributing
                                     keyby = .(region, regionName, Time_Period, hours, rDateTime, weekdays, peakPeriod)]
@@ -241,7 +275,7 @@ gxpWinter2015DT <- gxpDataDT[lubridate::year(rDate) == 2015 &
   # save it: NB saves rDateTime as UTC
   data.table::fwrite(taranakiDT, paste0(here::here(), "/data/taranakiGxpTop100DT.csv"))
   taranakiDT[, .(nPeaks = .N), keyby = .(regionName, hours, Time_Period)]
-  # almost completely matches Vince's extract but the kWh values here are _exactly_ 1/2 of Vince's. Why?
+  # almost completely matches Vince's extract but the kWh values here are _exactly_ 1/2 of Vince's. Why? Ans: because he multiplied by 2!
   
   hawkesBayDT <- head(regionSumGxpDT[region == "h"][order(-sumkWh)], 100)
   table(hawkesBayDT$peakPeriod, hawkesBayDT$month)

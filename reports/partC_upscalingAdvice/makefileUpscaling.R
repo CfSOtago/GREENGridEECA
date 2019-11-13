@@ -107,8 +107,12 @@ gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run befo
 if(nrow(gxpFiles) == 0){
   message("No data!")
 } else {
-  message("Yep, we've got (some) data")
+  message("Yep, we've got (some) data, loading it")
   gxpDataDT <- loadGXPData(gxpFiles)
+  # save out fpr future use
+  message("Saving processed version for future use...")
+  data.table::fwrite(file = paste0(repoParams$gxpData, "gxpDataDT_latest.csv"),
+                     gxpDataDT)
 }
 
 # remove the date NAs here (DST breaks)
@@ -161,6 +165,6 @@ authors <- "Ben Anderson"
 
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/reports/partC_upscalingAdvice/upscaling.Rmd")
-makeReport(rmdFile)
+#makeReport(rmdFile)
 
 
