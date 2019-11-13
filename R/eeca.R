@@ -21,7 +21,7 @@ labelEECACircuits <- function(dt, loadVar = "imputedTotalDemand_circuitsToSum_v1
                                      circuitLabel == "Upstairs Heat Pumps" |
                                      circuitLabel == "Heating",
                                    "Heat Pump or Heating",
-                                   "XX_Other") # default
+                                   NA) # could be any other circuit including the incomer
            ]
   
   # %like% matches if the string is in the circuit label (i.e. circuit label could contain other words)
@@ -40,6 +40,6 @@ labelEECACircuits <- function(dt, loadVar = "imputedTotalDemand_circuitsToSum_v1
                                      circuitLabel %like% "Lights",
                                    "Lighting", eecaCircuit)]
   dt <- dt[, eecaCircuit := ifelse(circuitLabel %like% loadVar, #loadVar is a parameter to the function so we can change it
-                                   "Total", eecaCircuit)]
+                                   "Calculated_Total", eecaCircuit)]
   return(dt)
 }
