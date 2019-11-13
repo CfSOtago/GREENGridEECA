@@ -87,9 +87,9 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 # Abstract
 
-This report uses the GREEN Grid project research data to analyse a variety of residential household appliances and their contribution to peak demand under several scenarios. Although the data does not derive from a representative sample of households, we demonstrate that identifiable heating contributes ~ 21% to residential peak (17:00-21:00) demand in winter with Hot Water at ~ 17%, Lighting at 14% and Ovens at 7% while non-identifed appliances contribute ~ 40%. These percentage contributions are generally similar at both regional network and sample co-incident peaks and across seasons although total power demand varies by season according to the appliance. Thus 'Others', heating and lighting are substantially lower in summer and whilst further research is clearly needed to unpack 'Other' demand, this suggests heating may be a major component. 
+This report uses the GREEN Grid project research data to analyse a variety of residential household appliances and their contribution to peak demand under several scenarios. Although the data does not derive from a representative sample of households, we demonstrate that identifiable heating contributes ~ 21% to residential peak (17:00-21:00) demand in winter with Hot Water at ~ 17%, Lighting at 14% and Ovens at 7% while non-identified appliances contribute ~ 40%. These percentage contributions are generally similar at both regional network and sample co-incident peaks and across seasons although total power demand varies by season according to the appliance. Thus 'Others', heating and lighting are substantially lower in summer and whilst further research is clearly needed to unpack 'Other' demand, this suggests heating may be a major component. 
 
-Our results also show that simple mean (or median) values or single indicators such as average laod factors mask considerable variation both within and between households. Overall we conclude that future work should focus on collecting data from a larger and representative sample of New Zealand households, ensuring that appliances are identified on circuits (especially electric heaters) and that both inter and intra-household heterogeneity should be adequately represented in analytic results.
+Our results also show that simple mean (or median) values or single indicators such as average load factors mask considerable variation both within and between households. Overall we conclude that future work should focus on collecting data from a larger and representative sample of New Zealand households, ensuring that appliances are identified on circuits (especially electric heaters) and that both inter and intra-household heterogeneity should be adequately represented in analytic results.
 
 
 # Introduction
@@ -1507,11 +1507,11 @@ dt$eecaCircuit <- factor(dt$eecaCircuit, levels = c("Hot Water","Heat Pump",
 
 Figure \@ref(fig:annualBoxPlot) conceals the significant variation in demand between seasons and in the following we use [density plots](https://ggplot2.tidyverse.org/reference/geom_density.html) to show the shape of the distribution for each circuit by season. 
 
-Figure \@ref(fig:annualConsplotHW) shows the distribution of seasonal energy consumption in kWh across all houses for Hot Water in 2015 using a density plot. This shows that most energy consumption for Hot Water is in winter, followed by spring and autumn. Energy consumption for hot water in summer is substantially lower with a distinctively different pattern to both the spring/autumn seasons and winter.
+Figure \@ref(fig:annualConsPlotHW) shows the distribution of seasonal energy consumption in kWh across all houses for Hot Water in 2015 using a density plot. This shows that most energy consumption for Hot Water is in winter, followed by spring and autumn. Energy consumption for hot water in summer is substantially lower with a distinctively different pattern to both the spring/autumn seasons and winter.
 
-> Histogram test included as a test - don't think it works
+> Example histogram saved as .png
 
-```{r annualConsplotHW, fig.cap="Distribution of seasonal energy consumption for Hot Water for all houses for 2015", warning=FALSE}
+```{r annualConsPlotHW, fig.cap="Distribution of seasonal energy consumption for Hot Water for all houses for 2015", warning=FALSE}
 
 myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/1000, colour=season)) +
   geom_density() +
@@ -1541,7 +1541,9 @@ myhisto <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/10
         axis.text.y = element_text(colour = "black"),
         axis.ticks.y = element_line(colour = "black"),
         axis.ticks.x = element_line(colour = "black"))
-myhisto
+
+# save it
+ggsave(paste0(here::here(), "/docs/plots/contribHistoTest.png"), myhisto)
 ```
 
 In contrast, Figure \@ref(fig:annualConsPlotHP) presents a similar density plot for Heat Pumps. As expected, most energy consumption is in winter. In summer, total energy consumption is mostly 0 (appliance is turned off). Only a few observations registered energy consumption in summer which may be cooling.
