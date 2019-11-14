@@ -1771,7 +1771,7 @@ The full data table containing LFs and CLFs (if available) for each house is sav
 
 Figure \@ref(fig:consLoadPlot) shows the Conservation Load Factor (CLF) for each identifiable load averaged over all houses in the sample. Results show that the CLF for Heat Pumps (0.55) is the highest, followed by Oven (0.43), Lighting (0.38), and Hot Water (0.17). 'Other' had a CLF of 0.24. 
 
-```{r consLoadPlot, fig.cap="Conservation Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
+```{r consLoadPlot, fig.cap="Mean Conservation Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
 
 
 myPlot <- ggplot2::ggplot(dt3, aes(x= eecaCircuit, fill = eecaCircuit)) +
