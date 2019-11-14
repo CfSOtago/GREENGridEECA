@@ -309,7 +309,7 @@ resAllSeasonsDT <- resAllSeasonsDT[, pc_OV := Oven/Total]
 resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := Other/Total]
 
 kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 3,
-                  caption = "Example data: Extracted winter peak load half-hour circuits (0 indicates no such circuit)")  %>% # test result
+                  caption = "Example data: Extracted winter peak load half-hour circuits (NA indicates no such circuit)")  %>% # test result
   kable_styling()
 
 data.table::fwrite(resAllSeasonsDT, paste0(here::here(), "/data/output/Extracted seasonal peak load half-hour circuits.csv"))
