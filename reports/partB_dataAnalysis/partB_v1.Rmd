@@ -54,6 +54,13 @@ GREENGridEECA::loadLibraries(rmdLibs)
 
 ```
 
+
+__Abstract__
+
+This report uses the GREEN Grid project research data to analyse a variety of residential household appliances and their contribution to peak demand under several scenarios. Although the data does not derive from a representative sample of households, we demonstrate that identifiable heating contributes ~ 21% to residential peak (17:00-21:00) demand in winter with Hot Water at ~ 17%, Lighting at 14% and Ovens at 7% while non-identified appliances contribute ~ 40%. These percentage contributions are generally similar at both regional network and sample co-incident peaks and across seasons although total power demand varies by season according to the appliance. Thus 'Others', heating and lighting are substantially lower in summer and whilst further research is clearly needed to unpack 'Other' demand, this suggests heating may be a major component. 
+
+Our results also show that simple mean (or median) values or single indicators such as average load factors mask considerable variation both within and between households. Overall we conclude that future work should focus on collecting data from a larger and representative sample of New Zealand households, ensuring that appliances are identified on circuits (especially electric heaters) and that both inter and intra-household heterogeneity should be adequately represented in analytic results.
+
 \newpage
 
 # About
@@ -84,13 +91,6 @@ GREENGridEECA::loadLibraries(rmdLibs)
 ```
  
 \newpage
-
-# Abstract
-
-This report uses the GREEN Grid project research data to analyse a variety of residential household appliances and their contribution to peak demand under several scenarios. Although the data does not derive from a representative sample of households, we demonstrate that identifiable heating contributes ~ 21% to residential peak (17:00-21:00) demand in winter with Hot Water at ~ 17%, Lighting at 14% and Ovens at 7% while non-identified appliances contribute ~ 40%. These percentage contributions are generally similar at both regional network and sample co-incident peaks and across seasons although total power demand varies by season according to the appliance. Thus 'Others', heating and lighting are substantially lower in summer and whilst further research is clearly needed to unpack 'Other' demand, this suggests heating may be a major component. 
-
-Our results also show that simple mean (or median) values or single indicators such as average load factors mask considerable variation both within and between households. Overall we conclude that future work should focus on collecting data from a larger and representative sample of New Zealand households, ensuring that appliances are identified on circuits (especially electric heaters) and that both inter and intra-household heterogeneity should be adequately represented in analytic results.
-
 
 # Introduction
 
@@ -288,25 +288,31 @@ dataBucketDT <- powerDT[selectDT] # way quicker - selects the ones that match
 Table \@ref(tab:winterPeaktestTable) shows the winter maximum load half-hours for each dwelling and year during the winter peak period as defined above. In this data extract, NaN indicates that no circuit data was obtained for this dwelling in this specific time period. We also calculate the proportionate contribution of each identifiable load to the total load. The complete data table across all houses is saved as “Extracted seasonal peak load half-hour circuits.csv” and is supplied with the report.
 
 ```{r winterPeaktestTable}
+# we do not imput 0 for NaN/NA cells as this would mean we have measured
+# 0 when we have not. We just don't know the value as there was
+# no circuit of this type. If we include 0 we reduce the mean/% yet
+# the true heating could have been in 'Other'
+
 resAllSeasonsDT <- dcast(dataBucketDT,
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN 
            value.var = "meanPowerW") # take 1 household and turn data round
 
 # Now just calculate the % using the identified circuits?
 
 
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_HW := `Hot water`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_HP := `Heat Pump or Heating`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_LI := `Lighting`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_OV := `Oven`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_HW := `Hot water`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_HP := `Heat Pump or Heating`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_LI := Lighting/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_OV := Oven/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := Other/Total]
 
 kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 3,
-                  caption = "Example data: Extracted winter peak load half-hour circuits (NaN indicates no such circuit)")  %>% # test result
+                  caption = "Example data: Extracted winter peak load half-hour circuits (NA indicates no such circuit)")  %>% # test result
   kable_styling()
 
-WriteDT <- data.table::fwrite(resAllSeasonsDT, paste0(here::here(), "/data/output/Extracted seasonal peak load half-hour circuits.csv"))
+data.table::fwrite(resAllSeasonsDT, paste0(here::here(), "/data/output/Extracted seasonal peak load half-hour circuits.csv"))
 
 ```
 
@@ -317,7 +323,7 @@ summaryP1DT <- copy(resAllSeasonsDT) #This is the summary table to present to EE
 summaryP1DT<-summaryP1DT[, c("Heat Pump or Heating", "Hot water", "Lighting", "Oven", "Total", "Other") := NULL]
 
 #summaryP1DT<-summaryP1DT[, averageContriHW := ]
-summaryP1DT <- setnames(summaryP1DT, old=c("contribution_HW","contribution_HP", "contribution_LI", "contribution_OV", "contribution_XX"),
+summaryP1DT <- setnames(summaryP1DT, old=c("pc_HW","pc_HP", "pc_LI", "pc_OV", "pc_Other"),
                         new=c("Hot Water", "Heat Pump", "Lighting", "Oven", "Other"))
 
 #summaryP1DT <- data.table::as.data.table(gather(summaryP1DT, eecaCircuit, meanPowerW, `Heat Pump or Heating`:`Oven`, factor_key = TRUE))
@@ -392,6 +398,7 @@ myPlot
 ContriW1DT <- dcast(dataBucketDT,#This tis the contribution DT for wattage and the first definition of peak demand
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "meanPowerW")
 ContriW1DT<-ContriW1DT[, c( "Total") := NULL]#We do not need this column
 
@@ -767,24 +774,25 @@ resAllSeasonsDT <- copy(extractHawkesDT)
 resAllSeasonsDT <- dcast(resAllSeasonsDT,
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "meanPowerW") # take 1 household and turn data round
 
 # Now just calculate the % using the identified circuits?
 
 
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_HW := `Hot water`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_HP := `Heat Pump or Heating`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_LI := `Lighting`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_OV := `Oven`/Total]
-#resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := `Other`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_HW := `Hot water`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_HP := `Heat Pump or Heating`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_LI := `Lighting`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_OV := `Oven`/Total]
+#resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := `Other`/Total]
 
 copiedtable <- copy(resAllSeasonsDT)
-copiedtable <- copiedtable[, c( "contribution_HW") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_HP") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_LI") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_OV") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_XX") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_HW") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_HP") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_LI") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_OV") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_Other") := NULL]#We do not need this column
 
 
 
@@ -810,7 +818,7 @@ summaryP1DT <- copy(resAllSeasonsDT) #This is the summary table to present to EE
 summaryP1DT<-summaryP1DT[, c("Heat Pump or Heating", "Hot water", "Lighting", "Oven", "Total", "Other") := NULL]
 
 #summaryP1DT<-summaryP1DT[, averageContriHW := ]
-summaryP1DT <- setnames(summaryP1DT, old=c("contribution_HW","contribution_HP", "contribution_LI", "contribution_OV", "contribution_XX"),
+summaryP1DT <- setnames(summaryP1DT, old=c("pc_HW","pc_HP", "pc_LI", "pc_OV", "pc_Other"),
                         new=c("Hot Water", "Heat Pump", "Lighting", "Oven", "Other"))
 
 #summaryP1DT <- data.table::as.data.table(gather(summaryP1DT, eecaCircuit, meanPowerW, `Heat Pump or Heating`:`Oven`, factor_key = TRUE))
@@ -864,6 +872,7 @@ ContriW1DT <- copy(extractHawkesDT)
 ContriW1DT <- dcast(ContriW1DT,#This tis the contribution DT for wattage and the first definition of peak demand
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "meanPowerW")
 ContriW1DT<-ContriW1DT[, c( "Total") := NULL]#We do not need this column
 
@@ -953,25 +962,26 @@ resAllSeasonsDT <- copy(extractTaranakiDT)
 resAllSeasonsDT <- dcast(resAllSeasonsDT,
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "meanPowerW") # take 1 household and turn data round
 
 # Now just calculate the % using the identified circuits?
 
 
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_HW := `Hot water`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_HP := `Heat Pump or Heating`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_LI := `Lighting`/Total]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_OV := `Oven`/Total]
-#resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
-resAllSeasonsDT <- resAllSeasonsDT[, contribution_XX := `Other`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_HW := `Hot water`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_HP := `Heat Pump or Heating`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_LI := `Lighting`/Total]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_OV := `Oven`/Total]
+#resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := `Other`/Total]
 
 
 copiedtable <- copy(resAllSeasonsDT)
-copiedtable <- copiedtable[, c( "contribution_HW") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_HP") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_LI") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_OV") := NULL]#We do not need this column
-copiedtable <- copiedtable[, c( "contribution_XX") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_HW") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_HP") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_LI") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_OV") := NULL]#We do not need this column
+copiedtable <- copiedtable[, c( "pc_Other") := NULL]#We do not need this column
 
 kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
                   caption = "Example data: Extracted peak load half-hour circuits (NaN indicates no such circuit)")  %>% # test result
@@ -995,7 +1005,7 @@ summaryP1DT <- copy(resAllSeasonsDT) #This is the summary table to present to EE
 summaryP1DT<-summaryP1DT[, c("Heat Pump or Heating", "Hot water", "Lighting", "Oven", "Total", "Other") := NULL]
 
 #summaryP1DT<-summaryP1DT[, averageContriHW := ]
-summaryP1DT <- setnames(summaryP1DT, old=c("contribution_HW","contribution_HP", "contribution_LI", "contribution_OV", "contribution_XX"),
+summaryP1DT <- setnames(summaryP1DT, old=c("pc_HW","pc_HP", "pc_LI", "pc_OV", "pc_Other"),
                         new=c("Hot Water", "Heat Pump", "Lighting", "Oven", "Other"))
 
 #summaryP1DT <- data.table::as.data.table(gather(summaryP1DT, eecaCircuit, meanPowerW, `Heat Pump or Heating`:`Oven`, factor_key = TRUE))
@@ -1059,6 +1069,7 @@ ContriW1DT <- copy(extractTaranakiDT)
 ContriW1DT <- dcast(ContriW1DT,#This tis the contribution DT for wattage and the first definition of peak demand
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "meanPowerW")
 ContriW1DT<-ContriW1DT[, c( "Total") := NULL]#We do not need this column
 
@@ -1213,16 +1224,17 @@ filteredDT <- powerDT[filterDT]
 contriSampleDT <- dcast(filteredDT,
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "meanPowerW") # take 1 household and turn data round
 
 # Now just calculate the % using the identified circuits?
 
 
-contriSampleDT <- contriSampleDT[, contribution_HW := `Hot water`/Total]
-contriSampleDT <- contriSampleDT[, contribution_HP := `Heat Pump or Heating`/Total]
-contriSampleDT <- contriSampleDT[, contribution_LI := `Lighting`/Total]
-contriSampleDT <- contriSampleDT[, contribution_OV := `Oven`/Total]
-contriSampleDT <- contriSampleDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+contriSampleDT <- contriSampleDT[, pc_HW := `Hot water`/Total]
+contriSampleDT <- contriSampleDT[, pc_HP := `Heat Pump or Heating`/Total]
+contriSampleDT <- contriSampleDT[, pc_LI := `Lighting`/Total]
+contriSampleDT <- contriSampleDT[, pc_OV := `Oven`/Total]
+contriSampleDT <- contriSampleDT[, pc_Other := Other/Total]
 
 
 ```
@@ -1235,7 +1247,7 @@ summaryPSDT <- copy(contriSampleDT) #This is the summary table to present to EEC
 summaryPSDT<-summaryPSDT[, c("Heat Pump or Heating", "Hot water", "Lighting", "Oven", "Total", "Other") := NULL]
 
 
-summaryPSDT <- setnames(summaryPSDT, old=c("contribution_HW","contribution_HP", "contribution_LI", "contribution_OV", "contribution_XX"),
+summaryPSDT <- setnames(summaryPSDT, old=c("pc_HW","pc_HP", "pc_LI", "pc_OV", "pc_Other"),
                         new=c("Hot Water", "Heat Pump", "Lighting", "Oven", "Other"))
 
 summaryPSDT <- data.table::as.data.table(gather(summaryPSDT, eecaLabelContri, contribution, `Hot Water`:`Oven`, factor_key = TRUE))#This brings our data into a nice form for the plot
@@ -1260,6 +1272,7 @@ Figure \@ref(fig:wattageContributionPeakSamplePlotAll) shows the mean contributi
 ContriWSDT <- dcast(filteredDT,#This tis the contribution DT for wattage and the first definition of peak demand
            linkID + year + season + r_dateTime_nz ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "meanPowerW")
 #ContriWSDT<-ContriWSDT[, c( "Total") := NULL]#We do not need this column
 
@@ -1406,13 +1419,14 @@ options(scipen = 999)
 analysisShortDT <- dcast(analysisShortDT, 
            linkID + year ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "totalEnergyWh") # take 1 household and turn data round
 
-analysisShortDT <- analysisShortDT[, contribution_HW := `Hot water`/Total]
-analysisShortDT <- analysisShortDT[, contribution_HP := `Heat Pump or Heating`/Total]
-analysisShortDT <- analysisShortDT[, contribution_LI := `Lighting`/Total]
-analysisShortDT <- analysisShortDT[, contribution_OV := `Oven`/Total]
-analysisShortDT <- analysisShortDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+analysisShortDT <- analysisShortDT[, pc_HW := `Hot water`/Total]
+analysisShortDT <- analysisShortDT[, pc_HP := `Heat Pump or Heating`/Total]
+analysisShortDT <- analysisShortDT[, pc_LI := `Lighting`/Total]
+analysisShortDT <- analysisShortDT[, pc_OV := `Oven`/Total]
+analysisShortDT <- analysisShortDT[, pc_Other := Other/Total]
 # There are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
 
 analysisShortDT <- setnames(analysisShortDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "Other"),
@@ -1477,13 +1491,14 @@ options(scipen = 999)
 analysisShortDT <- dcast(analysisShortDT, 
            linkID + year + season ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           fill = NA, # so we don't get NaN
            value.var = "totalEnergyWh") # take 1 household and turn data round
 
-analysisShortDT <- analysisShortDT[, contribution_HW := `Hot water`/Total]
-analysisShortDT <- analysisShortDT[, contribution_HP := `Heat Pump or Heating`/Total]
-analysisShortDT <- analysisShortDT[, contribution_LI := `Lighting`/Total]
-analysisShortDT <- analysisShortDT[, contribution_OV := `Oven`/Total]
-analysisShortDT <- analysisShortDT[, contribution_XX := 1-((`Hot water` + `Heat Pump or Heating` + `Lighting` + `Oven`)/Total)]
+analysisShortDT <- analysisShortDT[, pc_HW := `Hot water`/Total]
+analysisShortDT <- analysisShortDT[, pc_HP := `Heat Pump or Heating`/Total]
+analysisShortDT <- analysisShortDT[, pc_LI := `Lighting`/Total]
+analysisShortDT <- analysisShortDT[, pc_OV := `Oven`/Total]
+analysisShortDT <- analysisShortDT[, pc_Other := Other/Total]
 # There are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
 
 analysisShortDT <- setnames(analysisShortDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "Other"),
@@ -1728,6 +1743,7 @@ Merged2DT <- copy(MergedDT)
 Merged2DT <- dcast(Merged2DT, 
            linkID ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
+           #fill = NA, # so we don't get NaN
            value.var = "CLF") # take 1 household and turn data round
 
 
@@ -1771,7 +1787,7 @@ The full data table containing LFs and CLFs (if available) for each house is sav
 
 Figure \@ref(fig:consLoadPlot) shows the Conservation Load Factor (CLF) for each identifiable load averaged over all houses in the sample. Results show that the CLF for Heat Pumps (0.55) is the highest, followed by Oven (0.43), Lighting (0.38), and Hot Water (0.17). 'Other' had a CLF of 0.24. 
 
-```{r consLoadPlot, fig.cap="Conservation Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
+```{r consLoadPlot, fig.cap="Mean Conservation Load Factor by circuit for peak demand (17:00-21:00) in winter 2015"}
 
 
 myPlot <- ggplot2::ggplot(dt3, aes(x= eecaCircuit, fill = eecaCircuit)) +
