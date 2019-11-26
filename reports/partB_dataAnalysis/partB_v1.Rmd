@@ -101,6 +101,94 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 ```{r generic sample, child=repoParams$data}
 ```
 
+As background, Table \@ref(tab:dataDesc) shows the mean halfhourly and mean total kW and kWh by season for the sample households in 2015. For this purpose the periods are defined as:
+
+ * 21:00 - 07:00 Off peak (night)
+ * 07:00 - 09:00 Peak (morning)
+ * 09:00 - 17:00 Off peak (day)
+ * 17:00 - 21:00 Peak (evening)
+
+```{r dataDesc}
+#Conversion to energy Wh
+powerDT[, meanEnergyWh := meanPowerW/2]
+powerDT[, hour := lubridate::hour(r_dateTime_nz)]
+powerDT[, ba_peak := ifelse(hour < 7, "Off peak (night)", NA)]
+powerDT[, ba_peak := ifelse(hour >= 7 & hour < 9, "Peak (morning)", ba_peak)]
+powerDT[, ba_peak := ifelse(hour >= 9 & hour < 17 , "Off peak (day)", ba_peak)]
+powerDT[, ba_peak := ifelse(hour >= 17 & hour < 21 , "Peak (evening)", ba_peak)]
+powerDT[, ba_peak := ifelse(hour >= 21, "Off peak (night)", ba_peak)]
+test <- table(powerDT$ba_peak,powerDT$hour)
+
+# test table
+t <- powerDT[year == 2015, .(sumkWh = sum(meanEnergyWh/1000, na.rm = TRUE),
+                             meankW = mean(meanPowerW/1000, na.rm = TRUE),
+                             sdkW = sd(meanPowerW/1000, na.rm = TRUE),
+                 nDays = uniqueN(date),
+                 nHouseholds = uniqueN(linkID)), keyby = .(season,ba_peak)]
+t[, meanTotalkWh := sumkWh/(nDays * nHouseholds)]
+# NB in this definition 'peak' is only evening peak (not morning)
+keepVars <- c("season", "ba_peak","meanTotalkWh","meankW","sdkW","nHouseholds")
+
+new <- c("Season", "Peak", "Mean total kWh", "Mean kW", "s.d. (kW)", "N households")
+
+table_t <- t[, ..keepVars]
+
+setnames(table_t, keepVars, new)
+
+kableExtra::kable(table_t, digits = 2, caption = "Descriptive statistics for power data") %>%
+  kable_styling()
+```
+
+Figure \@ref(fig:plotkWh) shows the mean total kWh consumed per household by period and season. Note that this total reflects not only the power demand level but the number of hours in each period.
+
+```{r plotkWh, fig.cap="Mean total kWh per period by season (2015)"}
+
+# plot sums at household level
+plotDT <- powerDT[year == 2015, .(sumkWh = sum(meanEnergyWh/1000, na.rm = TRUE),
+                             meankW = mean(meanPowerW/1000, na.rm = TRUE),
+                             sdkW = sd(meanPowerW/1000, na.rm = TRUE),
+                 nDays = uniqueN(date),
+                 nHouseholds = uniqueN(linkID)), keyby = .(season,ba_peak, linkID)]
+
+plotDT[, meanTotalkWh := sumkWh/(nDays)]
+
+p <- ggplot2::ggplot(plotDT, aes(y = meanTotalkWh, 
+                                           x = ba_peak, 
+                                           colour = season, 
+                                           group = ba_peak
+                                 )
+                     ) +
+  geom_boxplot() +
+  labs(x = "Time of day",
+         y = "Mean total kWh")
+
+p +
+  facet_grid(season ~ .) +
+   theme(legend.position = 'bottom') +
+  scale_color_discrete(name = "Season")
+
+```
+
+Figure \@ref(fig:plotkW) on the other hand shows the mean half-hourly kW demand per household by period and season and reflects the greater power demand in the evening and morning peak periods.
+
+```{r plotkW, fig.cap="Mean kW per half hour by period and season (2015)"}
+
+p <- ggplot2::ggplot(plotDT, aes(y = meankW, 
+                                           x = ba_peak, 
+                                           colour = season, 
+                                           group = ba_peak
+                                 )
+                     ) +
+  geom_boxplot() +
+  labs(x = "Time of day",
+         y = "Mean kW")
+
+p +
+  facet_grid(season ~ .) +
+   theme(legend.position = 'bottom') +
+  scale_color_discrete(name = "Season")
+```
+
 # Peak Contribution
 
 
@@ -1396,17 +1484,14 @@ This section presents annual and seasonal energy consumption (in kWh) for each i
 # kWh
 
 # new DT ( do we need to?)
-energyDT <- copy(powerDT)
+#energyDT <- copy(powerDT)
 
 #energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]#Converting W into Wh energy 
 
 
-
-#Conversion to energy Wh
-energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]
-analysisDT <- copy(energyDT) # another new DT. Do we need to?
-analysisDT <- analysisDT[, totalEnergyWh := sum(meanEnergyWh, na.rm = TRUE), 
-                         keyby = .(linkID, eecaCircuit, year)]#Ignores NAs
+#analysisDT <- copy(energyDT) # another new DT. Do we need to?
+analysisDT <- powerDT[, totalEnergyWh := sum(meanEnergyWh, na.rm = TRUE), 
+                         keyby = .(linkID, eecaCircuit, year)] #Ignores NAs
 analysisShortDT <- analysisDT[, .(totalEnergyWh = totalEnergyWh), 
                               keyby = .(linkID, eecaCircuit, year)] #For some reason by does not remove duplicates without crashing....
 

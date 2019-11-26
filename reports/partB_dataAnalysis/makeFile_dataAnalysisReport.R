@@ -193,4 +193,4 @@ version <- "2.1_fixedOther"
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part B) Report v", version)
 authors <- "Dortans, C., Anderson, B. and Jack, M."
-doReport() # uncomment to run automatically
+#doReport() # uncomment to run automatically
