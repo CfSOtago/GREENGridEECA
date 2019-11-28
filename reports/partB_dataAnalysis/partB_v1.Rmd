@@ -101,7 +101,7 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 ```{r generic sample, child=repoParams$data}
 ```
 
-As background, Table \@ref(tab:dataDesc) shows the mean halfhourly and mean total kW and kWh by season for the sample households in 2015. For this purpose the periods are defined as:
+As background, Table \@ref(tab:dataDesc) shows the mean half-hourly and mean total kW and kWh by season for the sample households in 2015. For this purpose the periods are defined as:
 
  * 21:00 - 07:00 Off peak (night)
  * 07:00 - 09:00 Peak (morning)
