@@ -196,8 +196,8 @@ In this section we use the GREEN Grid residential sample to estimate the contrib
 
 * Sample winter evenings 17:00 - 21:00.
     * Mean winter evening load: 
-        * Find the average load across each circuit during the period
-        * Calculate the percentage contribution of each identified load type to this average peak load. 
+        * find the average load across each circuit during the period
+        * calculate the percentage contribution of each identified load type to this average peak load. 
     * Maximum winter evening load
         * find the maximum half-hour demand for each household during the defined peak period
         * calculate the percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in that half hour.
