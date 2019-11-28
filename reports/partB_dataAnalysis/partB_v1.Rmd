@@ -101,7 +101,7 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 ```{r generic sample, child=repoParams$data}
 ```
 
-As background, Table \@ref(tab:dataDesc) shows the mean halfhourly and mean total kW and kWh by season for the sample households in 2015. For this purpose the periods are defined as:
+As background, Table \@ref(tab:dataDesc) shows the mean half-hourly and mean total kW and kWh by season for the sample households in 2015. For this purpose the periods are defined as:
 
  * 21:00 - 07:00 Off peak (night)
  * 07:00 - 09:00 Peak (morning)
@@ -241,7 +241,7 @@ subsetDT <- powerDT[season == "Winter" &
 dataBucketDT <- subsetDT[, .(avgPeakDemandW = mean(meanPowerW, na.rm = TRUE)), keyby =.(linkID, eecaCircuit)]
 
 
-kableExtra::kable(head(dataBucketDT, 10), digits = 3,
+kableExtra::kable(head(dataBucketDT, 10), digits = 2,
                   caption = "Example data: Extracted mean demand by dwelling and circuit at 'peak'")  %>% # test result
   kable_styling()
 
@@ -396,7 +396,7 @@ resAllSeasonsDT <- resAllSeasonsDT[, pc_LI := Lighting/Total]
 resAllSeasonsDT <- resAllSeasonsDT[, pc_OV := Oven/Total]
 resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := Other/Total]
 
-kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 3,
+kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 2,
                   caption = "Example data: Extracted winter peak load half-hour circuits (NA indicates no such circuit)")  %>% # test result
   kable_styling()
 
@@ -886,7 +886,7 @@ copiedtable <- copiedtable[, c( "pc_Other") := NULL]#We do not need this column
 
 
 
-kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
+kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 2,
                   caption = "Example data: Extracted peak load half-hour circuits for Hawke's Bay (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
@@ -1071,7 +1071,7 @@ copiedtable <- copiedtable[, c( "pc_LI") := NULL]#We do not need this column
 copiedtable <- copiedtable[, c( "pc_OV") := NULL]#We do not need this column
 copiedtable <- copiedtable[, c( "pc_Other") := NULL]#We do not need this column
 
-kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
+kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 2,
                   caption = "Example data: Extracted peak load half-hour circuits (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
@@ -1256,7 +1256,7 @@ sample2015DT <- sampleShortDT[year == 2015] # Getting rid of years that are not 
 
 sample2015DT <- setorder(sample2015DT, -averagePowerW)
 
-kableExtra::kable(head(sample2015DT[year == "2015"], 10), digits = 3,
+kableExtra::kable(head(sample2015DT[year == "2015"], 10), digits = 2,
                   caption = "Example data: Extracted winter peak load half-hours in descending order for 2015")  %>% # test result
   kable_styling()
 
@@ -1863,7 +1863,7 @@ The Load Factor (LF) is defined as the ratio of mean demand (W) and the peak dem
 The CLF represents the ratio of the power demand at peak to the annual energy consumption over the year (in W/kWh). The advantage of the CLF is that is gives a larger value when the load makes larger contribution to the peak. Table \@ref(tab:clfTableExample) shows the first rows of our calculation of LF and CLF.
 
 ```{r clfTableExample}
-kableExtra::kable(head(MergedTable), digits = 3,
+kableExtra::kable(head(MergedTable), digits = 2,
                   caption = "Example data: Extracted load factor by household and circuit")  %>% # test result
   kable_styling()
 ```
