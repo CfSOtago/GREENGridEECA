@@ -21,6 +21,10 @@ A repo supporting analysis of NZ GREEN Grid electricity demand data for EECA.
 
  * Final report: ([Final](partC_upscalingAdvice_v1.0_Final.html)) ([PDF]())
 
+## Other
+
+ * Exploration of the [GXP data](gxpReport_v0.5.html)
+ 
 ## Code
 
 Get it from [github](https://github.com/CfSOtago/GREENGridEECA).
