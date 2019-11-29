@@ -149,7 +149,7 @@ powerDT <- powerDT[, peak := ifelse(obsHalfHour >= PS & obsHalfHour <= PE,
 # this stops the RHS coercion errors
 ```
 
-```{r Solarcity}
+```{r dailyMeans }
 
 #Creating daily avergaes 
 

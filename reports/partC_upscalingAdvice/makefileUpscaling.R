@@ -157,7 +157,7 @@ makeReport <- function(f){
 
 # > Make report ----
 # >> yaml ----
-version <- "0.5"
+version <- "1.0_Final"
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part C) Upscaling Advice Report v", version)
 authors <- "Ben Anderson"
@@ -165,6 +165,6 @@ authors <- "Ben Anderson"
 
 # >> run report ----
 rmdFile <- paste0(repoParams$repoLoc, "/reports/partC_upscalingAdvice/upscaling.Rmd")
-#makeReport(rmdFile)
+makeReport(rmdFile)
 
 
