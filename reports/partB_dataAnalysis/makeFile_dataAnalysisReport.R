@@ -187,7 +187,7 @@ powerDT <- drake::readd(cleanPowerData)
 table(powerDT$eecaCircuit, powerDT$eecaCircuitOrig)
 
 # > run report ----
-version <- "2.1_final"
+version <- "2.1_Final"
 
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
