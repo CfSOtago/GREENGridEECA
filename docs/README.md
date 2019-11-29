@@ -11,15 +11,15 @@ A repo supporting analysis of NZ GREEN Grid electricity demand data for EECA.
 
 ### Part A – Data processing
 
- * Final report: ([html](partA_dataProcessingReport_v1.0_Final.html)) ([PDF]())
+ * Final report: ([html](partA_dataProcessingReport_v1.0_Final.html)) ([PDF](https://ourarchive.otago.ac.nz/handle/10523/9822))
 
 ### Part B - Data analysis
 
- * Final report: ([html](partB_dataAnalysisReport_v2.1_Final.html)) ([PDF]())
+ * Final report: ([html](partB_dataAnalysisReport_v2.1_Final.html)) ([PDF](https://ourarchive.otago.ac.nz/handle/10523/9821))
 
 ### Part C – Provision of advice for upscaling 
 
- * Final report: ([html](partC_upscalingAdvice_v1.0_Final.html)) ([PDF]())
+ * Final report: ([html](partC_upscalingAdvice_v1.0_Final.html)) ([PDF](https://ourarchive.otago.ac.nz/handle/10523/9820))
 
 ## Other
 
