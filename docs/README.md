@@ -1,5 +1,5 @@
 # GREEN Grid EECA
-A repo supporting analysis of [New Zealand GREEN Grid Household Electricity Demand Study 2014-2018](http://reshare.ukdataservice.ac.uk/853334/) for the New Zealand Energy Efficiency and Conservation Authority [EECA](https://www.eeca.govt.nz/).
+A repo supporting analysis of the [New Zealand GREEN Grid Household Electricity Demand Study 2014-2018](http://reshare.ukdataservice.ac.uk/853334/) data for the New Zealand Energy Efficiency and Conservation Authority [EECA](https://www.eeca.govt.nz/).
 
 ## Data
 
