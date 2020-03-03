@@ -16,8 +16,10 @@ and and pre-processed into long form. Also requires a geo-coded look-up table
 which is in the repo /data/input folder. Function returns a long form data.table.
 }
 \seealso{
-Other emi: \code{\link{cleanGXP}},
-  \code{\link{getGxpData}}, \code{\link{refreshGXPData}}
+Other emi: 
+\code{\link{cleanGXP}()},
+\code{\link{getGxpData}()},
+\code{\link{refreshGXPData}()}
 }
 \author{
 Ben Anderson, \email{b.anderson@soton.ac.uk}

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -1474,6 +1473,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1505,6 +1505,12 @@ summary {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1586,7 +1592,7 @@ div.tocify {
 <h1 class="title toc-ignore">NZ GREEN Grid Household Electricity Demand Data</h1>
 <h3 class="subtitle">EECA Data Analysis (Part B) Report v2.1_Final</h3>
 <h4 class="author">Dortans, C., Anderson, B. and Jack, M.</h4>
-<h4 class="date">Last run at: 2019-11-29 14:06:46 (Pacific/Auckland)</h4>
+<h4 class="date">Last run at: 2020-03-03 14:56:42 (Europe/London)</h4>
 
 </div>
 
@@ -1601,9 +1607,9 @@ div.tocify {
 <h2><span class="header-section-number">1.1</span> Citation</h2>
 <p>If you wish to use any of the material from this report please cite as:</p>
 <ul>
-<li>Dortans, C., Anderson, B. and Jack, M. (2019) <em>NZ GREEN Grid Household Electricity Demand Data: EECA Data Analysis (Part B) Report v2.1_Final</em>, <a href="http://www.otago.ac.nz/centre-sustainability/">Centre for Sustainability</a>, University of Otago: Dunedin.</li>
+<li>Dortans, C., Anderson, B. and Jack, M. (2020) <em>NZ GREEN Grid Household Electricity Demand Data: EECA Data Analysis (Part B) Report v2.1_Final</em>, <a href="http://www.otago.ac.nz/centre-sustainability/">Centre for Sustainability</a>, University of Otago: Dunedin.</li>
 </ul>
-<p>This work is (c) 2019 the authors. Usage rights are specified in the License section (<a href="#license">1.3</a>).</p>
+<p>This work is (c) 2020 the authors. Usage rights are specified in the License section (<a href="#license">1.3</a>).</p>
 </div>
 <div id="report-circulation" class="section level2">
 <h2><span class="header-section-number">1.2</span> Report circulation:</h2>
@@ -3939,6 +3945,141 @@ Figure 4.9: Mean appliance contribution to peak demand for the top 20 half hours
 Figure 5.1: Box and whisker plot of annual energy consumption (per house) of each identifiable load for 2015
 </p>
 </div>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:annualBoxPlot">Table 5.1: </span>Descriptive statistics for 2015 (annual kWh)
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+year
+</th>
+<th style="text-align:left;">
+eecaCircuit
+</th>
+<th style="text-align:right;">
+meankWh
+</th>
+<th style="text-align:right;">
+mediankWh
+</th>
+<th style="text-align:right;">
+sdkWh
+</th>
+<th style="text-align:right;">
+nHouseholds
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2015
+</td>
+<td style="text-align:left;">
+Heat Pump
+</td>
+<td style="text-align:right;">
+983.9364
+</td>
+<td style="text-align:right;">
+637.8066
+</td>
+<td style="text-align:right;">
+1261.0710
+</td>
+<td style="text-align:right;">
+39
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2015
+</td>
+<td style="text-align:left;">
+Hot Water
+</td>
+<td style="text-align:right;">
+2018.9726
+</td>
+<td style="text-align:right;">
+1954.0908
+</td>
+<td style="text-align:right;">
+967.4119
+</td>
+<td style="text-align:right;">
+39
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2015
+</td>
+<td style="text-align:left;">
+Lighting
+</td>
+<td style="text-align:right;">
+739.6984
+</td>
+<td style="text-align:right;">
+618.0304
+</td>
+<td style="text-align:right;">
+690.7768
+</td>
+<td style="text-align:right;">
+39
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2015
+</td>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:right;">
+3613.0850
+</td>
+<td style="text-align:right;">
+3411.0362
+</td>
+<td style="text-align:right;">
+2274.1369
+</td>
+<td style="text-align:right;">
+39
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2015
+</td>
+<td style="text-align:left;">
+Oven
+</td>
+<td style="text-align:right;">
+338.7537
+</td>
+<td style="text-align:right;">
+259.6349
+</td>
+<td style="text-align:right;">
+284.0407
+</td>
+<td style="text-align:right;">
+39
+</td>
+</tr>
+</tbody>
+</table>
+<pre><code>## # Test for comparison with EECA Energy End Use Database</code></pre>
+<pre><code>## Mean lighting kWh as a % of mean total kWh - actually sum of means so...</code></pre>
+<pre><code>## [1] 9.613407</code></pre>
+<pre><code>## 30% of that value - EECA Elec end use database suggests residential consumtion is 32% of total</code></pre>
+<pre><code>## [1] 3.07629</code></pre>
+<pre><code>##  -&gt; which is slightly less than 4% so it suggests our households use less than EECA estimate or EECA estimate is too high</code></pre>
 <p>Figure <a href="#fig:annualBoxPlot">5.1</a> conceals the significant variation in demand between seasons and in the following we use <a href="https://ggplot2.tidyverse.org/reference/geom_density.html">density plots</a> to show the shape of the distribution for each circuit by season.</p>
 <p>Figure <a href="#fig:annualConsPlotHW">5.2</a> shows the distribution of seasonal energy consumption in kWh across all houses for Hot Water in 2015 using a density plot. This shows that most energy consumption for Hot Water is in winter, followed by spring and autumn. Energy consumption for hot water in summer is substantially lower with a distinctively different pattern to both the spring/autumn seasons and winter.</p>
 <blockquote>
@@ -6487,67 +6628,962 @@ Wall Oven$4169
 <div id="original-data-description" class="section level2">
 <h2><span class="header-section-number">8.2</span> Original data description</h2>
 <p>Descriptive statistics for aggregate half hourly power data for all households and all circuits:</p>
-<pre><code>## Skim summary statistics
-##  n obs: 6994581 
-##  n variables: 23 
-## 
-## ── Variable type:character ──────────────────────────────────────────────────────────────────────
-##            variable missing complete       n min max empty n_unique
-##             ba_peak       0  6994581 6994581  14  16     0        4
-##             circuit       0  6994581 6994581   9  37     0       99
-##           circuitID 3109239  3885342 6994581   4   4     0       97
-##        circuitLabel       0  6994581 6994581   4  37     0       27
-##         eecaCircuit       0  6994581 6994581   4  20     0        6
-##     eecaCircuitOrig       0  6994581 6994581   4  20     0        6
-##              linkID       0  6994581 6994581   5   6     0       40
-##                peak       0  6994581 6994581   4  10     0        3
-##  r_dateTimeHalfHour       0  6994581 6994581  20  20     0    77345
-##              season       0  6994581 6994581   6   6     0        4
-## 
-## ── Variable type:Date ───────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n        min        max     median
-##      date       0  6994581 6994581 2014-01-06 2018-08-01 2016-03-21
-##  n_unique
-##      1613
-## 
-## ── Variable type:difftime ───────────────────────────────────────────────────────────────────────
-##     variable missing complete       n    min        max   median n_unique
-##  obsHalfHour       0  6994581 6994581 0 secs 84600 secs 12:00:00       48
-## 
-## ── Variable type:integer ────────────────────────────────────────────────────────────────────────
-##  variable missing complete       n  mean   sd p0 p25 p50 p75 p100     hist
-##      hour       0  6994581 6994581 11.5  6.92  0   6  12  18   23 ▇▇▇▇▇▇▇▇
-##      nObs       0  6994581 6994581 29.98 0.6   1  30  30  30   62 ▁▁▁▇▁▁▁▁
-## 
-## ── Variable type:numeric ────────────────────────────────────────────────────────────────────────
-##       variable missing complete       n       mean         sd       p0
-##      maxPowerW 1585024  5409557 6994581     724.64    1291.09     0   
-##   meanEnergyWh  122032  6872549 6994581     210.04     365.81 -1897.14
-##     meanPowerW  122032  6872549 6994581     420.09     731.62 -3794.28
-##      minPowerW 1627148  5367433 6994581     193.51     507.04     0   
-##          month       0  6994581 6994581       6.49       3.33     1   
-##       sdPowerW 1546109  5448472 6994581     185.37     375.63     0   
-##  totalEnergyWh       0  6994581 6994581 2879611.11 3059523.96     0   
-##           year       0  6994581 6994581    2015.85       1.15  2014   
-##        p25        p50        p75        p100     hist
-##       0         17.54     777.52    27759    ▇▁▁▁▁▁▁▁
-##       0         69.21     244.88     5490.79 ▁▁▇▁▁▁▁▁
-##       0        138.42     489.77    10981.59 ▁▁▇▁▁▁▁▁
-##       0          0        160.49     9600.58 ▇▁▁▁▁▁▁▁
-##       4          6          9          12    ▆▃▇▅▅▇▃▆
-##       0          0.72     109.08     5068.08 ▇▁▁▁▁▁▁▁
-##  519127.83 1943378.84 4192192.63 15455703.3  ▇▃▂▁▁▁▁▁
-##    2015       2016       2017        2018    ▃▇▁▆▁▅▁▂
-## 
-## ── Variable type:POSIXct ────────────────────────────────────────────────────────────────────────
-##       variable missing complete       n        min        max     median
-##  r_dateTime_nz       0  6994581 6994581 2014-01-06 2018-08-01 2016-03-21
-##  n_unique
-##     77345</code></pre>
+<table style="width: auto;" class="table table-condensed">
+<caption>
+<span id="tab:skimData">Table 8.2: </span>Data summary
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Name
+</td>
+<td style="text-align:left;">
+powerDT
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Number of rows
+</td>
+<td style="text-align:left;">
+6994581
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Number of columns
+</td>
+<td style="text-align:left;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+_______________________
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Column type frequency:
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+character
+</td>
+<td style="text-align:left;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Date
+</td>
+<td style="text-align:left;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+difftime
+</td>
+<td style="text-align:left;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+numeric
+</td>
+<td style="text-align:left;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+POSIXct
+</td>
+<td style="text-align:left;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+________________________
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Group variables
+</td>
+<td style="text-align:left;">
+None
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+skim_variable
+</th>
+<th style="text-align:right;">
+n_missing
+</th>
+<th style="text-align:right;">
+complete_rate
+</th>
+<th style="text-align:right;">
+min
+</th>
+<th style="text-align:right;">
+max
+</th>
+<th style="text-align:right;">
+empty
+</th>
+<th style="text-align:right;">
+n_unique
+</th>
+<th style="text-align:right;">
+whitespace
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+linkID
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+40
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+circuit
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+37
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+99
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+r_dateTimeHalfHour
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+77345
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+season
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+peak
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+circuitLabel
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+37
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+circuitID
+</td>
+<td style="text-align:right;">
+3109239
+</td>
+<td style="text-align:right;">
+0.56
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+97
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+eecaCircuit
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+eecaCircuitOrig
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ba_peak
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: Date</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+skim_variable
+</th>
+<th style="text-align:right;">
+n_missing
+</th>
+<th style="text-align:right;">
+complete_rate
+</th>
+<th style="text-align:left;">
+min
+</th>
+<th style="text-align:left;">
+max
+</th>
+<th style="text-align:left;">
+median
+</th>
+<th style="text-align:right;">
+n_unique
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+date
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+2014-01-06
+</td>
+<td style="text-align:left;">
+2018-08-01
+</td>
+<td style="text-align:left;">
+2016-03-21
+</td>
+<td style="text-align:right;">
+1613
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: difftime</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+skim_variable
+</th>
+<th style="text-align:right;">
+n_missing
+</th>
+<th style="text-align:right;">
+complete_rate
+</th>
+<th style="text-align:left;">
+min
+</th>
+<th style="text-align:left;">
+max
+</th>
+<th style="text-align:left;">
+median
+</th>
+<th style="text-align:right;">
+n_unique
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+obsHalfHour
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+0 secs
+</td>
+<td style="text-align:left;">
+84600 secs
+</td>
+<td style="text-align:left;">
+12:00:00
+</td>
+<td style="text-align:right;">
+48
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+skim_variable
+</th>
+<th style="text-align:right;">
+n_missing
+</th>
+<th style="text-align:right;">
+complete_rate
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+sd
+</th>
+<th style="text-align:right;">
+p0
+</th>
+<th style="text-align:right;">
+p25
+</th>
+<th style="text-align:right;">
+p50
+</th>
+<th style="text-align:right;">
+p75
+</th>
+<th style="text-align:right;">
+p100
+</th>
+<th style="text-align:left;">
+hist
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+nObs
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+29.98
+</td>
+<td style="text-align:right;">
+0.60
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+30.0
+</td>
+<td style="text-align:right;">
+30.00
+</td>
+<td style="text-align:right;">
+30.00
+</td>
+<td style="text-align:right;">
+62.00
+</td>
+<td style="text-align:left;">
+▁▁▇▁▁
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meanPowerW
+</td>
+<td style="text-align:right;">
+122032
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+<td style="text-align:right;">
+420.09
+</td>
+<td style="text-align:right;">
+731.62
+</td>
+<td style="text-align:right;">
+-3794.28
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+138.42
+</td>
+<td style="text-align:right;">
+489.77
+</td>
+<td style="text-align:right;">
+10981.59
+</td>
+<td style="text-align:left;">
+▁▇▁▁▁
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sdPowerW
+</td>
+<td style="text-align:right;">
+1546109
+</td>
+<td style="text-align:right;">
+0.78
+</td>
+<td style="text-align:right;">
+185.37
+</td>
+<td style="text-align:right;">
+375.63
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+0.72
+</td>
+<td style="text-align:right;">
+109.08
+</td>
+<td style="text-align:right;">
+5068.08
+</td>
+<td style="text-align:left;">
+▇▁▁▁▁
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+minPowerW
+</td>
+<td style="text-align:right;">
+1627148
+</td>
+<td style="text-align:right;">
+0.77
+</td>
+<td style="text-align:right;">
+193.51
+</td>
+<td style="text-align:right;">
+507.04
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+160.49
+</td>
+<td style="text-align:right;">
+9600.58
+</td>
+<td style="text-align:left;">
+▇▁▁▁▁
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+maxPowerW
+</td>
+<td style="text-align:right;">
+1585024
+</td>
+<td style="text-align:right;">
+0.77
+</td>
+<td style="text-align:right;">
+724.64
+</td>
+<td style="text-align:right;">
+1291.09
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+17.54
+</td>
+<td style="text-align:right;">
+777.52
+</td>
+<td style="text-align:right;">
+27759.00
+</td>
+<td style="text-align:left;">
+▇▁▁▁▁
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+month
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+6.49
+</td>
+<td style="text-align:right;">
+3.33
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+6.00
+</td>
+<td style="text-align:right;">
+9.00
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:left;">
+▇▆▆▆▇
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+year
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2015.85
+</td>
+<td style="text-align:right;">
+1.15
+</td>
+<td style="text-align:right;">
+2014.00
+</td>
+<td style="text-align:right;">
+2015.0
+</td>
+<td style="text-align:right;">
+2016.00
+</td>
+<td style="text-align:right;">
+2017.00
+</td>
+<td style="text-align:right;">
+2018.00
+</td>
+<td style="text-align:left;">
+▃▇▆▅▂
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meanEnergyWh
+</td>
+<td style="text-align:right;">
+122032
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+<td style="text-align:right;">
+210.04
+</td>
+<td style="text-align:right;">
+365.81
+</td>
+<td style="text-align:right;">
+-1897.14
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+69.21
+</td>
+<td style="text-align:right;">
+244.88
+</td>
+<td style="text-align:right;">
+5490.79
+</td>
+<td style="text-align:left;">
+▁▇▁▁▁
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hour
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+11.50
+</td>
+<td style="text-align:right;">
+6.92
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+6.0
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+18.00
+</td>
+<td style="text-align:right;">
+23.00
+</td>
+<td style="text-align:left;">
+▇▇▆▇▇
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+totalEnergyWh
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2879611.11
+</td>
+<td style="text-align:right;">
+3059523.96
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+519127.8
+</td>
+<td style="text-align:right;">
+1943378.84
+</td>
+<td style="text-align:right;">
+4192192.63
+</td>
+<td style="text-align:right;">
+15455703.30
+</td>
+<td style="text-align:left;">
+▇▃▁▁▁
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: POSIXct</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+skim_variable
+</th>
+<th style="text-align:right;">
+n_missing
+</th>
+<th style="text-align:right;">
+complete_rate
+</th>
+<th style="text-align:left;">
+min
+</th>
+<th style="text-align:left;">
+max
+</th>
+<th style="text-align:left;">
+median
+</th>
+<th style="text-align:right;">
+n_unique
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+r_dateTime_nz
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+2014-01-06 16:00:00
+</td>
+<td style="text-align:left;">
+2018-08-01 23:30:00
+</td>
+<td style="text-align:left;">
+2016-03-21 01:30:00
+</td>
+<td style="text-align:right;">
+77345
+</td>
+</tr>
+</tbody>
+</table>
 <p>The following tables show descriptive statistics for the meanPowerW values for each circuit by household.</p>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_01: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_01: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -6696,7 +7732,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_02: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_02: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -6825,7 +7861,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_06: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_06: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -6954,7 +7990,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_07: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_07: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7043,7 +8079,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_08: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_08: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7172,7 +8208,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_09: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_09: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7221,7 +8257,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_10: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_10: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7330,7 +8366,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_11: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_11: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7419,7 +8455,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_12: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_12: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7528,7 +8564,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_13: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_13: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7657,7 +8693,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_15b: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_15b: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7766,7 +8802,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_16: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_16: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7855,7 +8891,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_17a: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_17a: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -7964,7 +9000,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_17b: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_17b: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8073,7 +9109,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_18: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_18: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8182,7 +9218,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_19: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_19: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8291,7 +9327,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_20: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_20: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8400,7 +9436,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_21: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_21: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8489,7 +9525,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_22: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_22: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8618,7 +9654,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_23: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_23: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8727,7 +9763,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_24: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_24: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8836,7 +9872,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_27: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_27: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -8965,7 +10001,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_28: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_28: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9074,7 +10110,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_29: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_29: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9203,7 +10239,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_30: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_30: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9332,7 +10368,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_31: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_31: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9461,7 +10497,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_32: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_32: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9590,7 +10626,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_33: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_33: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9719,7 +10755,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_34: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_34: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9848,7 +10884,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_35: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_35: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -9977,7 +11013,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_36: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_36: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10106,7 +11142,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_37: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_37: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10235,7 +11271,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_38: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_38: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10364,7 +11400,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_39: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_39: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10493,7 +11529,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_40: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_40: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10602,7 +11638,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_41: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_41: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10731,7 +11767,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_42: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_42: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10860,7 +11896,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_44: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_44: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -10989,7 +12025,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_45: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_45: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -11118,7 +12154,7 @@ Total
 </table>
 <table>
 <caption>
-<span id="tab:powerTablesByHH">Table 8.2: </span>rf_47: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
+<span id="tab:powerTablesByHH">Table 8.3: </span>rf_47: Mean of half-hourly mean power (W) by original circuit label &amp; EECA circuit type
 </caption>
 <thead>
 <tr>
@@ -11229,7 +12265,7 @@ Total
 </div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">9</span> Runtime</h1>
-<p>Analysis completed in 111.89 seconds ( 1.86 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.5.2 (2018-12-20) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 166.85 seconds ( 2.78 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.6.2 (2019-12-12) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">10</span> R environment</h1>
@@ -11248,13 +12284,13 @@ Total
 </div>
 <div id="session-info" class="section level2">
 <h2><span class="header-section-number">10.2</span> Session info</h2>
-<pre><code>## R version 3.5.2 (2018-12-20)
+<pre><code>## R version 3.6.2 (2019-12-12)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)
 ## Running under: macOS High Sierra 10.13.6
 ## 
 ## Matrix products: default
-## BLAS: /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
-## LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+## BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
 ## [1] en_NZ.UTF-8/en_NZ.UTF-8/en_NZ.UTF-8/C/en_NZ.UTF-8/en_NZ.UTF-8
@@ -11263,37 +12299,21 @@ Total
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] readr_1.3.1              dplyr_0.8.3             
-##  [3] tidyr_1.0.0              skimr_1.0.7             
-##  [5] hms_0.5.1                kableExtra_1.1.0        
-##  [7] ggplot2_3.2.1            drake_7.7.0             
-##  [9] bookdown_0.14            rmarkdown_1.16          
-## [11] GREENGridEECA_0.0.0.9000 GREENGridData_1.0       
-## [13] lubridate_1.7.4          here_0.1                
-## [15] data.table_1.12.6       
+##  [1] readr_1.3.1              dplyr_0.8.3              tidyr_1.0.0              skimr_2.0.2              hms_0.5.2               
+##  [6] kableExtra_1.1.0         ggplot2_3.2.1            drake_7.8.0              bookdown_0.16            rmarkdown_2.0           
+## [11] GREENGridEECA_0.0.0.9000 GREENGridData_1.0        lubridate_1.7.4          here_0.1                 data.table_1.12.8       
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.2        txtq_0.2.0        prettyunits_1.0.2
-##  [4] assertthat_0.2.1  zeallot_0.1.0     rprojroot_1.3-2  
-##  [7] digest_0.6.22     packrat_0.5.0     utf8_1.1.4       
-## [10] R6_2.4.0          cellranger_1.1.0  plyr_1.8.4       
-## [13] backports_1.1.5   evaluate_0.14     httr_1.4.1       
-## [16] highr_0.8         pillar_1.4.2      rlang_0.4.1      
-## [19] progress_1.2.2    lazyeval_0.2.2    readxl_1.3.1     
-## [22] rstudioapi_0.10   R.utils_2.9.0     R.oo_1.22.0      
-## [25] labeling_0.3      webshot_0.5.1     stringr_1.4.0    
-## [28] igraph_1.2.4.1    munsell_0.5.0     compiler_3.5.2   
-## [31] xfun_0.10         pkgconfig_2.0.3   htmltools_0.4.0  
-## [34] tidyselect_0.2.5  tibble_2.1.3      fansi_0.4.0      
-## [37] viridisLite_0.3.0 crayon_1.3.4      withr_2.1.2      
-## [40] R.methodsS3_1.7.1 grid_3.5.2        gtable_0.3.0     
-## [43] lifecycle_0.1.0   magrittr_1.5      storr_1.2.1      
-## [46] scales_1.0.0      cli_1.1.0         stringi_1.4.3    
-## [49] reshape2_1.4.3    xml2_1.2.2        ellipsis_0.3.0   
-## [52] filelock_1.0.2    vctrs_0.2.0       forcats_0.4.0    
-## [55] tools_3.5.2       glue_1.3.1        purrr_0.3.3      
-## [58] yaml_2.2.0        colorspace_1.4-1  base64url_1.4    
-## [61] rvest_0.3.4       knitr_1.25</code></pre>
+##  [1] Rcpp_1.0.3        txtq_0.2.0        prettyunits_1.0.2 assertthat_0.2.1  zeallot_0.1.0     rprojroot_1.3-2   digest_0.6.23    
+##  [8] utf8_1.1.4        repr_1.0.1        R6_2.4.1          cellranger_1.1.0  plyr_1.8.5        backports_1.1.5   evaluate_0.14    
+## [15] highr_0.8         httr_1.4.1        pillar_1.4.2      rlang_0.4.2       progress_1.2.2    lazyeval_0.2.2    curl_4.3         
+## [22] readxl_1.3.1      rstudioapi_0.10   R.utils_2.9.2     R.oo_1.23.0       labeling_0.3      webshot_0.5.2     stringr_1.4.0    
+## [29] igraph_1.2.4.2    munsell_0.5.0     compiler_3.6.2    xfun_0.11         base64enc_0.1-3   pkgconfig_2.0.3   htmltools_0.4.0  
+## [36] tidyselect_0.2.5  tibble_2.1.3      fansi_0.4.0       viridisLite_0.3.0 crayon_1.3.4      withr_2.1.2       R.methodsS3_1.7.1
+## [43] grid_3.6.2        jsonlite_1.6      gtable_0.3.0      lifecycle_0.1.0   magrittr_1.5      storr_1.2.1       scales_1.1.0     
+## [50] cli_2.0.0         stringi_1.4.3     farver_2.0.1      reshape2_1.4.3    xml2_1.2.2        ellipsis_0.3.0    filelock_1.0.2   
+## [57] vctrs_0.2.0       tools_3.6.2       glue_1.3.1        purrr_0.3.3       yaml_2.2.0        colorspace_1.4-1  base64url_1.4    
+## [64] rvest_0.3.5       knitr_1.26</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">

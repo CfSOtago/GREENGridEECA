@@ -16,8 +16,10 @@ pre-processes them into monthly long form files with friendlier column names.
 Function saves a long form data.table.
 }
 \seealso{
-Other emi: \code{\link{cleanGXP}},
-  \code{\link{loadGXPData}}, \code{\link{refreshGXPData}}
+Other emi: 
+\code{\link{cleanGXP}()},
+\code{\link{loadGXPData}()},
+\code{\link{refreshGXPData}()}
 }
 \author{
 Ben Anderson, \email{b.anderson@soton.ac.uk}

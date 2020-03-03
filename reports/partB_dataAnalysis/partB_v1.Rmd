@@ -1545,6 +1545,29 @@ myPlot <- ggplot2::ggplot(dt[year == 2015], aes((y=totalEnergykWh), x=eecaCircui
     ) 
 myPlot
 
+t <- dt[year == 2015, .(meankWh = mean(totalEnergykWh, na.rm = TRUE),
+            mediankWh = median(totalEnergykWh, na.rm = TRUE),
+            sdkWh = sd(totalEnergykWh, na.rm = TRUE),
+            nHouseholds = uniqueN(linkID)), keyby = .(year, eecaCircuit)]
+
+kableExtra::kable(t, caption = "Descriptive statistics for 2015 (annual kWh)") %>%
+  kable_styling()
+
+message("# Test for comparison with EECA Energy End Use Database")
+
+# total mean kWh across households
+s <- sum(t$meankWh)
+# lighting as a % of household mean
+pc <- 100*(t[eecaCircuit == "Lighting", meankWh]/s)
+message("Mean lighting kWh as a % of mean total kWh - actually sum of means so...")
+pc
+# If household consumption is 32% of all elec consumption (as per EECA) then can we
+# just multiply this value by 32% to see how close we get to the EECA 4% figure for 
+# residential lighitng a a % of all electricity?
+message("30% of that value - EECA Elec end use database suggests residential consumtion is 32% of total")
+pc * 0.32
+
+message(" -> which is slightly less than 4% so it suggests our households use less than EECA estimate or EECA estimate is too high")
 
 ```
 
