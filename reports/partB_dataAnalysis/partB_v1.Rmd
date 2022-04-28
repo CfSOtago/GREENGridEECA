@@ -11,7 +11,7 @@ output:
   bookdown::html_document2:
     fig_width: 6
     fig_caption: yes
-    code_folding: hide
+    code_folding: show
     number_sections: yes
     toc: yes
     toc_depth: 2
@@ -101,6 +101,111 @@ This report uses the GREEN Grid project [@stephenson_smart_2017] research data t
 ```{r generic sample, child=repoParams$data}
 ```
 
+As background, Table \@ref(tab:dataDesc) shows the mean half-hourly and mean total kW and kWh by season for the sample households in 2015. For this purpose the periods are defined as:
+
+ * 21:00 - 07:00 Off peak (night)
+ * 07:00 - 09:00 Peak (morning)
+ * 09:00 - 17:00 Off peak (day)
+ * 17:00 - 21:00 Peak (evening)
+
+Note that the mean kWh values are substantially different from the medians indicating a skewed distribution.
+
+```{r dataDesc}
+#Conversion to energy Wh
+powerDT[, energyWh := meanPowerW/2]
+powerDT[, hour := lubridate::hour(r_dateTime_nz)]
+powerDT[, ba_peak := ifelse(hour < 7, "Off peak (night)", NA)]
+powerDT[, ba_peak := ifelse(hour >= 7 & hour < 9, "Peak (morning)", ba_peak)]
+powerDT[, ba_peak := ifelse(hour >= 9 & hour < 17 , "Off peak (day)", ba_peak)]
+powerDT[, ba_peak := ifelse(hour >= 17 & hour < 21 , "Peak (evening)", ba_peak)]
+powerDT[, ba_peak := ifelse(hour >= 21, "Off peak (night)", ba_peak)]
+test <- table(powerDT$ba_peak,powerDT$hour)
+
+# test table
+t <- powerDT[year == 2015 & eecaCircuit == "Total", .(sumkWh = sum(energyWh/1000, na.rm = TRUE),
+                             meankWh = mean(energyWh/1000, na.rm = TRUE),
+                             mediankWh = median(energyWh/1000, na.rm = TRUE), 
+                             meankW = mean(meanPowerW/1000, na.rm = TRUE),
+                             sdkW = sd(meanPowerW/1000, na.rm = TRUE),
+                 nDays = uniqueN(date),
+                 nHouseholds = uniqueN(linkID)), keyby = .(season,ba_peak)]
+t[, meanTotalkWh := sumkWh/(nDays * nHouseholds)]
+# NB in this definition 'peak' is only evening peak (not morning)
+keepVars <- c("season", "ba_peak","nHouseholds", "meankW","sdkW","meankWh", "mediankWh", "meanTotalkWh")
+
+new <- c("Season", "Peak", "N households", "Mean half-hourly kW", "s.d. (half-hourly kW)", "Mean half-hourly kWh", "Median half-hourly kWh","Mean total kWh for the period")
+
+table_t <- t[, ..keepVars]
+
+setnames(table_t, keepVars, new)
+
+kableExtra::kable(table_t, digits = 2, caption = "Descriptive statistics for power data (overall household total demand/energy use)") %>%
+  kable_styling()
+```
+
+The following table estimates the mean total kWh per period using a different method (i.e. directly from the half-hourly level data) as a cross-check.
+
+```{r tableUpdate}
+t2 <- powerDT[year == 2015 & eecaCircuit == "Total", .(sumkWh = sum(energyWh/1000, na.rm = TRUE), # add up the total kWh
+                  nDays = uniqueN(date)), keyby = .(linkID, season, ba_peak)] # for each hh, season and period
+t2[, meanSumkWh := sumkWh/nDays]
+
+table_t2 <- t2[, .(mean_SumkWh = mean(meanSumkWh)), keyby = .(season, ba_peak)]
+
+kableExtra::kable(table_t2[!is.na(season)], digits = 2, caption = "Mean household total kWh per period and season (alternative method)") %>%
+  kable_styling()
+```
+
+Figure \@ref(fig:plotkWh) shows the mean total kWh consumed per household by period and season. Note that this total reflects not only the power demand level but the number of hours in each period.
+
+```{r plotkWh, fig.cap="Mean total kWh per period by season (2015)"}
+
+# plot sums at household level
+plotDT <- powerDT[year == 2015 & eecaCircuit == "Total", .(sumkWh = sum(energyWh/1000, na.rm = TRUE),
+                             meankW = mean(meanPowerW/1000, na.rm = TRUE),
+                             sdkW = sd(meanPowerW/1000, na.rm = TRUE),
+                 nDays = uniqueN(date),
+                 nHouseholds = uniqueN(linkID)), keyby = .(season,ba_peak, linkID)]
+
+plotDT[, meanTotalkWh := sumkWh/(nDays)]
+
+p <- ggplot2::ggplot(plotDT, aes(y = meanTotalkWh, 
+                                           x = ba_peak, 
+                                           colour = season, 
+                                           group = ba_peak
+                                 )
+                     ) +
+  geom_boxplot() +
+  labs(x = "Time of day",
+         y = "Mean total kWh")
+
+p +
+  facet_grid(season ~ .) +
+   theme(legend.position = 'bottom') +
+  scale_color_discrete(name = "Season")
+
+```
+
+Figure \@ref(fig:plotkW) on the other hand shows the mean half-hourly kW demand per household by period and season and reflects the greater power demand in the evening and morning peak periods.
+
+```{r plotkW, fig.cap="Mean kW per half hour by period and season (2015)"}
+
+p <- ggplot2::ggplot(plotDT, aes(y = meankW, 
+                                           x = ba_peak, 
+                                           colour = season, 
+                                           group = ba_peak
+                                 )
+                     ) +
+  geom_boxplot() +
+  labs(x = "Time of day",
+         y = "Mean kW")
+
+p +
+  facet_grid(season ~ .) +
+   theme(legend.position = 'bottom') +
+  scale_color_discrete(name = "Season")
+```
+
 # Peak Contribution
 
 
@@ -108,8 +213,8 @@ In this section we use the GREEN Grid residential sample to estimate the contrib
 
 * Sample winter evenings 17:00 - 21:00.
     * Mean winter evening load: 
-        * Find the average load across each circuit during the period
-        * Calculate the percentage contribution of each identified load type to this average peak load. 
+        * find the average load across each circuit during the period
+        * calculate the percentage contribution of each identified load type to this average peak load. 
     * Maximum winter evening load
         * find the maximum half-hour demand for each household during the defined peak period
         * calculate the percentage contribution of each separately identifiable load type (lighting, hot water, heat pump, oven) in that half hour.
@@ -153,7 +258,7 @@ subsetDT <- powerDT[season == "Winter" &
 dataBucketDT <- subsetDT[, .(avgPeakDemandW = mean(meanPowerW, na.rm = TRUE)), keyby =.(linkID, eecaCircuit)]
 
 
-kableExtra::kable(head(dataBucketDT, 10), digits = 3,
+kableExtra::kable(head(dataBucketDT, 10), digits = 2,
                   caption = "Example data: Extracted mean demand by dwelling and circuit at 'peak'")  %>% # test result
   kable_styling()
 
@@ -163,6 +268,7 @@ data.table::fwrite(dataBucketDT, paste0(here::here(), "/data/output/Extracted me
 
 
 ```
+
 ```{r wattageContributionAverageDemand}
 
 #This section aims to calculate the wattage contribution. We recycle previous results...
@@ -308,7 +414,7 @@ resAllSeasonsDT <- resAllSeasonsDT[, pc_LI := Lighting/Total]
 resAllSeasonsDT <- resAllSeasonsDT[, pc_OV := Oven/Total]
 resAllSeasonsDT <- resAllSeasonsDT[, pc_Other := Other/Total]
 
-kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 3,
+kableExtra::kable(head(resAllSeasonsDT[season == "Winter"], 10), digits = 2,
                   caption = "Example data: Extracted winter peak load half-hour circuits (NA indicates no such circuit)")  %>% # test result
   kable_styling()
 
@@ -798,7 +904,7 @@ copiedtable <- copiedtable[, c( "pc_Other") := NULL]#We do not need this column
 
 
 
-kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
+kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 2,
                   caption = "Example data: Extracted peak load half-hour circuits for Hawke's Bay (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
@@ -983,7 +1089,7 @@ copiedtable <- copiedtable[, c( "pc_LI") := NULL]#We do not need this column
 copiedtable <- copiedtable[, c( "pc_OV") := NULL]#We do not need this column
 copiedtable <- copiedtable[, c( "pc_Other") := NULL]#We do not need this column
 
-kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 3,
+kableExtra::kable(head(copiedtable[year == "2015"], 10), digits = 2,
                   caption = "Example data: Extracted peak load half-hour circuits (NaN indicates no such circuit)")  %>% # test result
   kable_styling()
 
@@ -1168,7 +1274,7 @@ sample2015DT <- sampleShortDT[year == 2015] # Getting rid of years that are not 
 
 sample2015DT <- setorder(sample2015DT, -averagePowerW)
 
-kableExtra::kable(head(sample2015DT[year == "2015"], 10), digits = 3,
+kableExtra::kable(head(sample2015DT[year == "2015"], 10), digits = 2,
                   caption = "Example data: Extracted winter peak load half-hours in descending order for 2015")  %>% # test result
   kable_styling()
 
@@ -1391,54 +1497,39 @@ myPlot
 This section presents annual and seasonal energy consumption (in kWh) for each identifiable load. This analysis considers the year 2015. Figure \@ref(fig:annualBoxPlot) shows the annual total energy consumption (in kWh) for the identifiable loads in a [box and whisker plot](https://ggplot2.tidyverse.org/reference/geom_boxplot.html) to show the median, 25%/75% quantiles, whiskers and outliers. Hot Water consumes the most energy per year with a pronounced variation between houses. Lighting, Heat Pump, and Oven follow. “Other”  clearly drive large inter-household variation and, as noted above, should be a focus of further work.
 
 
-```{r annualanalysis}
-
+```{r annualAnalysis}
 # kWh
-
-# new DT ( do we need to?)
-energyDT <- copy(powerDT)
-
-#energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]#Converting W into Wh energy 
-
-
-
-#Conversion to energy Wh
-energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]
-analysisDT <- copy(energyDT) # another new DT. Do we need to?
-analysisDT <- analysisDT[, totalEnergyWh := sum(meanEnergyWh, na.rm = TRUE), 
-                         keyby = .(linkID, eecaCircuit, year)]#Ignores NAs
-analysisShortDT <- analysisDT[, .(totalEnergyWh = totalEnergyWh), 
-                              keyby = .(linkID, eecaCircuit, year)] #For some reason by does not remove duplicates without crashing....
-
-analysisShortDT <- unique(analysisShortDT)# Removing duplicates
+# annual total per circuit
+annualDT <- powerDT[, .(totalAnnualEnergyPerCircuitWh = sum(energyWh, na.rm = TRUE)), 
+                              keyby = .(linkID, eecaCircuit, year)] 
 
 # Calculating the contribution to annual energy consumption and turning off e-notation
 
 options(scipen = 999)
 
-analysisShortDT <- dcast(analysisShortDT, 
+annualWideDT <- dcast(annualDT, 
            linkID + year ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
            fill = NA, # so we don't get NaN
-           value.var = "totalEnergyWh") # take 1 household and turn data round
+           value.var = "totalAnnualEnergyPerCircuitWh") # take 1 household and turn data round
 
-analysisShortDT <- analysisShortDT[, pc_HW := `Hot water`/Total]
-analysisShortDT <- analysisShortDT[, pc_HP := `Heat Pump or Heating`/Total]
-analysisShortDT <- analysisShortDT[, pc_LI := `Lighting`/Total]
-analysisShortDT <- analysisShortDT[, pc_OV := `Oven`/Total]
-analysisShortDT <- analysisShortDT[, pc_Other := Other/Total]
+annualWideDT <- annualWideDT[, pc_HW := `Hot water`/Total]
+annualWideDT <- annualWideDT[, pc_HP := `Heat Pump or Heating`/Total]
+annualWideDT <- annualWideDT[, pc_LI := `Lighting`/Total]
+annualWideDT <- annualWideDT[, pc_OV := `Oven`/Total]
+annualWideDT <- annualWideDT[, pc_Other := Other/Total]
 # There are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
 
-analysisShortDT <- setnames(analysisShortDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "Other"),
+annualWideDT <- setnames(annualWideDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "Other"),
                         new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Other"))
 
-analysisShortDT <- analysisShortDT[, c( "Total") := NULL]#We do not need this column
+annualWideDT <- annualWideDT[, c( "Total") := NULL]#We do not need this column
 
 #Summarising the variation in demand
 #We need to dcast it back into the original form
-dt <- data.table::as.data.table(gather(analysisShortDT, eecaCircuit, totalEnergyWh, `Heat Pump`:`Oven`, factor_key = TRUE))
+plotDT <- data.table::as.data.table(gather(annualWideDT, eecaCircuit, totalAnnualEnergyPerCircuitWh, `Heat Pump`:`Oven`, factor_key = TRUE))
 
-dt <- dt[, totalEnergykWh := totalEnergyWh/1000]
+plotDT[, totalAnnualEnergyPerCircuitkWh := totalAnnualEnergyPerCircuitWh/1000]
 
 
 ```
@@ -1446,8 +1537,8 @@ dt <- dt[, totalEnergykWh := totalEnergyWh/1000]
 ```{r annualBoxPlot, fig.cap="Box and whisker plot of annual energy consumption (per house) of each identifiable load for 2015", warning=FALSE}
 
 
-myPlot <- ggplot2::ggplot(dt[year == 2015], aes((y=totalEnergykWh), x=eecaCircuit)) +
-  geom_boxplot(aes(y=totalEnergykWh)) +
+myPlot <- ggplot2::ggplot(plotDT[year == 2015], aes((y=totalAnnualEnergyPerCircuitkWh), x=eecaCircuit)) +
+  geom_boxplot() +
   labs(x = "Circuit", y= "Annual Energy consumption (kWh)") +
   #scale_x_continuous( limits = c(0,2000))+
   #facet_grid( season ~ year)+
@@ -1466,57 +1557,44 @@ myPlot
 
 ```{r partBannualConsumption}
 # kWh
+# seasonal
 
-# new DT ( do we need to?)
-energyDT <- copy(powerDT)
-
-#energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]#Converting W into Wh energy 
-
-
-
-#Conversion to energy Wh
-energyDT <- energyDT[, meanEnergyWh := meanPowerW/2]
-analysisDT <- copy(energyDT) # another new DT. Do we need to?
-analysisDT <- analysisDT[, totalEnergyWh := sum(meanEnergyWh, na.rm = TRUE), 
-                         keyby = .(linkID, season, eecaCircuit, year)]#Ignores NAs
-analysisShortDT <- analysisDT[, .(totalEnergyWh = totalEnergyWh), 
-                              keyby = .(linkID, season, eecaCircuit, year)] #For some reason by does not remove duplicates without crashing....
-
-analysisShortDT <- unique(analysisShortDT)# Removing duplicates
+seasonalDT <- powerDT[, .(totalSeasonalEnergyPerCircuitWh = sum(energyWh, na.rm = TRUE)), 
+                         keyby = .(linkID, eecaCircuit, year, season)] #Ignores NAs
 
 # Calculating the contribution to annual energy consumption and turning off e-notation
 
 options(scipen = 999)
 
-analysisShortDT <- dcast(analysisShortDT, 
+seasonalWideDT <- dcast(seasonalDT, 
            linkID + year + season ~ eecaCircuit, 
            fun = mean, # won't do anything as we should just have 1 value?
            fill = NA, # so we don't get NaN
-           value.var = "totalEnergyWh") # take 1 household and turn data round
+           value.var = "totalSeasonalEnergyPerCircuitWh") # take 1 household and turn data round
 
-analysisShortDT <- analysisShortDT[, pc_HW := `Hot water`/Total]
-analysisShortDT <- analysisShortDT[, pc_HP := `Heat Pump or Heating`/Total]
-analysisShortDT <- analysisShortDT[, pc_LI := `Lighting`/Total]
-analysisShortDT <- analysisShortDT[, pc_OV := `Oven`/Total]
-analysisShortDT <- analysisShortDT[, pc_Other := Other/Total]
+seasonalWideDT <- seasonalWideDT[, pc_HW := `Hot water`/Total]
+seasonalWideDT <- seasonalWideDT[, pc_HP := `Heat Pump or Heating`/Total]
+seasonalWideDT <- seasonalWideDT[, pc_LI := `Lighting`/Total]
+seasonalWideDT <- seasonalWideDT[, pc_OV := `Oven`/Total]
+seasonalWideDT <- seasonalWideDT[, pc_Other := Other/Total]
 # There are a lot of NA/Nan in the data. XXSensible to turn NaN into NA to receive more results??XX
 
-analysisShortDT <- setnames(analysisShortDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "Other"),
+seasonalWideDT <- setnames(seasonalWideDT, old=c("Heat Pump or Heating","Hot water", "Lighting", "Oven", "Other"),
                         new=c("Heat Pump", "Hot Water", "Lighting", "Oven", "Other"))
 
 
-analysisShortDT <- analysisShortDT[, c( "Total") := NULL]#We do not need this column
+seasonalWideDT <- seasonalWideDT[, c( "Total") := NULL]#We do not need this column
 
 
 #Summarising the variation in demand
 #We need to dcast it back into the original form
-dt <- data.table::as.data.table(gather(analysisShortDT, eecaCircuit, totalEnergyWh, `Heat Pump`:`Oven`, factor_key = TRUE))
+plotDT <- data.table::as.data.table(gather(seasonalWideDT, eecaCircuit, totalSeasonalEnergyPerCircuitWh, `Heat Pump`:`Oven`, factor_key = TRUE))
 
-dt$season <- factor(dt$season, levels = c("Spring","Summer",
+plotDT$season <- factor(plotDT$season, levels = c("Spring","Summer",
                                                     "Autumn", "Winter"))#This puts the seasons in the right order in the plot
 
 
-dt$eecaCircuit <- factor(dt$eecaCircuit, levels = c("Hot Water","Heat Pump",
+plotDT$eecaCircuit <- factor(plotDT$eecaCircuit, levels = c("Hot Water","Heat Pump",
                                                     "Lighting", "Oven", "Other"))#This puts the seasons in the right order in the plot
 ```
 
@@ -1528,11 +1606,11 @@ Figure \@ref(fig:annualConsPlotHW) shows the distribution of seasonal energy con
 
 ```{r annualConsPlotHW, fig.cap="Distribution of seasonal energy consumption for Hot Water for all houses for 2015", warning=FALSE}
 
-myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/1000, colour=season)) +
+myPlot <- ggplot2::ggplot(plotDT[eecaCircuit =="Hot Water"], aes(x=totalSeasonalEnergyPerCircuitWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seasonal energy (kWh)") +
   #scale_x_continuous( limits = c(0,2000))+
-     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+     geom_vline(aes(xintercept=mean(totalSeasonalEnergyPerCircuitWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
@@ -1543,11 +1621,11 @@ myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/100
         axis.ticks.x = element_line(colour = "black"))
 myPlot
 
-myhisto <- ggplot2::ggplot(dt[eecaCircuit =="Hot Water"], aes(x=totalEnergyWh/1000, fill=season, alpha = 0.5)) +
+myhisto <- ggplot2::ggplot(plotDT[eecaCircuit =="Hot Water"], aes(x=totalSeasonalEnergyPerCircuitWh/1000, fill=season, alpha = 0.5)) +
   geom_histogram(position = "dodge") +
   labs(x = "Seasonal energy (kWh)") +
   #scale_x_continuous( limits = c(0,2000))+
-     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+     geom_vline(aes(xintercept=mean(totalSeasonalEnergyPerCircuitWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
@@ -1565,11 +1643,11 @@ In contrast, Figure \@ref(fig:annualConsPlotHP) presents a similar density plot 
 
 ```{r annualConsPlotHP, fig.cap="Distribution of seasonal energy consumption for Heat Pumps for all houses for 2015", warning=FALSE}
 
-myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Heat Pump"], aes(x=totalEnergyWh/1000, colour=season)) +
+myPlot <- ggplot2::ggplot(plotDT[eecaCircuit =="Heat Pump"], aes(x=totalSeasonalEnergyPerCircuitWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seasonal energy (kWh)") +
   #scale_x_continuous( limits = c(0,500))+
-     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+     geom_vline(aes(xintercept=mean(totalSeasonalEnergyPerCircuitWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
@@ -1587,11 +1665,11 @@ Energy consumption of Lighting is particularly apparent in spring, autumn, and w
 
 ```{r annualConsPlotL, fig.cap="Distribution of seasonal energy consumption for Lighting for all houses for 2015", warning=FALSE}
 
-myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Lighting"], aes(x=totalEnergyWh/1000, colour=season)) +
+myPlot <- ggplot2::ggplot(plotDT[eecaCircuit =="Lighting"], aes(x=totalSeasonalEnergyPerCircuitWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seaonal energy (kWh)") +
   #scale_x_continuous( limits = c(0,500))+
-     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+     geom_vline(aes(xintercept=mean(totalSeasonalEnergyPerCircuitWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
@@ -1609,11 +1687,11 @@ For ovens, there is less seasonal variation in seasonal energy consumption as sh
 
 ```{r annualConsPlotOven, fig.cap="Distribution of seasonal energy consumption for Ovens for all houses for 2015", warning=FALSE}
 
-myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Oven"], aes(x=totalEnergyWh/1000, colour=season)) +
+myPlot <- ggplot2::ggplot(plotDT[eecaCircuit =="Oven"], aes(x=totalSeasonalEnergyPerCircuitWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seasonal energy (kWh)") +
   #scale_x_continuous( limits = c(0,500))+
-     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+     geom_vline(aes(xintercept=mean(totalSeasonalEnergyPerCircuitWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
@@ -1632,11 +1710,11 @@ For "Other", there is a lot of seasonal variation in seasonal energy consumption
 
 ```{r annualConsPlotOther, fig.cap="Distribution of seasonal energy consumption for Other for all houses for 2015", warning=FALSE}
 
-myPlot <- ggplot2::ggplot(dt[eecaCircuit =="Other"], aes(x=totalEnergyWh/1000, colour=season)) +
+myPlot <- ggplot2::ggplot(plotDT[eecaCircuit =="Other"], aes(x=totalSeasonalEnergyPerCircuitWh/1000, colour=season)) +
   geom_density() +
   labs(x = "Seasonal energy (kWh)") +
   #scale_x_continuous( limits = c(0,500))+
-     geom_vline(aes(xintercept=mean(totalEnergyWh/1000)),
+     geom_vline(aes(xintercept=mean(totalSeasonalEnergyPerCircuitWh/1000)),
             color="blue", linetype="dashed", size=0.5)+
   #facet_grid( season ~ year)+
   
@@ -1653,7 +1731,7 @@ myPlot
 #For some reason I am not able to chnage the legend title below so I will just rename the variable in a copied data table...
 
 
-dt2 <- copy(dt)
+dt2 <- copy(plotDT)
 
 dt2 <- setnames(dt2, old=c("eecaCircuit"),
                         new=c("Circuit"))
@@ -1663,7 +1741,7 @@ dt2 <- setnames(dt2, old=c("eecaCircuit"),
 
 ```{r annualConsPlotWinter, fig.cap="Distribution of winter 2015 total energy consumption for all circuits for all houses", warning=FALSE}
 
-myPlot <- ggplot2::ggplot(dt2[year == 2015 & season == "Winter"], aes(x=totalEnergyWh/1000, colour=Circuit)) +
+myPlot <- ggplot2::ggplot(dt2[year == 2015 & season == "Winter"], aes(x=totalSeasonalEnergyPerCircuitWh/1000, colour=Circuit)) +
   geom_density() +
   labs(x = "Energy consumption in winter (kWh)") +
   #scale_x_continuous( limits = c(0,4000))+
@@ -1778,7 +1856,7 @@ The Load Factor (LF) is defined as the ratio of mean demand (W) and the peak dem
 The CLF represents the ratio of the power demand at peak to the annual energy consumption over the year (in W/kWh). The advantage of the CLF is that is gives a larger value when the load makes larger contribution to the peak. Table \@ref(tab:clfTableExample) shows the first rows of our calculation of LF and CLF.
 
 ```{r clfTableExample}
-kableExtra::kable(head(MergedTable), digits = 3,
+kableExtra::kable(head(MergedTable), digits = 2,
                   caption = "Example data: Extracted load factor by household and circuit")  %>% # test result
   kable_styling()
 ```

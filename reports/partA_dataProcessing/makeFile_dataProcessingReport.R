@@ -83,8 +83,8 @@ makeOdtReport <- function(f){
 version <- "1.0"
 
 # data ----
-impdPath <- paste0(repoParams$GreenGridData, "gridSpy/1min/data/imputed/") # imputed total load
-hhdPath <- paste0(repoParams$GreenGridData, "gridSpy/halfHour/data/") # use half-hourly data with imputed total load
+impdPath <- paste0(repoParams$GreenGridData, "/1min/data/imputed/") # imputed total load
+hhdPath <- paste0(repoParams$GreenGridData, "/halfHour/data/") # use half-hourly data with imputed total load
 
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
@@ -135,7 +135,9 @@ if(require(drake)){
 
 # > household data  ----
 # fast - no need to drake
-hhDataDT <- data.table::fread(paste0(repoParams$GreenGridData, "survey/ggHouseholdAttributesSafe.csv.gz"))
+f <- path.expand(paste0(repoParams$GreenGridData, 
+            "survey/ggHouseholdAttributesSafe_2019-10-20.csv.gz"))
+hhDataDT <- data.table::fread(f)
 
 # > run report ----
 f <- paste0(repoParams$repoLoc, "/reports/partA_dataProcessing/dataProcessingReport.Rmd")

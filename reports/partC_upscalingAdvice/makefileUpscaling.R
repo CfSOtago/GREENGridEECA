@@ -107,8 +107,12 @@ gxpFiles <- getGXPFileList(repoParams$gxpData) # will be empty if never run befo
 if(nrow(gxpFiles) == 0){
   message("No data!")
 } else {
-  message("Yep, we've got (some) data")
+  message("Yep, we've got (some) data, loading it")
   gxpDataDT <- loadGXPData(gxpFiles)
+  # save out fpr future use
+  message("Saving processed version for future use...")
+  data.table::fwrite(file = paste0(repoParams$gxpData, "gxpDataDT_latest.csv"),
+                     gxpDataDT)
 }
 
 # remove the date NAs here (DST breaks)
@@ -153,7 +157,7 @@ makeReport <- function(f){
 
 # > Make report ----
 # >> yaml ----
-version <- "0.5"
+version <- "1.0_Final"
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
 subtitle <- paste0("EECA Data Analysis (Part C) Upscaling Advice Report v", version)
 authors <- "Ben Anderson"
