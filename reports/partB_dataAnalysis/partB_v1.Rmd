@@ -11,7 +11,7 @@ output:
   bookdown::html_document2:
     fig_width: 6
     fig_caption: yes
-    code_folding: hide
+    code_folding: show
     number_sections: yes
     toc: yes
     toc_depth: 2
@@ -120,22 +120,37 @@ powerDT[, ba_peak := ifelse(hour >= 21, "Off peak (night)", ba_peak)]
 test <- table(powerDT$ba_peak,powerDT$hour)
 
 # test table
-t <- powerDT[year == 2015, .(sumkWh = sum(meanEnergyWh/1000, na.rm = TRUE),
+t <- powerDT[year == 2015 & eecaCircuit == "Total", .(sumkWh = sum(meanEnergyWh/1000, na.rm = TRUE),
+                             meankWh = mean(meanEnergyWh/1000, na.rm = TRUE),
+                             mediankWh = median(meanEnergyWh/1000, na.rm = TRUE), 
                              meankW = mean(meanPowerW/1000, na.rm = TRUE),
                              sdkW = sd(meanPowerW/1000, na.rm = TRUE),
                  nDays = uniqueN(date),
                  nHouseholds = uniqueN(linkID)), keyby = .(season,ba_peak)]
 t[, meanTotalkWh := sumkWh/(nDays * nHouseholds)]
 # NB in this definition 'peak' is only evening peak (not morning)
-keepVars <- c("season", "ba_peak","meanTotalkWh","meankW","sdkW","nHouseholds")
+keepVars <- c("season", "ba_peak","nHouseholds", "meankW","sdkW","meankWh", "mediankWh", "meanTotalkWh")
 
-new <- c("Season", "Peak", "Mean total kWh", "Mean kW", "s.d. (kW)", "N households")
+new <- c("Season", "Peak", "N households", "Mean half-hourly kW", "s.d. (half-hourly kW)", "Mean half-hourly kWh", "Median half-hourly kWh","Mean total kWh for the period")
 
 table_t <- t[, ..keepVars]
 
 setnames(table_t, keepVars, new)
 
-kableExtra::kable(table_t, digits = 2, caption = "Descriptive statistics for power data") %>%
+kableExtra::kable(table_t, digits = 2, caption = "Descriptive statistics for power data (overall household total demand/energy use)") %>%
+  kable_styling()
+```
+
+The following table estimates the mean total kWh per period using a different method (i.e. directly from the half-hourly level data) as a cross-check.
+
+```{r tableUpdate}
+t2 <- powerDT[year == 2015 & eecaCircuit == "Total", .(sumkWh = sum(meanEnergyWh/1000, na.rm = TRUE), # add up the total kWh
+                  nDays = uniqueN(date)), keyby = .(linkID, season, ba_peak)] # for each hh, season and period
+t2[, meanSumkWh := sumkWh/nDays]
+
+table_t2 <- t2[, .(mean_SumkWh = mean(meanSumkWh)), keyby = .(season, ba_peak)]
+
+kableExtra::kable(table_t2[!is.na(season)], digits = 2, caption = "Mean household total kWh per period and season (alternative method)") %>%
   kable_styling()
 ```
 
@@ -144,7 +159,7 @@ Figure \@ref(fig:plotkWh) shows the mean total kWh consumed per household by per
 ```{r plotkWh, fig.cap="Mean total kWh per period by season (2015)"}
 
 # plot sums at household level
-plotDT <- powerDT[year == 2015, .(sumkWh = sum(meanEnergyWh/1000, na.rm = TRUE),
+plotDT <- powerDT[year == 2015 & eecaCircuit == "Total", .(sumkWh = sum(meanEnergyWh/1000, na.rm = TRUE),
                              meankW = mean(meanPowerW/1000, na.rm = TRUE),
                              sdkW = sd(meanPowerW/1000, na.rm = TRUE),
                  nDays = uniqueN(date),
@@ -251,6 +266,7 @@ data.table::fwrite(dataBucketDT, paste0(here::here(), "/data/output/Extracted me
 
 
 ```
+
 ```{r wattageContributionAverageDemand}
 
 #This section aims to calculate the wattage contribution. We recycle previous results...
@@ -1479,7 +1495,7 @@ myPlot
 This section presents annual and seasonal energy consumption (in kWh) for each identifiable load. This analysis considers the year 2015. Figure \@ref(fig:annualBoxPlot) shows the annual total energy consumption (in kWh) for the identifiable loads in a [box and whisker plot](https://ggplot2.tidyverse.org/reference/geom_boxplot.html) to show the median, 25%/75% quantiles, whiskers and outliers. Hot Water consumes the most energy per year with a pronounced variation between houses. Lighting, Heat Pump, and Oven follow. “Other”  clearly drive large inter-household variation and, as noted above, should be a focus of further work.
 
 
-```{r annualanalysis}
+```{r annualAnalysis}
 
 # kWh
 
