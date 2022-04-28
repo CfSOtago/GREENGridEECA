@@ -17,6 +17,11 @@ nodename <- info[4]
 login <- info[6]
 user <- info[7]
 
+# default data path for UoS
+repoParams$GreenGridData <- path.expand("J://CivilEnvResearch/Public/SERG/data/NZ_GREENGrid/safe/")
+repoParams$censusData <- path.expand("J://CivilEnvResearch/Public/SERG/data/NZ_Census/") # fix for your platform
+repoParams$gxpData <- path.expand("J://CivilEnvResearch/Public/SERG/data/NZ_EA_EMI/gxp/") # fix for your platform
+
 # > Data on HCS ----
 if((user == "dataknut" | user == "carsten" ) & sysname == "Linux"){
   message("We're on the CS RStudio server as ", user, " using " , sysname)
@@ -26,9 +31,9 @@ if((user == "dataknut" | user == "carsten" ) & sysname == "Linux"){
 }
 if(user == "ben" & sysname == "Darwin"){
   message("We're on Ben's laptop as : ", user, " using " , sysname)
-  repoParams$GreenGridData <- path.expand("~/Data/NZ_GREENGrid/safe/")
-  repoParams$censusData <- path.expand("~/Data/NZ_Census/") # fix for your platform
-  repoParams$gxpData <- path.expand("~/Data/NZ_EA_EMI/gxp/") # fix for your platform
+  repoParams$GreenGridData <- path.expand("~/Dropbox/data/NZ_GREENGrid/safe/")
+  repoParams$censusData <- path.expand("~/Dropbox/data/NZ_Census/") # fix for your platform
+  repoParams$gxpData <- path.expand("~/Dropbox/data/NZ_EA_EMI/gxp/") # fix for your platform
 }
 if(user == "carsten.dortans" & sysname == "Darwin"){
   message("We're on Carsten's laptop as : ", user, " using " , sysname)
