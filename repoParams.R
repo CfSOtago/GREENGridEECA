@@ -31,9 +31,9 @@ if((user == "dataknut" | user == "carsten" ) & sysname == "Linux"){
 }
 if(user == "ben" & sysname == "Darwin"){
   message("We're on Ben's laptop as : ", user, " using " , sysname)
-  repoParams$GreenGridData <- path.expand("~/Data/NZ_GREENGrid/safe/")
-  repoParams$censusData <- path.expand("~/Data/NZ_Census/") # fix for your platform
-  repoParams$gxpData <- path.expand("~/Data/NZ_EA_EMI/gxp/") # fix for your platform
+  repoParams$GreenGridData <- path.expand("~/Dropbox/data/NZ_GREENGrid/safe/")
+  repoParams$censusData <- path.expand("~/Dropbox/data/NZ_Census/") # fix for your platform
+  repoParams$gxpData <- path.expand("~/Dropbox/data/NZ_EA_EMI/gxp/") # fix for your platform
 }
 if(user == "carsten.dortans" & sysname == "Darwin"){
   message("We're on Carsten's laptop as : ", user, " using " , sysname)
