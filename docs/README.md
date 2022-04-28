@@ -16,6 +16,7 @@ A repo supporting analysis of the [New Zealand GREEN Grid Household Electricity 
 ### Part B - Data analysis
 
  * Final report: ([html](partB_dataAnalysisReport_v2.1_Final.html)) ([PDF](https://ourarchive.otago.ac.nz/handle/10523/9821))
+  * Final report (v2.2 - Table 3.1 fixed - see [this commit](https://github.com/CfSOtago/GREENGridEECA/pull/101/commits/212d4fdefb42a035a2d91dd3d8dd1a7ca365ae2f)): ([html](partB_dataAnalysisReport_v2.2.html))
 
 ### Part C – Provision of advice for upscaling 
 
