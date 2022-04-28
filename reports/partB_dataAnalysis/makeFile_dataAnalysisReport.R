@@ -106,7 +106,7 @@ processPowerData <- function(dt){
   
   # we will now have the following eecaCircuits:
   table(powerDT$eecaCircuit, useNA = "always")
-  # NA is all non-abelled circuits and _will_ include main incomer so not safe
+  # NA is all non-labelled circuits and _will_ include main incomer so not safe
   # to sum. We need to create a calculated 'Other' and add it to the table in place of the NA rows
   labeledDT <- powerDT[!is.na(eecaCircuit) & 
                          !(eecaCircuit %like% "Calculated"), 
@@ -143,6 +143,7 @@ processPowerData <- function(dt){
 }
 
 doReport <- function(){
+  # really should pass params & version in as parameters
   rmdFile <- paste0(repoParams$repoLoc, "/reports/partB_dataAnalysis/partB_v1.Rmd")
   rmarkdown::render(input = rmdFile,
                     params = list(title = title,
@@ -176,18 +177,18 @@ filesDT <- getFileList(dPath)
 plan # test the plan
 make(plan) # run the plan, re-loading data if needed
 
-
+# load survey data
 hhSurveyDT <- data.table::fread(paste0(repoParams$GreenGridData, 
                                        "survey/ggHouseholdAttributesSafe.csv.gz"))
 
 
-# reload data from wherever drake put it
+# reload half-hourly power data from wherever drake put it
 powerDT <- drake::readd(cleanPowerData)
 # check
 table(powerDT$eecaCircuit, powerDT$eecaCircuitOrig)
 
 # > run report ----
-version <- "2.1_Final"
+version <- "2.2"
 
 #> yaml ----
 title <- paste0("NZ GREEN Grid Household Electricity Demand Data")
